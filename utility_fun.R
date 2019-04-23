@@ -22,3 +22,22 @@ wdTable <-function(x,..., filename=NULL, path = ""){
   cat("Done!\n")
 }
 
+#######################
+#ping_IP: checking internet connection.
+ping_IP <- function() {
+  if (.Platform$OS.type == "windows") {
+    cat("Please wait...")
+    ipmessage <- system("ping www.google.com", intern = TRUE)
+  } 
+  
+  l1=strsplit(ipmessage[3],":")[[1]][2]
+  l2=strsplit(ipmessage[4],":")[[1]][2]
+  l3=strsplit(ipmessage[5],":")[[1]][2]
+  l4=strsplit(ipmessage[6],":")[[1]][2]
+  
+  result<-  !all(c(l1,l2,l3,l4)==" Destination net unreachable.")
+  cat("\nInternet connection: ",result[1])
+ invisible(result)
+}
+
+###################
