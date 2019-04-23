@@ -14,8 +14,8 @@ write.cb <- function(x, row.names = FALSE, col.names = TRUE,...)
               col.names = col.names,...)
 
 #########################
-# wdTable: create a table in word automatically using x dataframe.
-wdTable <-function(x,..., filename=NULL, path = ""){
+# wd.Table: create a table in word automatically using x dataframe.
+wd.Table <-function(x,..., filename=NULL, path = ""){
   R2wd::wdGet(filename,path , method="RDCOMClient")
   R2wd::wdBody("\n\n")
   R2wd::wdTable(as.data.frame(x), ...)
@@ -23,8 +23,8 @@ wdTable <-function(x,..., filename=NULL, path = ""){
 }
 
 #######################
-#ping_IP: checking internet connection.
-ping_IP <- function() {
+#ping.IP: checking internet connection.
+ping.IP <- function() {
   if (.Platform$OS.type == "windows") {
     cat("Please wait...")
     ipmessage <- system("ping www.google.com", intern = TRUE)
