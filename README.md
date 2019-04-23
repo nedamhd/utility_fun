@@ -1,8 +1,8 @@
 # Some utility functions  to improve coding
 * read clipboard (read.cb()).
 * write clipbord (write.cb()).
-* create a table in word automatically (wdTable()).
-* checking internet connection (ping_IP()).
+* create a table in word automatically (wd.Table()).
+* checking internet connection (ping.IP()).
 
 
 
