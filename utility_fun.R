@@ -42,10 +42,10 @@ ping.IP <- function() {
 
 ###################
 #lib: install and load a library together.
-lib <- function(...) {#
-  lib<- deparse(substitute( ... ))
-  if(lib %in% rownames(installed.packages()) == FALSE)  
-    install.packages(lib)
-    library(...)
-       
-}
+#lib <- function(...) {#
+#  lib<- deparse(substitute( ... ))
+#  if(lib %in% rownames(installed.packages()) == FALSE)  
+#    install.packages(lib)
+#    library(...)
+#  }     
+
