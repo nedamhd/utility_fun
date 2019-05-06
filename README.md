@@ -8,6 +8,6 @@
 
 
 
-Download: 
-devtools::source_url("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/utility_fun.R")
+Download:     
+source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/utility_fun.R")
 
