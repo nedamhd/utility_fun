@@ -4,6 +4,11 @@
 # Packages Used: R2wd
 
 ##########################
+# Important common libraries
+library(ggplot2); library(dplyr)
+
+
+##########################
 # read.cb: read clipboard
 read.cb <- function(header=TRUE,...) read.table("clipboard", header = header,
                                                 sep ="\t",...)
