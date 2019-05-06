@@ -3,7 +3,7 @@
 * write clipbord (write.cb()).
 * create a table in word automatically (wd.Table()).
 * checking internet connection (ping.IP()).
-* install and load a library together(lib()).
+
 
 
 
