@@ -55,8 +55,16 @@ ping.IP <- function() {
 
   
 ##################
-# `%#%` Pipe to add a comment to a variable (`%#%`).
-"%#%"<- function(a,b) {comment(a)=b; a}
+# `%#%` A pipe to add or replace a comment to a variable.
+"%#%"<- function(a,b) {
+  #"Replacing a new comment with old one or
+  # adding another one by including '...' to the start of comment"
+ sp= strsplit(b,split  ="")[[1]]
+ if(all(sp[1:3]==".")){  
+   sp=  paste0(sp[-(1:3)],collapse = "")
+   comment(a)<-c(comment(a),sp)
+   } else {comment(a)<-b}
+  a}
   
   
   
