@@ -3,7 +3,7 @@
 * write clipbord (`write.cb()`).
 * create a table in word automatically (`wd.Table()`).
 * checking internet connection (`ping.IP()`).
-* Pipe to add a comment to a variable (`%#%`).
+* A pipe to add or replace a comment to a variable (`%#%`).
 
 
 
