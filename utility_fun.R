@@ -14,12 +14,6 @@ read.cb <- function(header=TRUE,...) read.table("clipboard", header = header,
                                                 sep ="\t",...)
 ##########################
 # write.cb: write x to clipbord
-write.cb <- function(x, row.names = FALSE, col.names = TRUE,...)
-  write.table(x, file="clipboard", sep = "\t", row.names = row.names,
-              col.names = col.names,...)
-
-#########################
-# wd.Table: create a table in word automatically using x dataframe.
 write.cb = function(x, row.names=TRUE, col.names=TRUE, comment=FALSE, text=NULL, ...){ 
 datafile <- file("clipboard", open='wt')
 on.exit(close(datafile))
@@ -29,6 +23,15 @@ if(comment == TRUE)   {
 write.table(x, file = datafile, sep = "\t", row.names = row.names,
               col.names = col.names, ...)
 if(!is.null(text))   {writeLines(text , con=datafile)}
+}
+
+#########################
+# wd.Table: create a table in word automatically using x dataframe.
+wdTable<-function(x,..., filename=NULL, path = ""){
+  R2wd::wdGet(filename,path , method="RDCOMClient")
+  R2wd::wdBody("\n\n")
+  R2wd::wdTable(as.data.frame(x), ...)
+  cat("Done!\n")
 }
 
 #######################
