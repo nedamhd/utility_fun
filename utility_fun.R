@@ -55,5 +55,9 @@ ping.IP <- function() {
 
   
 ##################
-# `%#%` Pipe for add a comment to a variable (`%#%`).
+# `%#%` Pipe to add a comment to a variable (`%#%`).
 "%#%"<- function(a,b) {comment(a)=b; a}
+  
+  
+  
+  
