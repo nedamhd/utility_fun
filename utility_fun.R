@@ -20,11 +20,15 @@ write.cb <- function(x, row.names = FALSE, col.names = TRUE,...)
 
 #########################
 # wd.Table: create a table in word automatically using x dataframe.
-wd.Table <-function(x,..., filename=NULL, path = ""){
-  R2wd::wdGet(filename,path , method="RDCOMClient")
-  R2wd::wdBody("\n\n")
-  R2wd::wdTable(as.data.frame(x), ...)
-  cat("Done!\n")
+write.cb = function(x, row.names=TRUE, col.names=TRUE, comment=FALSE, text=NULL, ...){ 
+datafile <- file("clipboard", open='wt')
+on.exit(close(datafile))
+if(comment == TRUE)   {
+  if(is.null(comment(x))) warning("There is no comment for x! first add one by comment(x) = '...'") else
+  writeLines(comment(x), con=datafile)}
+write.table(x, file = datafile, sep = "\t", row.names = row.names,
+              col.names = col.names, ...)
+if(!is.null(text))   {writeLines(text , con=datafile)}
 }
 
 #######################
