@@ -4,18 +4,30 @@
 # Packages Used: R2wd
 
 ##########################
-# read.cb: read clipboard
+# Important common libraries
+library(ggplot2); library(dplyr); library(wrapr)
+
+
+##########################
+# `read.cb`: read clipboard
 read.cb <- function(header=TRUE,...) read.table("clipboard", header = header,
                                                 sep ="\t",...)
 ##########################
-# write.cb: write x to clipbord
-write.cb <- function(x, row.names = FALSE, col.names = TRUE,...)
-  write.table(x, file="clipboard", sep = "\t", row.names = row.names,
-              col.names = col.names,...)
+# `write.cb`: write x to clipbord
+write.cb = function(x, row.names=TRUE, col.names=TRUE, comment=FALSE, text=NULL, ...){ 
+datafile <- file("clipboard", open='wt')
+on.exit(close(datafile))
+if(comment == TRUE)   {
+  if(is.null(comment(x))) warning("There is no comment for x! first add one by comment(x) = '...'") else
+  writeLines(comment(x), con=datafile)}
+write.table(x, file = datafile, sep = "\t", row.names = row.names,
+              col.names = col.names, ...)
+if(!is.null(text))   {writeLines(text , con=datafile)}
+}
 
 #########################
-# wd.Table: create a table in word automatically using x dataframe.
-wd.Table <-function(x,..., filename=NULL, path = ""){
+# `wd.Table`: create a table in word automatically using x dataframe.
+wdTable<-function(x,..., filename=NULL, path = ""){
   R2wd::wdGet(filename,path , method="RDCOMClient")
   R2wd::wdBody("\n\n")
   R2wd::wdTable(as.data.frame(x), ...)
@@ -23,7 +35,7 @@ wd.Table <-function(x,..., filename=NULL, path = ""){
 }
 
 #######################
-#ping.IP: checking internet connection.
+#`ping.IP`: checking internet connection.
 ping.IP <- function() {
   if (.Platform$OS.type == "windows") {
     cat("Please wait...")
@@ -40,4 +52,20 @@ ping.IP <- function() {
  invisible(result)
 }
 
-###################
+
+  
+##################
+# `%#%` A pipe to add or replace a comment to a variable.
+"%#%"<- function(a,b) {
+  #"Replacing a new comment with old one or
+  # adding another one by including '...' to the start of comment"
+ sp= strsplit(b,split  ="")[[1]]
+ if(all(sp[1:3]==".")){  
+   sp=  paste0(sp[-(1:3)],collapse = "")
+   comment(a)<-c(comment(a),sp)
+   } else {comment(a)<-b}
+  a}
+  
+  
+  
+  
