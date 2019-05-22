@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "1+2\n\n\n\n",
+    "created" : 1558474722791.000,
+    "dirty" : false,
+    "encoding" : "ISO8859-1",
+    "folds" : "",
+    "hash" : "1575095213",
+    "id" : "DFC535FD",
+    "lastKnownWriteTime" : 1558474930,
+    "last_content_update" : 1558474930610,
+    "path" : "~/Desktop/ddddd/dddd/heloo.R",
+    "project_path" : "heloo.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
