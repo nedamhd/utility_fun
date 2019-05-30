@@ -1,10 +1,10 @@
 # Some utility functions  to improve coding
-* read clipboard (`read.cb()`).
-* write clipbord (`write.cb()`).
-* create a table in word automatically (`wd.Table()`).
-* checking internet connection (`ping.IP()`).
+* Read clipboard (`read.cb()`).
+* Write clipbord (`write.cb()`).
+* Create a table in word automatically (`wd.Table()`).
+* Checking internet connection (`ping.IP()`).
 * A pipe to add or replace a comment to a variable (`%#%`).
-*  Easy function to set a progress bar(`progress()`).
+* Easy function to set a progress bar(`progress()`).
 
 
 
