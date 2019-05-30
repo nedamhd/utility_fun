@@ -4,7 +4,7 @@
 * create a table in word automatically (`wd.Table()`).
 * checking internet connection (`ping.IP()`).
 * A pipe to add or replace a comment to a variable (`%#%`).
-
+*  Easy function to set a progress bar(`progress()`).
 
 
 
