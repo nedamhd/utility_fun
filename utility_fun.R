@@ -9,11 +9,11 @@ library(ggplot2); library(dplyr); library(wrapr)
 
 
 ##########################
-# `read.cb`: read clipboard
+# Read clipboard
 read.cb <- function(header=TRUE,...) read.table("clipboard", header = header,
                                                 sep ="\t",...)
 ##########################
-# `write.cb`: write x to clipbord
+# Write x to clipbord
 write.cb = function(x, row.names=TRUE, col.names=TRUE, comment=FALSE, text=NULL, ...){ 
 datafile <- file("clipboard", open='wt')
 on.exit(close(datafile))
@@ -26,7 +26,7 @@ if(!is.null(text))   {writeLines(text , con=datafile)}
 }
 
 #########################
-# `wd.Table`: create a table in word automatically using x dataframe.
+# Create a table in word automatically using x dataframe.
 wdTable<-function(x,..., filename=NULL, path = ""){
   R2wd::wdGet(filename,path , method="RDCOMClient")
   R2wd::wdBody("\n\n")
@@ -35,7 +35,7 @@ wdTable<-function(x,..., filename=NULL, path = ""){
 }
 
 #######################
-#`ping.IP`: checking internet connection.
+# Checking internet connection.
 ping.IP <- function() {
   if (.Platform$OS.type == "windows") {
     cat("Please wait...")
@@ -55,7 +55,7 @@ ping.IP <- function() {
 
   
 ##################
-# `%#%` A pipe to add or replace a comment to a variable.
+# A pipe to set or replace a comment into a variable.
 "%#%"<- function(a,b) {
   #"Replacing a new comment with old one or
   # adding another one by including '...' to the start of comment"
@@ -65,6 +65,22 @@ ping.IP <- function() {
    comment(a)<-c(comment(a),sp)
    } else {comment(a)<-b}
   a}
+  
+  #################
+  # Easy function to set progress bar.
+  progress<- function(it, min = 1, max = 100, 
+                    title = "Coding by Ahad Alizadeh", text = "Hello World!"){
+                    if (it == min)
+                        progression...... <<- winProgressBar(min = min,label="% done",
+                                 max = max, width = 300)  
+ 
+                        setWinProgressBar(progression......, it,title =
+                                paste0(title, ", ", round((it+1)/(max)*100),"% done."),
+                                label = text)
+  
+                     if(it == max)  close(progression......)
+
+ }
   
   
   
