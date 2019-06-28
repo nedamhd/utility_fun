@@ -28,6 +28,9 @@ if(!is.null(text))   {writeLines(text , con=datafile)}
 #########################
 # Create a table in word automatically using x dataframe.
 wdTable<-function(x,..., filename=NULL, path = ""){
+  if("RDCOMClient" %in% rownames(installed.packages()) == FALSE)   
+    # Sys.setenv("TAR" = "internal") # if you need it.
+    install.packages('RDCOMClient', repos = 'http://www.omegahat.org/R') 
   R2wd::wdGet(filename,path , method="RDCOMClient")
   R2wd::wdBody("\n\n")
   R2wd::wdTable(as.data.frame(x), ...)
