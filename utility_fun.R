@@ -86,6 +86,40 @@ ping.IP <- function() {
 
  }
   
+ ##################
+#estimate error bars based on CI,SD, and CI.
+ errorbar <- function(x,
+                     type = c("CI", "SD", "SE"),
+                     alpha = 0.05) {
+  if (!is.numeric(x))
+    stop("x must be numeric!")
+  m.call <- names(match.call())
+  if (!"type" %in% m.call)
+    type = "CI"
   
+  m <- mean(x, na.rm = TRUE)
+  s <- sd(x, na.rm = TRUE)
+  n <- sum(!is.na(x))
+  se <- s / sqrt(n)
+  
+  if (type == "CI" | type == "ci") {
+    l <- m - qnorm(1 - alpha / 2) * se
+    u <- m + qnorm(1 - alpha / 2) * se
+    type = "CI"
+  } else if (type == "SD" | type == "sd") {
+    l <- m - s
+    u <- m + s
+    type = "SD"
+  } else if (type == "SE" | type == "se") {
+    l <- m - se
+    u <- m + se
+    type = "SE"
+  } else
+    stop("type must be one of \"CI\",\"SD\", or\"SE\"!")
+  
+  list(lower = l,
+       upper = u,
+       type = type)
+}
   
   
