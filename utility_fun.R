@@ -8,7 +8,7 @@
 #Check and install requested R packages
 librares<- c("ggplot2","dplyr", "wrapr","R2wd")
 for(i in librares)
-  if(librares[i] %in% rownames(installed.packages()) == FALSE) install.packages(librares[i])
+  if(i %in% rownames(installed.packages()) == FALSE) install.packages(i)
 
 
 ##########################
