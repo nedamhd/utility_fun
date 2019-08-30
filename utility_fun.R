@@ -1,7 +1,15 @@
 # Author: Ahad Alizadeh
 # Last update: 2019-4-23
 # Description: Some utility functions to improve coding
-# Packages Used: R2wd
+ 
+
+
+##########################
+#Check and install requested R packages
+librares<- c("ggplot2","dplyr", "wrapr","R2wd")
+for(i in librares)
+  if(librares[i] %in% rownames(installed.packages()) == FALSE) install.packages(librares[i])
+
 
 ##########################
 # Important common libraries
@@ -39,7 +47,7 @@ wdTable<-function(x,..., filename=NULL, path = ""){
 }
 
 #######################
-# Checking internet connection.
+# Checking internet connection in R.
 ping.IP <- function() {
   if (.Platform$OS.type == "windows") {
     cat("Please wait...")
@@ -87,7 +95,7 @@ ping.IP <- function() {
  }
   
  ##################
-#estimate error bars based on CI,SD, and CI.
+# Estimate error bars based on CI,SD, and CI.
  errorbar <- function(x,
                      type = c("CI", "SD", "SE"),
                      alpha = 0.05) {
