@@ -1,4 +1,4 @@
-# Some utility functions  to improve coding
+# Some utility functions  to improve my coding
 * Read clipboard (`read.cb()`).
 * Write clipbord (`write.cb()`).
 * Create a table in word automatically (`wd.Table()`).
