@@ -140,7 +140,7 @@ ping.IP <- function() {
 if( class(M0)[1]== "bayesglm" ){
   cat("Bayesian method by bayesglm\n\n")
    s.M0=summary(M0)
-  M0.s=coef(sim(M0,n=10000))
+  M0.s=coef(arm::sim(M0,n=10000))
   CI<- apply(M0.s,2,quantile,
              c(0.025,0.975))
   mean.sim <- apply(M0.s,2,mean)
