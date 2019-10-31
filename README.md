@@ -6,6 +6,8 @@
 * A pipe to add or replace a comment to a variable (`%#%`).
 * Easy function to set a progress bar(`progress()`).
 * Estimate error bars based on CI,SD, and CI (`errorbar()`).
+* Bayesian or classic Confidence interval (`CI()`)
+
 
 
 Download:     
