@@ -13,3 +13,5 @@
 Download:     
 `source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/utility_fun.R")`
 
+To print specific charecter such as `±`, just use Unicode characters. For example: `print('\u00B1')`
+https://en.wikipedia.org/wiki/List_of_Unicode_characters
