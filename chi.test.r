@@ -22,9 +22,5 @@ source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/utilit
     s.t
   }
  
-[2,]
- mydata2$Calciumchannelblocker  %>% table()
- mydata2$Calciumchannelblocker[mydata2$Calciumchannelblocker==""]<- 0
- mydata2$Calciumchannelblocker[mydata2$Calciumchannelblocker!=0]<- 1
- attach(mydata2)
-chisqTest(x=Calciumchannelblocker, y=CAD )  %>% write.cb()
+# attach(mydata2)
+# chisqTest(x=Calciumchannelblocker, y=CAD )  %>% write.cb()
