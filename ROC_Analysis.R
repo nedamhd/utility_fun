@@ -3,12 +3,12 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis",
                           data = NULL,
                           obs = NULL,
                           pred = NULL,
-                          result = NULL,
+                          result = data.frame( ),
                           spliter = NULL,
                           x.lab = NULL,
                           spliter.lab = NULL,
                           plot = NULL,
-                          initialize = function(data , obs, pred, 
+                           initialize = function(data , obs, pred, 
                                                 x.lab = NULL, spliter =NULL,
                                                 spliter.lab = NULL) {
                            self$obs = obs
@@ -19,8 +19,31 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis",
                               self$spliter <- spliter
                               if(!is.null(spliter.lab)){self$spliter.lab <- spliter.lab} else 
                               {self$spliter.lab <- unique(self$data[[spliter]])}
-                           } 
-                            # self$plot <- ROCplot()
+                              
+                           }
+                           # self$result <- private$myroc.area()
+                             self$ROCplot()
+                             invisible(self)
+                          },
+                          add = function(data , obs, pred, 
+                                                x.lab = NULL, spliter =NULL,
+                                                spliter.lab = NULL) {
+                            self$obs = obs
+                            self$pred = pred 
+                            self$data = na.omit(data[,c(obs,pred,spliter)])
+                            if(!is.null(x.lab)){self$x.lab <- x.lab} else {self$x.lab <- pred}
+                            if(!is.null(spliter)){
+                              self$spliter <- spliter
+                              if(!is.null(spliter.lab)){self$spliter.lab <- spliter.lab} else 
+                              {self$spliter.lab <- unique(self$data[[spliter]])}
+                              
+                            }else {
+                              self$spliter     <- NULL
+                              self$spliter.lab <- NULL  
+                            }
+                            # self$result <- private$myroc.area()
+                            self$ROCplot()
+                            invisible(self)
                           },
                           ROCplot = function(data =  self$data,
                                              x = self$pred,
@@ -40,20 +63,26 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis",
                               s.l <- length(data)
                               g = list()
                               for (i in 1:s.l){
-                                g[[i]] <-   private$gg.Roc(data[[i]] ,  x = x, y = y, x.lab = x.lab)
+                                g[[i]] <-   private$gg.Roc(data=data[[i]] ,  x = x, y = y, x.lab = x.lab)
                                 cat("Element ", i," of list output is for ",spliter, ": '", names(data)[i],
                                     "' (See names of elements of the list ).\n")  
                                names(g)[i]<- paste0(spliter," - ", names(data)[i])
-                                }
-                            }
+                               
+                              }
+                              self<<-self
+                              # self<<-FF
+                               di= dim(self$result)[1]
+                               self$result[(di- (s.l*length(x))+1):di, "spliter"]<- rep(names(g),each=length(x))
+                               }
                             
                             if( !is.null(spliter) && (length(x)==1) )     {
                               g= list(private$gg.Roc.1factor(data = data, x = x, y = y,
                                                   x.lab = x.lab, spliter = spliter,spliter.lab = spliter.lab))
                             names(g)<- paste0(x, collapse = " & ")
+                             
                               }
                             print(g)
-                            self$plot <- g 
+                            self$plot <- c(self$plot,g) 
                           },
                           ggsave = function(filename=NULL,...) {
                             n= length(self$plot)
@@ -68,25 +97,12 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis",
                               for (i in 1:n) {
                                 ggsave(filename[i], plot=self$plot[[i]],...)
                               }
-                            }}
-                          ),
+                            }} 
+                            ),
                         private = list(
-                          cutoff = function(data = NULL, obs, pred) {
-                            obs1 <- c(data[, as.character(substitute(obs))])
-                            pred1 <- c(data[, as.character(substitute(pred))])
-                            
-                            aa1= pROC::roc(response = obs1, predictor = pred1)
-                            a.yu1= pROC::ci.coords(aa1,x= "best",best.method="youden",best.policy="random",boot.n=10000)
-                            a.yu1 = as.data.frame(a.yu1)
-                            data.frame(name = deparse(substitute(pred)),
-                                       Threshold = paste0(round(a.yu1[1,2],2)," (",round(a.yu1[1,1],3),",",round(a.yu1[1,3],3),")" ),
-                                       Specificity = paste0(round(a.yu1[1,5]*100,2)," (",round(a.yu1[1,4]*100,3),",",round(a.yu1[1,6]*100,3),")" ),
-                                       Sensitivity = paste0(round(a.yu1[1,8]*100,2)," (",round(a.yu1[1,7]*100,3),",",round(a.yu1[1,9]*100,3),")" )
-                            )
-                          },
                           myroc.area = function(data = self$data, obs = self$obs, 
                                                 pred = self$pred) {
-                            # obs:  A binary observation (coded {0, 1 } ).
+                            # obs:  A binary observation (coded {0, 1 }).
                             # pred:  A probability prediction on the interval [0,1].
                             
                             if (!is.null(data)) {
@@ -101,19 +117,33 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis",
                               pred1 <- pred
                             }
                             name <-  pred
-                            
                             g = verification::roc.area(obs1, pred1)
                             di <- "direct"
                             if (g$A < 0.5) {
                               g =   verification::roc.area(obs1,-1 * pred1)
                               di <- "indirect"
                             }
-                            as.data.frame(cbind(
-                              name = deparse(substitute(pred)) ,
+                             result <- as.data.frame(cbind(
+                              name =  pred  ,
                               round((do.call(cbind, g)), 4),
                               "Direction" = di
                             ))
+                           # cat("Results saved in `self$result`\n")
+                           result
                             
+                          },
+                          cutoff = function(data = NULL, obs, pred) {
+                            obs1 <- c(data[, as.character(substitute(obs))])
+                            pred1 <- c(data[, as.character(substitute(pred))])
+                            
+                            aa1= pROC::roc(response = obs1, predictor = pred1)
+                            a.yu1= pROC::ci.coords(aa1,x= "best",best.method="youden",best.policy="random",boot.n=10000)
+                            a.yu1 = as.data.frame(a.yu1)
+                            data.frame(name = deparse(substitute(pred)),
+                                       Threshold = paste0(round(a.yu1[1,2],2)," (",round(a.yu1[1,1],3),",",round(a.yu1[1,3],3),")" ),
+                                       Specificity = paste0(round(a.yu1[1,5]*100,2)," (",round(a.yu1[1,4]*100,3),",",round(a.yu1[1,6]*100,3),")" ),
+                                       Sensitivity = paste0(round(a.yu1[1,8]*100,2)," (",round(a.yu1[1,7]*100,3),",",round(a.yu1[1,9]*100,3),")" )
+                            )
                           },
                           gg.Roc.1factor = function(data , x , y , x.lab, spliter,spliter.lab ){
                             temp<-  na.omit(data[,c(x,y,spliter)])
@@ -125,6 +155,8 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis",
                               # if(length(x.lab) == fe) cat("Use x.lab for spliter labels.")
                             x.lab2<- c() 
                             for (i in 1:fe.n) {
+                              self$result <- rbind(self$result, cbind(spliter = paste0(spliter, " - ", fe[i]),
+                                                   private$myroc.area (temp[[i]], obs =as.character(y),pred = as.character(x))))
                               a= as.numeric(as.character( private$myroc.area (temp[[i]], obs =as.character(y),pred = as.character(x))[["A"]]))
                               p= as.numeric(as.character( private$myroc.area (temp[[i]], obs=as.character(y), as.character(x))[["p.value"]]))
                               x.lab2[i] = paste0(spliter.lab[i], "\nAUC = ", round(a,2), ", p = ", round(p,3),"\n")
@@ -155,9 +187,12 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis",
                           gg.Roc = function(data , x , y , x.lab ){
                             fe<- length(x) 
                             temp<- data[,c(x,y)]
+                           
                             x.lab2<- c()
                             for (i in 1:fe) {
-                              a= as.numeric(as.character( private$myroc.area (data, obs =as.character(y),pred = as.character(x[i]))[["A"]]))
+                             self$result <- rbind(self$result, cbind(spliter = NA,
+                              private$myroc.area (data, obs =as.character(y),pred = as.character(x[i]))))
+                              a= as.numeric(as.character(private$myroc.area (data, obs =as.character(y),pred = as.character(x[i]))[["A"]]))
                               p= as.numeric(as.character( private$myroc.area (data, obs=as.character(y), as.character(x[i]))[["p.value"]]))
                               x.lab2[i] = paste0(x.lab[i], "\nAUC = ", round(a,2), ", p = ", round(p,3),"\n")
                               if (p == 0){
@@ -198,8 +233,14 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis",
 # $ggsave(): save jpg file. don't need file name. 
 
 # Example
-# D<-ROC_Analysis$new(data = CAD.data ,pred = "logTGPOXase" ,obs = y, spliter = "Sex" )
+
+# D<-ROC_Analysis$new(data = CAD.data ,pred = c("logTGPOXase"  ) ,obs = "CAD", spliter = "Sex") 
+# D$add(data = CAD.data ,pred = c("TGmgdL","logTGPOXase"  ) ,obs = "CAD", spliter = "Sex"   )
 # D$ROCplot()
 # D$ggsave(  width = 10)
-# D$plot[[1]]
-#  
+# names(D$plot) 
+#  D$result
+#  self=D
+#  x= self$pred
+#  y= "CAD"
+ 
