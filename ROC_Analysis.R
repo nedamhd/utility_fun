@@ -1,16 +1,28 @@
+#R6 CLASS for ROC analysis
+# pred or x: quantitative test(S) [c("Age","TGmgdL","LDLCssPOXase")].
+# obs or y: binary gold standard ("CAD").
+# obs.lab: label of preds (c("TG", "LDL")).
+# spliter: quvalitative variable ("Sex"). 
+# spliter.lab: label of spliter levels (c("male", "female")).
+# $ROCplot(): create ROC plots and save in self$plot[[i]].
+# $ggsave(): save jpg file. don't need file name. 
+
+ 
+
 ROC_Analysis <- R6::R6Class("ROC_Analysis",
-                       public = list(
-                          data = NULL,
-                          obs = NULL,
-                          pred = NULL,
-                          result = data.frame( ),
-                          spliter = NULL,
-                          x.lab = NULL,
+                       public         = list(
+                          data        = NULL,
+                          obs         = NULL,
+                          pred        = NULL,
+                          result      = data.frame( ),
+                          spliter     = NULL,
+                          x.lab       = NULL,
                           spliter.lab = NULL,
-                          plot = NULL,
+                          plot        = NULL,
                            initialize = function(data , obs, pred, 
-                                                x.lab = NULL, spliter =NULL,
+                                                 pred.lab = NULL, spliter =NULL,
                                                 spliter.lab = NULL) {
+                           x.lab = pred.lab
                            self$obs = obs
                            self$pred = pred 
                            self$data = na.omit(data[,c(obs,pred,spliter)])
@@ -36,7 +48,6 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis",
                               self$spliter <- spliter
                               if(!is.null(spliter.lab)){self$spliter.lab <- spliter.lab} else 
                               {self$spliter.lab <- unique(self$data[[spliter]])}
-                              
                             }else {
                               self$spliter     <- NULL
                               self$spliter.lab <- NULL  
@@ -69,9 +80,10 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis",
                                names(g)[i]<- paste0(spliter," - ", names(data)[i])
                                
                               }
-                              self<<-self
+                              # self<<-self
                               # self<<-FF
                                di= dim(self$result)[1]
+                               self$result$spliter <- c(self$result$spliter)
                                self$result[(di- (s.l*length(x))+1):di, "spliter"]<- rep(names(g),each=length(x))
                                }
                             
@@ -155,8 +167,8 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis",
                               # if(length(x.lab) == fe) cat("Use x.lab for spliter labels.")
                             x.lab2<- c() 
                             for (i in 1:fe.n) {
-                              self$result <- rbind(self$result, cbind(spliter = paste0(spliter, " - ", fe[i]),
-                                                   private$myroc.area (temp[[i]], obs =as.character(y),pred = as.character(x))))
+                              self$result <- rbind(self$result, cbind(spliter = paste0(spliter, " - ", spliter.lab[i]),
+                                                   private$myroc.area (temp[[i]], obs =as.character(y),pred = as.character(x)), stringsAsFactors =FALSE))
                               a= as.numeric(as.character( private$myroc.area (temp[[i]], obs =as.character(y),pred = as.character(x))[["A"]]))
                               p= as.numeric(as.character( private$myroc.area (temp[[i]], obs=as.character(y), as.character(x))[["p.value"]]))
                               x.lab2[i] = paste0(spliter.lab[i], "\nAUC = ", round(a,2), ", p = ", round(p,3),"\n")
@@ -190,8 +202,8 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis",
                            
                             x.lab2<- c()
                             for (i in 1:fe) {
-                             self$result <- rbind(self$result, cbind(spliter = NA,
-                              private$myroc.area (data, obs =as.character(y),pred = as.character(x[i]))))
+                             self$result <- rbind(self$result, cbind(spliter = "NO SPLIT",
+                              private$myroc.area (data, obs =as.character(y),pred = as.character(x[i])), stringsAsFactors =FALSE))
                               a= as.numeric(as.character(private$myroc.area (data, obs =as.character(y),pred = as.character(x[i]))[["A"]]))
                               p= as.numeric(as.character( private$myroc.area (data, obs=as.character(y), as.character(x[i]))[["p.value"]]))
                               x.lab2[i] = paste0(x.lab[i], "\nAUC = ", round(a,2), ", p = ", round(p,3),"\n")
@@ -223,24 +235,49 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis",
                          )
 )
 
-#R6 CLASS for ROC analysis
-# pred: quantitative test(S) [c("Age","TGmgdL","LDLCssPOXase")].
-# obs: binary gold standard ("CAD").
-# obs.lab: label of preds (c("TG", "LDL")).
-# spliter: quvalitative variable ("Sex"). 
-# spliter.lab: label of spliter levels (c("male", "female")).
-# $ROCplot(): create ROC plots and save in self$plot[[i]].
-# $ggsave(): save jpg file. don't need file name. 
+ 
+
 
 # Example
 
-# D<-ROC_Analysis$new(data = CAD.data ,pred = c("logTGPOXase"  ) ,obs = "CAD", spliter = "Sex") 
-# D$add(data = CAD.data ,pred = c("TGmgdL","logTGPOXase"  ) ,obs = "CAD", spliter = "Sex"   )
-# D$ROCplot()
-# D$ggsave(  width = 10)
+# data = data.frame(TG =rnorm(1000),
+#                   LDL = rnorm(1000),
+#                   HDL = rnorm(1000),
+#                   CAD = rbinom(1000,1,0.5),
+#                   Sex = rbinom(1000,1,0.5),
+#                   Smoking =rbinom(1000,1,0.5) 
+#            )
+# 
+#  D<-ROC_Analysis$new(data = data,
+#                      pred = "TG",
+#                      obs = "CAD", 
+#                      pred.lab = c("TG Horm"),
+#                      spliter = "Sex",
+#                      spliter.lab = c("M", "F")
+#                      ) 
+# D$result
+#  
+# D$add(data =  data, 
+#       pred = c("LDL","HDL") ,
+#       obs = "CAD", 
+#       spliter = "Smoking",
+#       spliter.lab = c("M", "F")
+#       )
+# D$result
+# 
+# D$add(data =  data, 
+#       pred = c("LDL","HDL") ,
+#       obs = "CAD" 
+# )
+# D$result 
+# 
+# D$add(data =  data, 
+#       pred = c("LDL") ,
+#       obs = "CAD"
+# )
+# D$result 
+# 
+# D$ggsave(  width = 5, height=5)
 # names(D$plot) 
-#  D$result
-#  self=D
-#  x= self$pred
-#  y= "CAD"
- 
+#  
+#  
