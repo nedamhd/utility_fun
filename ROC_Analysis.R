@@ -9,7 +9,7 @@
 
  
 
-ROC_Analysis <- R6::R6Class("ROC_Analysis",
+ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = FALSE,
                        public         = list(
                           data        = NULL,
                           obs         = NULL,
@@ -38,8 +38,9 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis",
                              invisible(self)
                           },
                           add = function(data , obs, pred, 
-                                                x.lab = NULL, spliter =NULL,
+                                                pred.lab = NULL, spliter =NULL,
                                                 spliter.lab = NULL) {
+                            x.lab <- pred.lab
                             self$obs = obs
                             self$pred = pred 
                             self$data = na.omit(data[,c(obs,pred,spliter)])
@@ -109,7 +110,29 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis",
                               for (i in 1:n) {
                                 ggsave(filename[i], plot=self$plot[[i]],...)
                               }
-                            }} 
+                            }} ,
+                          wd.Table =
+                          function(x= self$result,..., filename=NULL, path = ""){
+                            if("RDCOMClient" %in% rownames(installed.packages()) == FALSE)  { 
+                              # Sys.setenv("TAR" = "internal") # if you need it.
+                              # devtools::install_github("omegahat/RDCOMClient")
+                              install.packages('RDCOMClient', repos = 'http://www.omegahat.org/R') }
+                            R2wd::wdGet(filename,path , method="RDCOMClient")
+                            R2wd::wdBody("\n\n")
+                            R2wd::wdTable(as.data.frame(x), ...)
+                            cat("Done!\n")
+                          },
+                          write.cb=
+                          function(x = self$result, row.names=TRUE, col.names=TRUE, comment=FALSE, text=NULL, ...){ 
+                            datafile <- file("clipboard", open='wt')
+                            on.exit(close(datafile))
+                            if(comment == TRUE)   {
+                              if(is.null(comment(x))) warning("There is no comment for x! first add one by comment(x) = '...'") else
+                                writeLines(comment(x), con=datafile)}
+                            write.table(x, file = datafile, sep = "\t", row.names = row.names,
+                                        col.names = col.names, ...)
+                            if(!is.null(text))   {writeLines(text , con=datafile)}
+                          }
                             ),
                         private = list(
                           myroc.area = function(data = self$data, obs = self$obs, 
@@ -170,16 +193,17 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis",
                               self$result <- rbind(self$result, cbind(spliter = paste0(spliter, " - ", spliter.lab[i]),
                                                    private$myroc.area (temp[[i]], obs =as.character(y),pred = as.character(x)), stringsAsFactors =FALSE))
                               a= as.numeric(as.character( private$myroc.area (temp[[i]], obs =as.character(y),pred = as.character(x))[["A"]]))
+                              # dir<<-   private$myroc.area (temp[[i]], obs =as.character(y),pred = as.character(x))[["Direction"]] 
                               p= as.numeric(as.character( private$myroc.area (temp[[i]], obs=as.character(y), as.character(x))[["p.value"]]))
                               x.lab2[i] = paste0(spliter.lab[i], "\nAUC = ", round(a,2), ", p = ", round(p,3),"\n")
                               
-                              if (p == 0){
+                              if (p < 0.00099){
                                 p <- "p<0.001"
                                 x.lab2[i] =   paste0(spliter.lab[i], "\nAUC = ", round(a,2),", ",   p,"\n")
                                 
                               }      
                               data[["variable"]][which(data[[spliter]]== fe[i])] <-  x.lab2[i]
-                              
+                              # if (dir == "indirect") data[[x]] <- -1*data[[x]]
                             }
                             
                             
@@ -204,13 +228,15 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis",
                             for (i in 1:fe) {
                              self$result <- rbind(self$result, cbind(spliter = "NO SPLIT",
                               private$myroc.area (data, obs =as.character(y),pred = as.character(x[i])), stringsAsFactors =FALSE))
-                              a= as.numeric(as.character(private$myroc.area (data, obs =as.character(y),pred = as.character(x[i]))[["A"]]))
-                              p= as.numeric(as.character( private$myroc.area (data, obs=as.character(y), as.character(x[i]))[["p.value"]]))
+                             a= as.numeric(as.character(private$myroc.area (data, obs =as.character(y),pred = as.character(x[i]))[["A"]]))
+                             # dir<<-  private$myroc.area (data, obs =as.character(y),pred = as.character(x[i]))[["Direction"]] 
+                             p= as.numeric(as.character( private$myroc.area (data, obs=as.character(y), as.character(x[i]))[["p.value"]]))
                               x.lab2[i] = paste0(x.lab[i], "\nAUC = ", round(a,2), ", p = ", round(p,3),"\n")
                               if (p == 0){
                                 p <- "p<0.001"
                                 x.lab2[i] =   paste0(x.lab[i], "\nAUC = ", round(a,2),", ",   p,"\n")
                               }
+                              # if (dir == "indirect") temp[[x.lab2[i]]]<- -1*temp[[x.lab2[i]]]
                             }
                             names(temp) <- c(x.lab2, y)
                             temp.melt <- reshape2::melt(temp, id.vars=y ,measure.vars = x.lab2)
