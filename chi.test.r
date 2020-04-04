@@ -5,8 +5,8 @@ source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/utilit
    # x: row variable.
    
    if(!is.null(data)){
-         x <- c(data[, deparse(substitute(x))])
-         y <- c(data[, deparse(substitute(y))])
+         x <- c(data[, as.character(substitute(x))])
+         y <- c(data[, as.character(substitute(y))])
     }
     
     t <- table(x ,y)
@@ -22,5 +22,6 @@ source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/utilit
     s.t
   }
  
-# attach(mydata2)
-# chisqTest(x=Calciumchannelblocker, y=CAD )  %>% write.cb()
+  attach( data)
+ data$Sex
+  chisqTest(x=rbinom(100,2,0.5), y=rbinom(100,7,0.5) )   
