@@ -100,6 +100,9 @@ norm_curve <-   function(zstart = NULL,
   
 }
 
+cat("RUN:\n norm_curve(zstart = NULL, zend = NULL ,\n
+                         mean = 0,sd = 1, fill = \"red\", \n
+                         alpha = 1, plot = NULL)")
 # g =norm_curve  ()  
 # g =norm_curve  (zend=1.5, fill="blue", alpha=0.1)  
 # g= norm_curve  (   mean.1 = 1, sd.1 = 1, fill="red",plot = g)  
