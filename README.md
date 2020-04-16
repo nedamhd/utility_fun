@@ -11,7 +11,10 @@
 
 
 Download:     
+* utility_fu
 `source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/utility_fun.R")`
+* Shading multiple areas under normal curve
+`source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/Shading%20multiple%20areas%20under%20normal%20curve.R")`
 
 
 * To print specific charecters such as `±`, just use unicode characters. For example: `print('\u00B1')`.
