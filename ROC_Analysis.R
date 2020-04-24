@@ -68,7 +68,7 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                             
                             if(is.null(spliter))  {
                               g= list(private$gg.Roc(data = data, x = x, y = y, x.lab = x.lab))
-                              private$cutoff(data = data, obs = y, pred = x) 
+                              # private$cutoff(data = data, obs = y, pred = x) 
     ###########
                               names(g)<- paste0(x, collapse = " & ")
                             }
