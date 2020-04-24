@@ -244,7 +244,9 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                 x.lab2[i] =   paste0(x.lab[i], "\nAUC = ", round(a,2),", ",   p,"\n")
                               }
                               # if (dir == "indirect") temp[[x.lab2[i]]]<- -1*temp[[x.lab2[i]]]
-                            }
+       #####################################################                     
+                              private$cutoff(data = data, obs = as.character(y), pred =as.character(x[i])) 
+                              }
                             names(temp) <- c(x.lab2, y)
                             temp.melt <- reshape2::melt(temp, id.vars=y ,measure.vars = x.lab2)
                             temp.melt$variable <- as.factor(temp.melt$variable)
