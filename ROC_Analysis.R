@@ -19,6 +19,7 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                           x.lab       = NULL,
                           spliter.lab = NULL,
                           plot        = NULL,
+                          Cut.off.points =   NULL,
                            initialize = function(data , obs, pred, 
                                                  pred.lab = NULL, spliter =NULL,
                                                 spliter.lab = NULL) {
@@ -67,6 +68,8 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                             
                             if(is.null(spliter))  {
                               g= list(private$gg.Roc(data = data, x = x, y = y, x.lab = x.lab))
+                              private$cutoff(data = data, obs = y, pred = x) 
+    ###########
                               names(g)<- paste0(x, collapse = " & ")
                             }
                             
@@ -76,6 +79,8 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                               g = list()
                               for (i in 1:s.l){
                                 g[[i]] <-   private$gg.Roc(data=data[[i]] ,  x = x, y = y, x.lab = x.lab)
+                                private$cutoff(data = data[[i]], obs = y, pred = x) 
+                                
                                 cat("Element ", i," of list output is for ",spliter, ": '", names(data)[i],
                                     "' (See names of elements of the list ).\n")  
                                names(g)[i]<- paste0(spliter," - ", names(data)[i])
@@ -91,12 +96,15 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                             if( !is.null(spliter) && (length(x)==1) )     {
                               g= list(private$gg.Roc.1factor(data = data, x = x, y = y,
                                                   x.lab = x.lab, spliter = spliter,spliter.lab = spliter.lab))
-                            names(g)<- paste0(x, collapse = " & ")
+                              private$cutoff(data = data, obs = y, pred = x) 
+                              
+                              names(g)<- paste0(x, collapse = " & ")
                              
                               }
                             print(g)
                             self$plot <- c(self$plot,g) 
                           },
+                           
                           ggsave = function(filename=NULL,...) {
                             n= length(self$plot)
                             if(!is.null(filename) && (length(filename) == n)){
@@ -111,8 +119,7 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                 ggsave(filename[i], plot=self$plot[[i]],...)
                               }
                             }} ,
-                          wd.Table =
-                          function(x= self$result,..., filename=NULL, path = ""){
+                          wd.Table = function(x= self$result,..., filename=NULL, path = ""){
                             if("RDCOMClient" %in% rownames(installed.packages()) == FALSE)  { 
                               # Sys.setenv("TAR" = "internal") # if you need it.
                               # devtools::install_github("omegahat/RDCOMClient")
@@ -122,8 +129,7 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                             R2wd::wdTable(as.data.frame(x), ...)
                             cat("Done!\n")
                           },
-                          write.cb=
-                          function(x = self$result, row.names=TRUE, col.names=TRUE, comment=FALSE, text=NULL, ...){ 
+                          write.cb= function(x = self$result, row.names=TRUE, col.names=TRUE, comment=FALSE, text=NULL, ...){ 
                             datafile <- file("clipboard", open='wt')
                             on.exit(close(datafile))
                             if(comment == TRUE)   {
@@ -137,8 +143,8 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                         private = list(
                           myroc.area = function(data = self$data, obs = self$obs, 
                                                 pred = self$pred) {
-                            # obs:  A binary observation (coded {0, 1 }).
-                            # pred:  A probability prediction on the interval [0,1].
+                            # y, obs:  A binary observation (coded {0, 1 }).
+                            # x,  pred:  A probability prediction on the interval [0,1].
                             
                             if (!is.null(data)) {
                               if (!(is.character(obs) &&
@@ -166,19 +172,20 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                            # cat("Results saved in `self$result`\n")
                            result
                             
-                          },
+                          }, 
                           cutoff = function(data = NULL, obs, pred) {
-                            obs1 <- c(data[, as.character(substitute(obs))])
-                            pred1 <- c(data[, as.character(substitute(pred))])
+                            obs1 <- c(data[[obs]])
+                            pred1 <- c(data[[pred]])
                             
                             aa1= pROC::roc(response = obs1, predictor = pred1)
                             a.yu1= pROC::ci.coords(aa1,x= "best",best.method="youden",best.policy="random",boot.n=10000)
                             a.yu1 = as.data.frame(a.yu1)
-                            data.frame(name = deparse(substitute(pred)),
+                            cut.points = data.frame(name = pred ,
                                        Threshold = paste0(round(a.yu1[1,2],2)," (",round(a.yu1[1,1],3),",",round(a.yu1[1,3],3),")" ),
                                        Specificity = paste0(round(a.yu1[1,5]*100,2)," (",round(a.yu1[1,4]*100,3),",",round(a.yu1[1,6]*100,3),")" ),
                                        Sensitivity = paste0(round(a.yu1[1,8]*100,2)," (",round(a.yu1[1,7]*100,3),",",round(a.yu1[1,9]*100,3),")" )
                             )
+                            self$Cut.off.points<-  rbind(self$Cut.off.points,cut.points)
                           },
                           gg.Roc.1factor = function(data , x , y , x.lab, spliter,spliter.lab ){
                             temp<-  na.omit(data[,c(x,y,spliter)])
@@ -197,7 +204,7 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                               p= as.numeric(as.character( private$myroc.area (temp[[i]], obs=as.character(y), as.character(x))[["p.value"]]))
                               x.lab2[i] = paste0(spliter.lab[i], "\nAUC = ", round(a,2), ", p = ", round(p,3),"\n")
                               
-                              if (p < 0.00099){
+                              if (p < 0.0009999999999){
                                 p <- "p<0.001"
                                 x.lab2[i] =   paste0(spliter.lab[i], "\nAUC = ", round(a,2),", ",   p,"\n")
                                 
@@ -232,7 +239,7 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                              # dir<<-  private$myroc.area (data, obs =as.character(y),pred = as.character(x[i]))[["Direction"]] 
                              p= as.numeric(as.character( private$myroc.area (data, obs=as.character(y), as.character(x[i]))[["p.value"]]))
                               x.lab2[i] = paste0(x.lab[i], "\nAUC = ", round(a,2), ", p = ", round(p,3),"\n")
-                              if (p == 0){
+                              if (p <0.000999999999999){
                                 p <- "p<0.001"
                                 x.lab2[i] =   paste0(x.lab[i], "\nAUC = ", round(a,2),", ",   p,"\n")
                               }
