@@ -180,7 +180,7 @@ dot.plot <-
       scale_fill_grey(start = 0.3 , end = 0.7)
     
     
-     if(is.null(label) ){
+     if(!is.null(label) ){
   
     base.of.y = ggplot_build(p)$layout$panel_params[[1]]$y.range
     if (is.null(adjust))
