@@ -180,7 +180,8 @@ dot.plot <-
       scale_fill_grey(start = 0.3 , end = 0.7)
     
     
-    
+     if(is.null(label) ){
+  
     base.of.y = ggplot_build(p)$layout$panel_params[[1]]$y.range
     if (is.null(adjust))
       adjust = (abs(base.of.y[2]) + abs(base.of.y[1])) / 40
@@ -196,7 +197,6 @@ dot.plot <-
                xend,
                ystart = c(height),
                yend = c(height + adjust))   %>% as.data.frame()
-    
     
     p +
       geom_segment(
@@ -246,6 +246,7 @@ dot.plot <-
         color = "black",
         size = 5
       )
+       }
  }
 
  
