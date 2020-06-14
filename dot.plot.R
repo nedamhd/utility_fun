@@ -10,10 +10,11 @@ dot.plot <-
            # limits = NULL
            log.transformation = FALSE,
            type = c("mean.ci", "median.quan")[1],
-           label = NULL,
+           p.label = NULL,
            adjust = NULL ,
            colorful = TRUE,
            main.title = NULL) {
+    label = p.label
     x.name <- as.character(substitute(x))[-1]
     c("mean.ci", "median.quan")
     if (!type %in%  c("mean.ci", "median.quan"))
@@ -180,7 +181,7 @@ dot.plot <-
       scale_fill_grey(start = 0.3 , end = 0.7)
     
     
-     if(!is.null(label) ){
+     if(!is.null(p.label) ){
   
     base.of.y = ggplot_build(p)$layout$panel_params[[1]]$y.range
     if (is.null(adjust))
