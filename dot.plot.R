@@ -199,7 +199,7 @@ dot.plot <-
                ystart = c(height),
                yend = c(height + adjust))   %>% as.data.frame()
     
-    p +
+   p= p +
       geom_segment(
         data = d1,
         mapping = aes(
@@ -248,6 +248,7 @@ dot.plot <-
         size = 5
       )
        }
+    p
  }
 
  
