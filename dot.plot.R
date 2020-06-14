@@ -71,9 +71,9 @@ dot.plot <-
     height <- m$max
     
     require(ggplot2)
-    library(ggthemes)
+    #library(ggthemes)
     library(grid)
-    library(ggmap)
+    #library(ggmap)
     p = ggplot() +
       geom_point(
         mapping = aes(
