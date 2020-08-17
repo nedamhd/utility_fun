@@ -6,24 +6,24 @@ GLM_Analysis <- R6::R6Class("GLM_Analysis", lock_objects = FALSE, lock_class = F
                               n.model     = 1,
                               # main.table  = data.frame( ),
                               result      = list( ),
-                              family      = "binomial",
+                              family      = "gaussian",
                               sepration   = c(),
                               # plot        = NULL,
-                              initialize = function(data, formula, family = "binomial"){
+                              initialize = function(data, formula, family = "gaussian"){
                                 self$data      = data
                                 self$family    = family
                                 n.model        = 1
                                 "%+%" <- function(x,y) paste0(x,y)
                                 m1 <- glm(formula = formula, family = family, data = data)
                                 self$sepration[self$n.model] <- !(m1$converged)
-                                m1.ci = private$CI(m1)$type2.result
+                                m1.ci = private$CI(m1, Family = self$family)$type2.result
                                 if(self$sepration[self$n.model]){
                                 m1 = arm::bayesglm(formula = formula, family = family, data = data)
-                                m1.ci = private$CI(m1)$type2.result
+                                m1.ci = private$CI(m1, Family = self$family)$type2.result
                                 cat("\nWe re-analyzed using bayesian glm due to Separation.\nIgnore  warning!\n")
-                                names(m1.ci) =c("OR ","P value ") %+% "Model " %+% n.model %+% "*"
+                                names(m1.ci) =c("Effect ","P value ") %+% "Model " %+% n.model %+% "*"
                                 } else {
-                                  names(m1.ci) =c("OR ","P value ") %+% "Model " %+% n.model
+                                  names(m1.ci) =c("Effect ","P value ") %+% "Model " %+% n.model
                                 }
                                  
                                 
@@ -39,14 +39,14 @@ GLM_Analysis <- R6::R6Class("GLM_Analysis", lock_objects = FALSE, lock_class = F
                                 "%+%" <- function(x,y) paste0(x,y)
                                 m1 = glm(formula = formula, family = family, data = data)
                                 self$sepration[self$n.model] <- !(m1$converged)
-                                m1.ci = private$CI(m1)$type2.result
+                                m1.ci = private$CI(m1, Family = self$family)$type2.result
                                 if(self$sepration[self$n.model]){
                                   m1 = arm::bayesglm(formula = formula, family = family, data = data)
-                                  m1.ci = private$CI(m1)$type2.result
+                                  m1.ci = private$CI(m1, Family = self$family)$type2.result
                                   cat("\nWe re-analyzed using bayesian glm due to Separation.\nIgnore  warning!\n")
-                                names(m1.ci) =c("OR ","P value ") %+% "Model " %+% n.model %+% "*"
+                                  names(m1.ci) =c("Effect ","P value ") %+% "Model " %+% n.model %+% "*"
                                 } else {
-                                  names(m1.ci) =c("OR ","P value ") %+% "Model " %+% n.model
+                                  names(m1.ci) =c("Effect ","P value ") %+% "Model " %+% n.model
                                   }
                                 
                                 m = base::merge(m,m1.ci, by="row.names",all=TRUE, suffixes = c("",""))
@@ -54,6 +54,10 @@ GLM_Analysis <- R6::R6Class("GLM_Analysis", lock_objects = FALSE, lock_class = F
                                 m$Row.names <- NULL
                                 self$result$main.table <- m
                                 },
+                              
+                              
+                              
+                              
                               wd.Table =
                                 function(x= self$result$main.table,..., filename=NULL, path = ""){
                                   caption = "- * Calculated by Bayesian Logistic regression due to data sparsity."
@@ -86,7 +90,7 @@ GLM_Analysis <- R6::R6Class("GLM_Analysis", lock_objects = FALSE, lock_class = F
                                ),
                             
                               private = list(
-                                CI = function(M0,round=3){
+                                CI = function(M0,round=2, Family=self$family){
                                   # M0: glm or arm::bayesglm object.
                                   Re2<- data.frame()
                                   if( class(M0)[1]== "bayesglm" ){
@@ -96,11 +100,18 @@ GLM_Analysis <- R6::R6Class("GLM_Analysis", lock_objects = FALSE, lock_class = F
                                     CI<- apply(M0.s,2,quantile,
                                                c(0.025,0.975))
                                     mean.sim <- apply(M0.s,2,mean)
+                                    
+                                    if(Family == "binomial"){
                                     Re=data.frame (OR= round( exp(mean.sim),round),round(t( exp(CI)),round),P.value=round(s.M0$ coefficients[,4],round+1))
-                                    
-                                    
                                     Re2= data.frame("OR"= ( paste0( Re[,1],"(", Re[,2],",", Re[,3], ")")), "P value"= Re[,4])
-                                    row.names(Re2)=row.names(Re)
+                                    }
+                                    
+                                    if(Family == "gaussian"){
+                                      Re=data.frame ("beta"= round( (mean.sim),round),round(t( (CI)),round),P.value=round(s.M0$ coefficients[,4],round+1))
+                                      Re2= data.frame("beta"= ( paste0( Re[,1],"(", Re[,2],",", Re[,3], ")")), "P value"= Re[,4])
+                                    }
+                                    
+                                     row.names(Re2)=row.names(Re)
                                   }
                                   
                                   
@@ -110,14 +121,29 @@ GLM_Analysis <- R6::R6Class("GLM_Analysis", lock_objects = FALSE, lock_class = F
                                     CI <-  (confint(M0))
                                     self$sepration[self$n.model] = (self$sepration[self$n.model] | any(is.na(CI)))
                                     mean.sim <- s.M0$coefficients[,1]
+                                    
+                                    
+                                    if(Family == "binomial"){
                                     Re=data.frame (OR= round( exp(mean.sim),round),round(( exp(CI)),round),P.value=round(s.M0$ coefficients[,4],round+1))
+                                    Re2= data.frame("OR"= (paste0( Re[,1],"(", Re[,2],",", Re[,3], ")")), "P value"= Re[,4])
+                                    }
+                                    
+                                    if(Family == "gaussian"){
+                                      Re=data.frame ("beta"= round( mean.sim,round),round(( (CI)),round),P.value=round(s.M0$ coefficients[,4],round+1))
+                                      Re2= data.frame("beta"= ( paste0( Re[,1],"(", Re[,2],",", Re[,3], ")")), "P value"= Re[,4])
+                                    }
                                     
                                     
-                                    Re2= data.frame("OR(95% CI)"= (paste0( Re[,1],"(", Re[,2],",", Re[,3], ")")), "P value"= Re[,4])
                                     row.names(Re2)=row.names(Re)
                                   }
                                   list(type1.result=Re,type2.result=Re2)
-                                }
+                                } 
+                                
+                                
+                                
+                                
+                                
+                                
                               )
 )
 

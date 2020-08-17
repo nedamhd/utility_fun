@@ -11,6 +11,7 @@
 
 ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = FALSE,
                        public         = list(
+                         mainData     = NULL,
                           data        = NULL,
                           obs         = NULL,
                           pred        = NULL,
@@ -26,7 +27,11 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                            x.lab = pred.lab
                            self$obs = obs
                            self$pred = pred 
-                           self$data = na.omit(data[,c(obs,pred,spliter)])
+                           # omit = function(data, obs, pred, spliter =NULL){
+                           #   temp = cbind(FlagID... = seq(1,dim()) ,data)
+                           # }
+                           self$mainData = data
+                           self$data =  (data[,c(obs,pred,spliter)]) #na.omit
                            if(!is.null(x.lab)){self$x.lab <- x.lab} else {self$x.lab <- pred}
                            if(!is.null(spliter)){
                               self$spliter <- spliter
@@ -38,13 +43,15 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                              self$ROCplot()
                              invisible(self)
                           },
-                          add = function(data , obs, pred, 
+                          add = function(data=NULL , obs=NULL, pred, 
                                                 pred.lab = NULL, spliter =NULL,
                                                 spliter.lab = NULL) {
                             x.lab <- pred.lab
+                            if(is.null(obs)) obs =  self$obs
                             self$obs = obs
-                            self$pred = pred 
-                            self$data = na.omit(data[,c(obs,pred,spliter)])
+                            self$pred = pred
+                            if(is.null(data)) data =  self$mainData
+                            self$data = (data[,c(obs,pred,spliter)])#na.omit
                             if(!is.null(x.lab)){self$x.lab <- x.lab} else {self$x.lab <- pred}
                             if(!is.null(spliter)){
                               self$spliter <- spliter
@@ -215,9 +222,11 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                             
                             
                             
-                            ggplot(data=data, aes(d = data[[y]], m = data[[x]], linetype= variable)) + 
+                            ggplot(data=data, aes(d = data[[y]], m = data[[x]],
+                                                  color= variable,
+                                                  linetype= variable)) + 
                               style_roc(guide = TRUE)+
-                              geom_roc(n.cuts = 0, labels = FALSE)+
+                              geom_roc(n.cuts = 0, labels = FALSE, size = 2)+
                               geom_abline(slope = 1, intercept = 0, color = "grey",linetype= "dashed")+
                               labs(colour="",linetype="")+
                               theme( legend.position = "bottom",
@@ -255,9 +264,11 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                             
                             
                             
-                            ggplot(data=temp.melt, aes(d = temp.melt[[y]], m = value, linetype= variable)) + 
+                            ggplot(data=temp.melt, aes(d = temp.melt[[y]], m = value, 
+                                                       color= variable,
+                                                       linetype= variable)) + 
                               style_roc(guide = TRUE)+
-                              geom_roc(n.cuts = 0, labels = FALSE)+
+                              geom_roc(n.cuts = 0, labels = FALSE, size = 2)+
                               geom_abline(slope = 1, intercept = 0, color = "grey",linetype= "dashed")+
                               labs(colour="",linetype="")+
                               theme( legend.position = "bottom",

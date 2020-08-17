@@ -69,6 +69,7 @@ Table_One <-   R6::R6Class(
       }
     ),
   private  = list(
+    result.for.plot = data.frame(),
     ttest     = function(data, group, deps, wilcox = FALSE) {
       if(!(length(deps)== length(wilcox) | length(wilcox) == 1 ))
         stop("length of wilcox must be the same as deps or one!")
@@ -98,7 +99,20 @@ Table_One <-   R6::R6Class(
         if(isTRUE(wilcox[i]))        {results <- wilcox.test(formula, data =  data); test.r <- "Mann-Whitney U" } 
         if(isTRUE(shapiro))  {results <- wilcox.test(formula, data =  data); test.r <- "Mann-Whitney U" }  
         # self$results$text$setContent(table)
-         values =c(   
+        result.for.plot <- list(data.frame( 
+          name =  dep,
+          group = group.level,
+          rbind(
+          private$descriptive(d[group.value==group.level[1]]),
+          private$descriptive(d[group.value==group.level[2]]))))
+        
+         result.for.plot <- append(result.for.plot,
+                                   private$result.for.plot
+                                   )
+         names(result.for.plot)[1]<- dep
+        private$result.for.plot <-result.for.plot
+        
+        values =c(   
           name = dep,
           level = NA,
           var1 = paste0(sprintf("%.2f", round(mean(d[group.value==group.level[1]],na.rm=TRUE),2)), 
@@ -116,19 +130,36 @@ Table_One <-   R6::R6Class(
       # y: Column variable.
       # x: row variable.
       deps.qualitative = x
+      cat(x," and ", y, " done!\n")
         x <- c(data[[x]])
         y <- c(data[[y]])
       
       
       t <- table(x ,y)
+      tt= apply(t,1, sum) 
+      p.tt= prop.table(tt) 
+      s.tt= paste0(tt," (",round(p.tt*100,2),"%)")
       p.t <- prop.table(t,2)
-      s.t <- matrix(paste0(t,"(", round(p.t*100,2), ")"),nrow = dim(t)[1])
+      s.t <- matrix(paste0(t," (", round(p.t*100,2), "%)"),nrow = dim(t)[1])
       "%f%" <- function(a, b) paste0(sprintf(paste0("%.",b,"f"), a) )              
       s.t <-cbind(s.t, chisq.test(x,y, simulate.p.value = TRUE)$p.value %f% 3)
       row.names(s.t)<-  NULL  
       colnames(s.t)<-  c(colnames(t), "p")
+      s.t <- cbind(total=s.tt,s.t )
       s.t <- cbind(name = deps.qualitative, level =  row.names(t) , s.t, test = "Chi-squared")
+      
       self$results$qualitative <- rbind(self$results$qualitative,s.t)
+    },
+    descriptive = function(x, alpha = 0.05) {
+      
+      n = sum(!is.na(x))
+      m = mean(x, na.rm = TRUE)
+      s = sd(x, na.rm = TRUE)
+      se = s/sqrt(n)
+      l.ci =  se*qnorm(1-(alpha/2))
+      u.ci =  se*qnorm(1-(alpha/2))
+      
+      data.frame(n, m, s, se, l.ci, u.ci, alpha)
     }
 )
 )

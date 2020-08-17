@@ -1,0 +1,262 @@
+
+ 
+ANOVA_table <-   R6::R6Class(
+  "ANOVA_table",
+   public =  list(
+    data                 = NULL,
+    group                = NULL, 
+    model                = list(),
+    deps.quantitative    = NULL,
+    kruskal_wallis        = FALSE,
+    results              = data.frame(),
+    initialize          = function(data, group, 
+                          deps.quantitative=NULL, 
+                          kruskal_wallis = FALSE, posthoc= "Tukey", p.adj= "holm", shapiro.t = TRUE) {
+       self$data = data 
+       self$group = group
+       self$deps.quantitative = deps.quantitative
+       self$kruskal_wallis = kruskal_wallis
+       self$add.quantitative(posthoc = posthoc, p.adj = p.adj, 
+                             shapiro.t = shapiro.t
+       )
+     },
+      
+     add.quantitative = function(data = NULL, 
+                                 group = NULL, 
+                                 deps.quantitative = NULL, 
+                                 kruskal_wallis = NULL, posthoc= "Tukey", p.adj="holm", shapiro.t=TRUE) {
+       
+     if(is.null(data))               data               = self$data
+     if(is.null(group))              group              = self$group
+     if(is.null(deps.quantitative))  deps.quantitative  = self$deps.quantitative
+     if(is.null(kruskal_wallis))     kruskal_wallis     = self$kruskal_wallis
+       
+       private$ANOVA(data = data, group = group, 
+                     deps = deps.quantitative, 
+                     kruskal_wallis = kruskal_wallis,
+                     posthoc = posthoc, p.adj = p.adj,
+                     shapiro.t = shapiro.t
+                     )
+     },
+   
+    
+    wd.Table = function(x= NULL,..., filename=NULL, path = ""){
+        if(is.null(x))
+        x <- as.data.frame(self$results)
+         if("RDCOMClient" %in% rownames(installed.packages()) == FALSE)  { 
+          # Sys.setenv("TAR" = "internal") # if you need it.
+          # devtools::install_github("omegahat/RDCOMClient")
+          install.packages('RDCOMClient', repos = 'http://www.omegahat.org/R') }
+        R2wd::wdGet(filename,path , method="RDCOMClient")
+        R2wd::wdBody("\n\n")
+        R2wd::wdTable(as.data.frame(x), ...)
+        cat("Done!\n")
+      }
+    ),
+  private  = list(
+    result.for.plot = data.frame(),
+    ANOVA = function(data, group, deps, 
+                     kruskal_wallis = FALSE,   posthoc= "Tukey", 
+                     p.adj= "holm", shapiro.t =TRUE) {
+      if(!(length(deps)== length(kruskal_wallis) | length(kruskal_wallis) == 1 ))
+        stop("length of kruskal_wallis must be the same as deps or one!")
+      
+       
+      i = 0
+      G.shapiro = c()
+      leng= c()
+      counts =c()
+      for (jj in  1:length(deps)) {
+        rm.data = na.omit(data[,c(deps[jj],group)])
+        rm.group.level<- sort(unique(rm.data[[group]]))
+        rm.group.counts =   table(rm.data[[group]])
+        cat( "Count of ",group , " based on ",deps[jj],"\n" ,rm.group.counts,"\n")
+        counts [jj] <- any(rm.group.counts<2)
+        leng [jj] = length(table(rm.group.level))
+      }
+      deps1 = deps[which(counts==FALSE)  ] 
+       deps2 = deps1[ which(leng[which(counts==FALSE)] == max(leng[which(counts==FALSE)])) ] 
+       rm.deps2 = deps[which(!(deps %in% deps2))]
+       if(length(deps2)!=length(deps)) 
+        cat("Some deps.quantitatives removed due to empty cells.
+        \nRemoved: \n", rm.deps2,  
+        "\n\nNew deps.quantitative:\n", deps2)
+      deps = deps2
+      if(length(kruskal_wallis )> 1) {
+        kruskal_wallis1= kruskal_wallis[which(counts==FALSE)]
+        kruskal_wallis2= kruskal_wallis1[which(leng[which(counts==FALSE)] == max(leng[which(counts==FALSE)]))]
+        kruskal_wallis = kruskal_wallis2
+      }
+      
+      k=0
+      for (dep in  deps) {
+        
+        if(length(deps)== length(kruskal_wallis)) {i = i +1} else {i =1}
+        rm.data = na.omit(data[,c(dep,group)])
+        group.value <- c(rm.data[[group]])
+        group.level<- sort(unique(group.value))
+        d= rm.data[[dep]]
+        
+       
+       l = data.frame()
+        for (j in 1:length(group.level)) {
+        l =rbind(l, data.frame(dep, group.level[j],
+        private$descriptive(d[group.value==group.level[j]])))
+         
+          # if(count [j] > 3)
+            # {
+         G.shapiro[j] <-  shapiro.test(d[which(group.value==group.level[j])])$p.value  
+          # } else{
+          # G.shapiro[j] <- 1#ks.test(d[which(group.value==group.level[j])], "pnorm", 0, 1, exact = TRUE)$p.value 
+          # }
+        }
+
+        
+        if(isTRUE(shapiro.t)) 
+        {shapiro    <- all(G.shapiro > 0.05) }else{
+          shapiro    <- FALSE
+          }
+        
+        formula <- paste0(dep, "~as.factor(",  group, ")")
+        formula <- as.formula(formula)
+        model <- aov(formula, data =  rm.data)
+        k= k+1
+        self$model[[k]] = model
+        test.r <- "ANOVA" 
+        if(isTRUE(shapiro))  {results <- kruskal.test(formula, data =  rm.data); test.r <- "Kruskal–Wallis" }  
+        
+        if(length(kruskal_wallis) > 1){
+            if(isTRUE(kruskal_wallis[i])) {results <- kruskal.test(formula, data =  rm.data); test.r <- "Kruskal–Wallis" } 
+           }
+          
+        if(length(kruskal_wallis)==1){
+            if(isTRUE(kruskal_wallis)) {results <- kruskal.test(formula, data =  rm.data); test.r <- "Kruskal–Wallis" } 
+       
+        }
+           if(test.r=="Kruskal–Wallis")
+               p.value = sprintf("%.3f", round(results$p.value, 3)) 
+           if(test.r=="ANOVA")
+               p.value = sprintf("%.3f", round(summary(model)[[1]][["Pr(>F)"]][1], 3)) 
+           
+           label = private$regenerate_label_summary(model = model, posthoc= posthoc, p.adj= p.adj)$labels.df$labels
+         
+         # label = multcompView::multcompLetters(
+         #   TukeyHSD(model)[[1]][,"p adj"]  )$Letters
+         l = cbind(l, label=label)
+         private$result.for.plot <- rbind(private$result.for.plot, l)
+
+         values = data.frame( t(c(
+           Factor= dep, 
+                paste0(sprintf("%.2f", round(l[,4], 2)),
+                                             ' \u00B1 ', 
+                       sprintf("%.2f", round(l[,5], 2)), label), 
+                p.value,test = test.r)))
+        
+           names(values)<-   c("Factor", paste0("Level ", l[,2]) ,"P value", "Test")
+        self$results <- rbind(self$results,values)
+        rm(values)       
+        rm(l)
+
+
+      }
+       
+    },
+    
+    descriptive = function(x, alpha = 0.05) {
+      
+      n = sum(!is.na(x))
+      m = mean(x, na.rm = TRUE)
+      s = sd(x, na.rm = TRUE)
+      se = s/sqrt(n)
+      l.ci = m- se*qnorm(1-(alpha/2))
+      u.ci = m+ se*qnorm(1-(alpha/2))
+      
+      data.frame(n, m, s, se, l.ci, u.ci, alpha)
+    },
+    
+    
+    regenerate_label_summary=
+      function(d = NULL,y = NULL, flev = NULL, model,posthoc=c("Tukey", "LSD","duncan","SNK" ,"REGW" ,"scheffe" ,"adjustment" ,"waerden" ,"median")
+               ,p.adj=c("none","holm","hommel", 
+                        "hochberg", "bonferroni", "BH", "BY", "fdr")
+      ){
+        # d is data
+        # flev is factor  variable in
+        if(is.null(d))       d = model$model
+        if(is.null(y))       y = names(model$model)[1]
+        if(is.null(flev)) flev = names( model$model)[2]
+        require(agricolae)
+        se<- function(x) sd(x,na.rm=TRUE)/sqrt(sum(!is.na(x)))
+        summary.me<- function(d=d,y=y,flev=flev){ 
+          summa<- function(x) c(length=sum(!is.na(x)), mean=mean(x,na.rm=TRUE),sd= sd(x,na.rm=TRUE),se=se(x),
+                                ci.l=mean(x,na.rm=TRUE) -1.96*se(x),
+                                ci.u=mean(x,na.rm=TRUE) +1.96*se(x) 
+          )
+          summary_data <-  aggregate(d[[y]],   by=list(  d[[flev]]),FUN=  summa)
+          colnames(summary_data$x)<-      c("Length","Mean","SD","SE","CI.Lower","CI.Upper")
+          cbind(level=summary_data$Group.1,summary_data$x)
+        }
+        summary_data<-data.frame(  summary.me(d=d,y=y,flev=flev))
+        x<-flev
+        # Extract labels and factor levels from Tukey post-hoc 
+        if(posthoc== "LSD") out <-LSD.test(model, x, group=F, p.adj= p.adj,console=TRUE)
+        
+        if(posthoc== "duncan") out <-duncan.test(model, x, group=F,console=TRUE)
+        
+        if(posthoc== "SNK") out <-SNK.test(model, x, group=F,console=TRUE)
+        
+        if(posthoc== "REGW") out <-REGW.test(model, x, group=F,console=TRUE)
+        
+        if(posthoc== "Tukey") out <-HSD.test(model, x, group=F,console=TRUE)
+        
+        if(posthoc== "scheffe")out <- scheffe.test(model, x, group=FALSE,console=FALSE)
+        
+        if(posthoc== "adjustment") out<-with(d,kruskal(d[,y],d[,x],group=FALSE, p.adj=p.adj))
+        
+        if(posthoc== "waerden") out<-with(d,waerden.test(d[,y],d[,x],group=FALSE,console=TRUE))
+        
+        # if(posthoc== "median") out<-with(d,Median.test(d[,y],d[,x],console=TRUE))
+        
+        
+        
+        Tukey.levels<-out$comparison[,"pvalue"]
+        sp<-strsplit(  rownames(out$comparison),"[ - ]")
+        sp2<-c() 
+        for(i in 1:length(sp))    sp2[i]<-   paste0( sp[[i]][1],sp[[i]][2],sp[[i]][3] )
+        names( Tukey.levels)<- sp2
+        Tukey.labels<-multcompView::multcompLetters(Tukey.levels)['Letters']
+        plot.labels <- names(Tukey.labels[['Letters']])
+        
+        
+        
+        plot.levels <- data.frame(plot.labels, labels = Tukey.labels[['Letters']],
+                                  stringsAsFactors = FALSE)
+        
+        # Merge it with the labels
+        labels.df <- merge(plot.levels, summary_data, by.x = 'plot.labels', by.y = "level", sort = FALSE)
+        # if (all(labels.df$labels=="a")) {
+        #   labels.df$labels<- rep(NA,length(labels.df$labels))
+        # }
+        list(labels.df=labels.df,Result=out)
+      }
+    
+    
+)
+)
+ 
+
+# D<-  Table_One$new(data = data, group =  "HbA1c.Cat8", 
+#                    deps.qualitative = c("Sex", "Metforminuse","Sulfonylureause",
+#                                         "Statinuse"),
+#                    deps.quantitative =
+#                      c("AIPlogTGHDLC","HOMAIR", 
+#                        "PON1activity", "Age","BMI" ))
+# # D$deps.quantitative()
+# # D$add.qualitative()
+# # D$add.qualitative(deps.qualitative = "rs115.Cat")
+# D$combine()
+# D$wd.Table()
+# D$results
+
+ 
+
