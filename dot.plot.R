@@ -10,10 +10,11 @@ dot.plot <-
            # limits = NULL
            log.transformation = FALSE,
            type = c("mean.ci", "median.quan")[1],
-           label = NULL,
+           p.label = NULL,
            adjust = NULL ,
            colorful = TRUE,
            main.title = NULL) {
+    label = p.label
     x.name <- as.character(substitute(x))[-1]
     c("mean.ci", "median.quan")
     if (!type %in%  c("mean.ci", "median.quan"))
@@ -71,9 +72,9 @@ dot.plot <-
     height <- m$max
     
     require(ggplot2)
-    library(ggthemes)
+    #library(ggthemes)
     library(grid)
-    library(ggmap)
+    #library(ggmap)
     p = ggplot() +
       geom_point(
         mapping = aes(
@@ -165,7 +166,7 @@ dot.plot <-
         shape = z.lab,
         title =  main.title
       ) +
-      scale_y_continuous(expand = c(0.0, 0.1),
+      scale_y_continuous(#expand = c(0.0, 0.1),
                          breaks = round(seq(
                            from = min(data.melt$value, na.rm = TRUE),
                            to = max(data.melt$value, na.rm = TRUE),
@@ -174,79 +175,83 @@ dot.plot <-
       scale_linetype_manual(values = rep(1, 8)) +
       guides(color = guide_legend(override.aes = list(size = 5)))
     
+    
     if (!isTRUE(colorful))
       p =  p +
       scale_colour_grey(start = 0.3 , end = 0.7) +
       scale_fill_grey(start = 0.3 , end = 0.7)
     
     
-    
-    base.of.y = ggplot_build(p)$layout$panel_params[[1]]$y.range
-    if (is.null(adjust))
-      adjust = (abs(base.of.y[2]) + abs(base.of.y[1])) / 40
-    
-    xx <- ggplot_build(p)$data[[3]]$x
-    xstart = xx [(1:length(xx)) %% 2 == 0]
-    xend = xx [(1:length(xx)) %% 2 != 0]
-    d1 = cbind(xstart,
-               xend,
-               ystart = c(height + adjust),
-               yend = c(height + adjust))   %>% as.data.frame()
-    d2 = cbind(xstart,
-               xend,
-               ystart = c(height),
-               yend = c(height + adjust))   %>% as.data.frame()
-    
-    
-    p +
-      geom_segment(
-        data = d1,
-        mapping = aes(
-          x = xstart,
-          xend = xend,
-          y = ystart,
-          yend = yend
-        ),
-        show.legend = FALSE,
-        size = 1.1,
-        color = "black"
-      ) +
-      geom_segment(
-        data = d2,
-        mapping = aes(
-          x = xstart,
-          xend = xstart,
-          y = ystart,
-          yend = yend
-        ),
-        show.legend = FALSE,
-        size = 1.1,
-        color = "black"
-      ) +
-      geom_segment(
-        data = d2,
-        mapping = aes(
-          x = xend,
-          xend = xend,
-          y = ystart,
-          yend = yend
-        ),
-        show.legend = FALSE,
-        size = 1.1,
-        color = "black"
-      ) +
-      geom_text(
-        data = d1,
-        mapping = aes(
-          x = (xstart + xend) / 2,
-          y = height + 2 * adjust ,
-          label = label
-        ),
-        show.legend = FALSE ,
-        color = "black",
-        size = 5
-      )
- }
+    if(!is.null(p.label) ){
+      
+      base.of.y = ggplot_build(p)$layout$panel_params[[1]]$y.range
+      if (is.null(adjust))
+        adjust = (abs(base.of.y[2]) + abs(base.of.y[1])) / 40
+      
+      xx <- ggplot_build(p)$data[[3]]$x
+      xstart = xx [(1:length(xx)) %% 2 == 0]
+      xend = xx [(1:length(xx)) %% 2 != 0]
+      d1 = cbind(xstart,
+                 xend,
+                 ystart = c(height + adjust),
+                 yend = c(height + adjust))   %>% as.data.frame()
+      d2 = cbind(xstart,
+                 xend,
+                 ystart = c(height),
+                 yend = c(height + adjust))   %>% as.data.frame()
+      
+      p= p +
+        geom_segment(
+          data = d1,
+          mapping = aes(
+            x = xstart,
+            xend = xend,
+            y = ystart,
+            yend = yend
+          ),
+          show.legend = FALSE,
+          size = 1.1,
+          color = "black"
+        ) +
+        geom_segment(
+          data = d2,
+          mapping = aes(
+            x = xstart,
+            xend = xstart,
+            y = ystart,
+            yend = yend
+          ),
+          show.legend = FALSE,
+          size = 1.1,
+          color = "black"
+        ) +
+        geom_segment(
+          data = d2,
+          mapping = aes(
+            x = xend,
+            xend = xend,
+            y = ystart,
+            yend = yend
+          ),
+          show.legend = FALSE,
+          size = 1.1,
+          color = "black"
+        ) +
+        geom_text(
+          data = d1,
+          mapping = aes(
+            x = (xstart + xend) / 2,
+            y = height + 2 * adjust ,
+            label = label
+          ),
+          show.legend = FALSE ,
+          color = "black",
+          size = 5
+        )
+    }
+    p$result   <- as.data.frame(summray_data) 
+    p
+  }
 
  
   # plot.dot (

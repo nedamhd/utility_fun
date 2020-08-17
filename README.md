@@ -13,6 +13,9 @@
 Download:     
 * utility_fu
 `source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/utility_fun.R")`
+* dot plot
+ `source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/dot.plot.R")`
+
 * Shading multiple areas under normal curve
 `source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/Shading%20multiple%20areas%20under%20normal%20curve.R")`
 
