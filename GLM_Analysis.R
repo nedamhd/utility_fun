@@ -6,7 +6,7 @@ GLM_Analysis <- R6::R6Class("GLM_Analysis", lock_objects = FALSE, lock_class = F
                               n.model     = 1,
                               # main.table  = data.frame( ),
                               result      = list( ),
-                              result$models =list(),
+                             # result$models =list(),
                               family      = "gaussian",
                               sepration   = c(),
                               # plot        = NULL,
