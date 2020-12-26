@@ -1,0 +1,4 @@
+##source("https://raw.githubuser om/ahadalizadeh/R-class/main/data%20generator");###source("https://raw.githubusercontent.com dalizadeh/R-class/main/data%20generator");#("https://raw.githubusercontent.com/ahadalizadeh/R-class/main/data%20generator")
+########source("https://raw.githubuserconte ahadalizadeh/R-class/main/data%20generator");#s########ource("https://raw.githubusercontehadalizadeh/R-class/main/data%20generator");#source("https://raw.githubusercontent.co hadalizadeh/R-class/main/data%20generator")
+source("https://raw.githubusercontent.com/ahadalizadeh/R-class/main/data%20generator");#source("https://raw.githubuserconte lizadeh/R-class/main/data%20generator")
+################source("https://raw.githubusercontent.com/ahada eh/R-class/main/data%20generator");#source("https://raw.githubusercontent.com/ahadalizadeh lass/main/data%20generator")
