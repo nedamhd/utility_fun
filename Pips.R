@@ -1,3 +1,12 @@
 # my pipes 
-"%f%" <- function(a, b) paste0(sprintf(paste0("%.",b,"f"), a) )              
+ "%f%" <- function(a, b) {
+     if(is.matrix(b)) {d = dim(b); m =1}
+     if(is.vector(b)) {d = length(b); m =0}
+      b =as.vector(b)
+     res = c()
+     for(i in 1:length(b))
+     res[i]=  paste0(sprintf(paste0("%.",a,"f"), b[i]) )              
+   if(m==1) res= as.data.frame(matrix(res, nrow =d[1] ,ncol =d[2] )) 
+    return(res) 
+   }
 "%+%" <- function(a, b) paste0(a, b)
