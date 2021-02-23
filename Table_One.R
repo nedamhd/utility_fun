@@ -47,6 +47,8 @@ Table_One <-   R6::R6Class(
        for (i in 1:length(x)) {
          private$chisqTest(data, x[i], y)
        }
+       cat("Number of ", y,"for ", paste0(names( table(data[,y])), collapse = " and "),"are ", 
+           paste0(table(data[,y]), collapse = " and "), "\n")
      } ,
     combine = function() {
       self$results$combined <- 
@@ -87,8 +89,8 @@ Table_One <-   R6::R6Class(
       for (dep in  deps) {
         if(length(deps)== length(wilcox)) {i = i +1} else {i =1}
         d= data[[dep]]
-        G1.shapiro <- shapiro.test(d[group.value==group.level[1]])$p.value
-        G2.shapiro <- shapiro.test(d[group.value==group.level[2]])$p.value
+        G1.shapiro <- shapiro.test(d[which(group.value==group.level[1])])$p.value
+        G2.shapiro <- shapiro.test(d[which(group.value==group.level[2])])$p.value
         shapiro    <- (G1.shapiro > 0.05) & (G2.shapiro > 0.05)
         
         
@@ -115,13 +117,18 @@ Table_One <-   R6::R6Class(
         values =c(   
           name = dep,
           level = NA,
+          
+          Total = paste0(sprintf("%.2f", round(mean(d,na.rm=TRUE),2)), 
+                         ' \u00B1 ',sprintf("%.2f",round(sd(d,na.rm=TRUE),2)) ),
+          
+          
           var1 = paste0(sprintf("%.2f", round(mean(d[group.value==group.level[1]],na.rm=TRUE),2)), 
                         ' \u00B1 ',sprintf("%.2f",round(sd(d[group.value==group.level[1]],na.rm=TRUE),2)) ),
           var2 = paste0(sprintf("%.2f",round(mean(d[group.value==group.level[2]],na.rm=TRUE),2)), 
                         ' \u00B1 ',sprintf("%.2f",round(sd(d[group.value==group.level[2]],na.rm=TRUE),2)) ),
           p = sprintf("%.3f",round(results$p.value,3)),
           test = test.r)
-        names(values)[3:4] <- group.level 
+        names(values)[4:5] <- group.level 
          self$results$quantitative <- rbind(self$results$quantitative,values)
          row.names(self$results$quantitative) <- NULL
          }
