@@ -79,21 +79,21 @@ GetSummary <- function(data, dep.quantitative, factor){
  
 
  meansd = data %>% group_by(get(factor))  %>%
-    summarise(across(dep.quantitative,
+    summarise(across(all_of(dep.quantitative),
                      ~ meansdFUN(.x)), .groups = 'drop')
   
  meanse = data %>% group_by(get(factor))  %>%
-    summarise(across(dep.quantitative,
+    summarise(across(all_of(dep.quantitative),
                      ~ meanseFUN(.x)), .groups = 'drop')
   
   
  CI = data %>% group_by(get(factor))  %>%
-    summarise(across(dep.quantitative,
+    summarise(across(all_of(dep.quantitative),
                      ~ CIFUN(.x)), .groups = 'drop')
  
    
  Quantile = data %>% group_by(get(factor))  %>%
-    summarise(across(dep.quantitative,
+    summarise(across(all_of(dep.quantitative),
                      ~ quantileFUN(.x)), .groups = 'drop')
  
  
@@ -117,7 +117,7 @@ list(MeanSD = MeanSD[-1,], MeanSE = MeanSE[-1,], CI =  CI[-1,], MedianQuantile =
 }
 
 #-------------------------------
-# d = data.frame(sex=rbinom(10000,6,0.5), age = rnorm(10000), bmi = rnorm(10000))
+# d = data.frame(sex=rbinom(10000,1,0.5), age = rnorm(10000), bmi = rnorm(10000))
 # Gkk= GetSummary (data = d, dep.quantitative= c("age", "bmi"), factor = "sex")
 # Gkk
 # Gkk$MeanSD   %>% wd.Table()
