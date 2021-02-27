@@ -1,287 +1,289 @@
-#R6 CLASS for ROC analysis
-# pred or x: quantitative test(S) [c("Age","TGmgdL","LDLCssPOXase")].
-# obs or y: binary gold standard ("CAD").
-# obs.lab: label of preds (c("TG", "LDL")).
-# spliter: quvalitative variable ("Sex"). 
-# spliter.lab: label of spliter levels (c("male", "female")).
-# $ROCplot(): create ROC plots and save in self$plot[[i]].
-# $ggsave(): save jpg file. don't need file name. 
-
- 
 
 ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = FALSE,
-                       public         = list(
-                         mainData     = NULL,
-                          data        = NULL,
-                          obs         = NULL,
-                          pred        = NULL,
-                          result      = data.frame( ),
-                          spliter     = NULL,
-                          x.lab       = NULL,
-                          spliter.lab = NULL,
-                          plot        = NULL,
-                          Cut.off.points =   NULL,
-                           initialize = function(data , obs, pred, 
-                                                 pred.lab = NULL, spliter =NULL,
-                                                spliter.lab = NULL) {
-                           x.lab = pred.lab
-                           self$obs = obs
-                           self$pred = pred 
-                           # omit = function(data, obs, pred, spliter =NULL){
-                           #   temp = cbind(FlagID... = seq(1,dim()) ,data)
-                           # }
-                           self$mainData = data
-                           self$data =  (data[,c(obs,pred,spliter)]) #na.omit
-                           if(!is.null(x.lab)){self$x.lab <- x.lab} else {self$x.lab <- pred}
-                           if(!is.null(spliter)){
-                              self$spliter <- spliter
-                              if(!is.null(spliter.lab)){self$spliter.lab <- spliter.lab} else 
-                              {self$spliter.lab <- unique(self$data[[spliter]])}
-                              
-                           }
-                           # self$result <- private$myroc.area()
-                             self$ROCplot()
-                             invisible(self)
-                          },
-                          add = function(data=NULL , obs=NULL, pred, 
-                                                pred.lab = NULL, spliter =NULL,
-                                                spliter.lab = NULL) {
-                            x.lab <- pred.lab
-                            if(is.null(obs)) obs =  self$obs
-                            self$obs = obs
-                            self$pred = pred
-                            if(is.null(data)) data =  self$mainData
-                            self$data = (data[,c(obs,pred,spliter)])#na.omit
-                            if(!is.null(x.lab)){self$x.lab <- x.lab} else {self$x.lab <- pred}
-                            if(!is.null(spliter)){
-                              self$spliter <- spliter
-                              if(!is.null(spliter.lab)){self$spliter.lab <- spliter.lab} else 
-                              {self$spliter.lab <- unique(self$data[[spliter]])}
-                            }else {
-                              self$spliter     <- NULL
-                              self$spliter.lab <- NULL  
-                            }
-                            # self$result <- private$myroc.area()
-                            self$ROCplot()
-                            invisible(self)
-                          },
-                          ROCplot = function(data =  self$data,
-                                             x = self$pred,
-                                             y = self$obs,
-                                             x.lab= self$x.lab, 
-                                             spliter =   self$spliter,
-                                             spliter.lab = self$spliter.lab ){
-                            require(ggplot2); require(verification);require(plotROC)
-                            
-                            if(is.null(spliter))  {
-                              g= list(private$gg.Roc(data = data, x = x, y = y, x.lab = x.lab))
-                              # private$cutoff(data = data, obs = y, pred = x) 
-    ###########
-                              names(g)<- paste0(x, collapse = " & ")
-                            }
-                            
-                            if(!is.null(spliter) && (length(x) >1)) {
-                              data <- split(data, f = as.factor(data[[spliter]]))
-                              s.l <- length(data)
-                              g = list()
-                              for (i in 1:s.l){
-                                g[[i]] <-   private$gg.Roc(data=data[[i]] ,  x = x, y = y, x.lab = x.lab)
-                                private$cutoff(data = data[[i]], obs = y, pred = x) 
+                            public         = list(
+                              mainData     = NULL,
+                              data        = NULL,
+                              obs         = NULL,
+                              pred        = NULL,
+                              result      = data.frame( ),
+                              spliter     = NULL,
+                              x.lab       = NULL,
+                              spliter.lab = NULL,
+                              plot        = NULL,
+                              Cut.off.points =   NULL,
+                              initialize = function(data , obs, pred, 
+                                                    pred.lab = NULL, spliter =NULL,
+                                                    spliter.lab = NULL) {
+                                x.lab = pred.lab
+                                self$obs = obs
+                                self$pred = pred 
+                                # omit = function(data, obs, pred, spliter =NULL){
+                                #   temp = cbind(FlagID... = seq(1,dim()) ,data)
+                                # }
+                                self$mainData = data
+                                self$data =  (data[,c(obs,pred,spliter)]) #na.omit
+                                if(!is.null(x.lab)){self$x.lab <- x.lab} else {self$x.lab <- pred}
+                                if(!is.null(spliter)){
+                                  self$spliter <- spliter
+                                  if(!is.null(spliter.lab)){self$spliter.lab <- spliter.lab} else 
+                                  {self$spliter.lab <- unique(self$data[[spliter]])}
+                                  
+                                }
+                                # self$result <- private$myroc.area()
+                                self$ROCplot()
+                                invisible(self)
+                              },
+                              add = function(data=NULL , obs=NULL, pred, 
+                                             pred.lab = NULL, spliter =NULL,
+                                             spliter.lab = NULL) {
+                                x.lab <- pred.lab
+                                if(is.null(obs)) obs =  self$obs
+                                self$obs = obs
+                                self$pred = pred
+                                if(is.null(data)) data =  self$mainData
+                                self$data = (data[,c(obs,pred,spliter)])#na.omit
+                                if(!is.null(x.lab)){self$x.lab <- x.lab} else {self$x.lab <- pred}
+                                if(!is.null(spliter)){
+                                  self$spliter <- spliter
+                                  if(!is.null(spliter.lab)){self$spliter.lab <- spliter.lab} else 
+                                  {self$spliter.lab <- unique(self$data[[spliter]])}
+                                }else {
+                                  self$spliter     <- NULL
+                                  self$spliter.lab <- NULL  
+                                }
+                                # self$result <- private$myroc.area()
+                                self$ROCplot()
+                                invisible(self)
+                              },
+                              ROCplot = function(data =  self$data,
+                                                 x = self$pred,
+                                                 y = self$obs,
+                                                 x.lab= self$x.lab, 
+                                                 spliter =   self$spliter,
+                                                 spliter.lab = self$spliter.lab ){
+                                require(ggplot2); require(verification);require(plotROC)
                                 
-                                cat("Element ", i," of list output is for ",spliter, ": '", names(data)[i],
-                                    "' (See names of elements of the list ).\n")  
-                               names(g)[i]<- paste0(spliter," - ", names(data)[i])
-                               
-                              }
-                              # self<<-self
-                              # self<<-FF
-                               di= dim(self$result)[1]
-                               self$result$spliter <- c(self$result$spliter)
-                               self$result[(di- (s.l*length(x))+1):di, "spliter"]<- rep(names(g),each=length(x))
-                               }
-                            
-                            if( !is.null(spliter) && (length(x)==1) )     {
-                              g= list(private$gg.Roc.1factor(data = data, x = x, y = y,
-                                                  x.lab = x.lab, spliter = spliter,spliter.lab = spliter.lab))
-                              private$cutoff(data = data, obs = y, pred = x) 
+                                if(is.null(spliter))  {
+                                  g= list(private$gg.Roc(data = data, x = x, y = y, x.lab = x.lab))
+                                  private$cutoff(data = data, obs = y, pred = x) 
+                                  ###########
+                                  names(g)<- paste0(x, collapse = " & ")
+                                }
+                                
+                                if(!is.null(spliter) && (length(x) >1)) {
+                                  data <- split(data, f = as.factor(data[[spliter]]))
+                                  s.l <- length(data)
+                                  g = list()
+                                  for (i in 1:s.l){
+                                    g[[i]] <-    private$gg.Roc(data=data[[i]] ,  x = x, y = y, x.lab = x.lab)
+                                    private$cutoff(data = data[[i]], obs = y, pred = x,
+                                                   spliter.label = paste0(spliter,": ", names(data)[i]) )
+                                    
+                                    cat("Element ", i," of list output is for ",spliter, ": '", names(data)[i],
+                                        "' (See names of elements of the list ).\n")
+                                    names(g)[i]<- paste0(spliter," - ", names(data)[i])
+                                    
+                                  }
+                                  
+                                  # self<<-self
+                                  # self<<-FF
+                                  di= dim(self$result)[1]
+                                  self$result$spliter <- c(self$result$spliter)
+                                  self$result[(di- (s.l*length(x))+1):di, "spliter"]<- rep(names(g),each=length(x))
+                                }
+                                
+                                if( !is.null(spliter) && (length(x)==1) )     {
+                                  g= list(private$gg.Roc.1factor(data = data, x = x, y = y,
+                                                                 x.lab = x.lab, spliter = spliter,spliter.lab = spliter.lab))
+                                  names(g)<- paste0(x)
+                                  
+                                  data <- split(data, f = as.factor(data[[spliter]]))
+                                  s.l <- length(data)
+                                  for (i in 1:s.l){
+                                    private$cutoff(data = data[[i]], obs = y, pred = x, 
+                                                   spliter.label =  paste0(spliter,": ", names(data)[i])) 
+                                  }
+                                  
+                                }
+                                print(g)
+                                self$plot <- c(self$plot,g) 
+                              },
                               
-                              names(g)<- paste0(x, collapse = " & ")
-                             
+                              ggsave = function(filename=NULL,...) {
+                                n= length(self$plot)
+                                if(!is.null(filename) && (length(filename) == n)){
+                                  for (i in 1:n) {
+                                    ggsave(filename[i], plot=self$plot[[i]],...)
+                                  }
+                                } else {
+                                  filename= paste0(names(self$plot), ".jpg")
+                                  cat("The length of filename is not ", n, ". We change to ", 
+                                      paste0(filename, collapse = " & "),"\n\n")
+                                  for (i in 1:n) {
+                                    ggsave(filename[i], plot=self$plot[[i]],...)
+                                  }
+                                }} ,
+                              wd.Table = function(x= self$result,..., filename=NULL, path = ""){
+                                if("RDCOMClient" %in% rownames(installed.packages()) == FALSE)  { 
+                                  # Sys.setenv("TAR" = "internal") # if you need it.
+                                  # devtools::install_github("omegahat/RDCOMClient")
+                                  install.packages('RDCOMClient', repos = 'http://www.omegahat.org/R') }
+                                R2wd::wdGet(filename,path , method="RDCOMClient")
+                                R2wd::wdBody("\n\n")
+                                R2wd::wdTable(as.data.frame(x), ...)
+                                cat("Done!\n")
+                              },
+                              write.cb= function(x = self$result, row.names=TRUE, col.names=TRUE, comment=FALSE, text=NULL, ...){ 
+                                datafile <- file("clipboard", open='wt')
+                                on.exit(close(datafile))
+                                if(comment == TRUE)   {
+                                  if(is.null(comment(x))) warning("There is no comment for x! first add one by comment(x) = '...'") else
+                                    writeLines(comment(x), con=datafile)}
+                                write.table(x, file = datafile, sep = "\t", row.names = row.names,
+                                            col.names = col.names, ...)
+                                if(!is.null(text))   {writeLines(text , con=datafile)}
                               }
-                            print(g)
-                            self$plot <- c(self$plot,g) 
-                          },
-                           
-                          ggsave = function(filename=NULL,...) {
-                            n= length(self$plot)
-                            if(!is.null(filename) && (length(filename) == n)){
-                             for (i in 1:n) {
-                                ggsave(filename[i], plot=self$plot[[i]],...)
-                              }
-                            } else {
-                              filename= paste0(names(self$plot), ".jpg")
-                              cat("The length of filename is not ", n, ". We change to ", 
-                                  paste0(filename, collapse = " & "),"\n\n")
-                              for (i in 1:n) {
-                                ggsave(filename[i], plot=self$plot[[i]],...)
-                              }
-                            }} ,
-                          wd.Table = function(x= self$result,..., filename=NULL, path = ""){
-                            if("RDCOMClient" %in% rownames(installed.packages()) == FALSE)  { 
-                              # Sys.setenv("TAR" = "internal") # if you need it.
-                              # devtools::install_github("omegahat/RDCOMClient")
-                              install.packages('RDCOMClient', repos = 'http://www.omegahat.org/R') }
-                            R2wd::wdGet(filename,path , method="RDCOMClient")
-                            R2wd::wdBody("\n\n")
-                            R2wd::wdTable(as.data.frame(x), ...)
-                            cat("Done!\n")
-                          },
-                          write.cb= function(x = self$result, row.names=TRUE, col.names=TRUE, comment=FALSE, text=NULL, ...){ 
-                            datafile <- file("clipboard", open='wt')
-                            on.exit(close(datafile))
-                            if(comment == TRUE)   {
-                              if(is.null(comment(x))) warning("There is no comment for x! first add one by comment(x) = '...'") else
-                                writeLines(comment(x), con=datafile)}
-                            write.table(x, file = datafile, sep = "\t", row.names = row.names,
-                                        col.names = col.names, ...)
-                            if(!is.null(text))   {writeLines(text , con=datafile)}
-                          }
                             ),
-                        private = list(
-                          myroc.area = function(data = self$data, obs = self$obs, 
-                                                pred = self$pred) {
-                            # y, obs:  A binary observation (coded {0, 1 }).
-                            # x,  pred:  A probability prediction on the interval [0,1].
-                            
-                            if (!is.null(data)) {
-                              if (!(is.character(obs) &&
-                                    is.character(pred)))
-                                stop("obs and pred must be charecter!")
-                              pred1 <- c(data[[as.character(pred)]])
-                              obs1 <- c(data[[as.character(obs)]])
-                              
-                            } else {
-                              obs1  <- obs
-                              pred1 <- pred
-                            }
-                            name <-  pred
-                            g = verification::roc.area(obs1, pred1)
-                            di <- "direct"
-                            if (g$A < 0.5) {
-                              g =   verification::roc.area(obs1,-1 * pred1)
-                              di <- "indirect"
-                            }
-                             result <- as.data.frame(cbind(
-                              name =  pred  ,
-                              round((do.call(cbind, g)), 4),
-                              "Direction" = di
-                            ))
-                           # cat("Results saved in `self$result`\n")
-                           result
-                            
-                          }, 
-                          cutoff = function(data = NULL, obs, pred) {
-                            obs1 <- c(data[[obs]])
-                            pred1 <- c(data[[pred]])
-                            
-                            aa1= pROC::roc(response = obs1, predictor = pred1)
-                            a.yu1= pROC::ci.coords(aa1,x= "best",best.method="youden",best.policy="random",boot.n=10000)
-                            a.yu1 = as.data.frame(a.yu1)
-                            cut.points = data.frame(name = pred ,
-                                       Threshold = paste0(round(a.yu1[1,2],2)," (",round(a.yu1[1,1],3),",",round(a.yu1[1,3],3),")" ),
-                                       Specificity = paste0(round(a.yu1[1,5]*100,2)," (",round(a.yu1[1,4]*100,3),",",round(a.yu1[1,6]*100,3),")" ),
-                                       Sensitivity = paste0(round(a.yu1[1,8]*100,2)," (",round(a.yu1[1,7]*100,3),",",round(a.yu1[1,9]*100,3),")" )
-                            )
-                            self$Cut.off.points<-  rbind(self$Cut.off.points,cut.points)
-                          },
-                          gg.Roc.1factor = function(data , x , y , x.lab, spliter,spliter.lab ){
-                            temp<-  na.omit(data[,c(x,y,spliter)])
-                            data<-  temp
-                            fe<- unique(temp[[spliter]])
-                            fe.n <- length(fe)
-                            temp<- split(temp,as.factor(temp[[spliter]]) )
-                            data[["variable"]] <- "999"
-                              # if(length(x.lab) == fe) cat("Use x.lab for spliter labels.")
-                            x.lab2<- c() 
-                            for (i in 1:fe.n) {
-                              self$result <- rbind(self$result, cbind(spliter = paste0(spliter, " - ", spliter.lab[i]),
-                                                   private$myroc.area (temp[[i]], obs =as.character(y),pred = as.character(x)), stringsAsFactors =FALSE))
-                              a= as.numeric(as.character( private$myroc.area (temp[[i]], obs =as.character(y),pred = as.character(x))[["A"]]))
-                              # dir<<-   private$myroc.area (temp[[i]], obs =as.character(y),pred = as.character(x))[["Direction"]] 
-                              p= as.numeric(as.character( private$myroc.area (temp[[i]], obs=as.character(y), as.character(x))[["p.value"]]))
-                              x.lab2[i] = paste0(spliter.lab[i], "\nAUC = ", round(a,2), ", p = ", round(p,3),"\n")
-                              
-                              if (p < 0.0009999999999){
-                                p <- "p<0.001"
-                                x.lab2[i] =   paste0(spliter.lab[i], "\nAUC = ", round(a,2),", ",   p,"\n")
+                            private = list(
+                              myroc.area = function(data = self$data, obs = self$obs, 
+                                                    pred = self$pred) {
+                                # y, obs:  A binary observation (coded {0, 1 }).
+                                # x,  pred:  A probability prediction on the interval [0,1].
                                 
-                              }      
-                              data[["variable"]][which(data[[spliter]]== fe[i])] <-  x.lab2[i]
-                              # if (dir == "indirect") data[[x]] <- -1*data[[x]]
-                            }
-                            
-                            
-                            
-                            ggplot(data=data, aes(d = data[[y]], m = data[[x]],
-                                                  color= variable,
-                                                  linetype= variable)) + 
-                              style_roc(guide = TRUE)+
-                              geom_roc(n.cuts = 0, labels = FALSE, size = 2)+
-                              geom_abline(slope = 1, intercept = 0, color = "grey",linetype= "dashed")+
-                              labs(colour="",linetype="")+
-                              theme( legend.position = "bottom",
-                                     axis.text=element_text(face = "bold",size = 12,colour = "black") ,
-                                     legend.text=element_text(face = "bold" ,size = 12,colour = "black") ,
-                                     axis.title= element_text(face ="bold" ,size = 16,colour = "black"))+
-                              theme( legend.key.width = unit(1.5,"cm"))+
-                              scale_linetype_manual(values=c("solid","dotted", "dashed",  "dotdash" ,  "longdash" ,  "twodash"))#
-                          },
-                          gg.Roc = function(data , x , y , x.lab ){
-                            fe<- length(x) 
-                            temp<- data[,c(x,y)]
-                           
-                            x.lab2<- c()
-                            for (i in 1:fe) {
-                             self$result <- rbind(self$result, cbind(spliter = "NO SPLIT",
-                              private$myroc.area (data, obs =as.character(y),pred = as.character(x[i])), stringsAsFactors =FALSE))
-                             a= as.numeric(as.character(private$myroc.area (data, obs =as.character(y),pred = as.character(x[i]))[["A"]]))
-                             # dir<<-  private$myroc.area (data, obs =as.character(y),pred = as.character(x[i]))[["Direction"]] 
-                             p= as.numeric(as.character( private$myroc.area (data, obs=as.character(y), as.character(x[i]))[["p.value"]]))
-                              x.lab2[i] = paste0(x.lab[i], "\nAUC = ", round(a,2), ", p = ", round(p,3),"\n")
-                              if (p <0.000999999999999){
-                                p <- "p<0.001"
-                                x.lab2[i] =   paste0(x.lab[i], "\nAUC = ", round(a,2),", ",   p,"\n")
+                                if (!is.null(data)) {
+                                  if (!(is.character(obs) &&
+                                        is.character(pred)))
+                                    stop("obs and pred must be charecter!")
+                                  pred1 <- c(data[[as.character(pred)]])
+                                  obs1 <- c(data[[as.character(obs)]])
+                                  
+                                } else {
+                                  obs1  <- obs
+                                  pred1 <- pred
+                                }
+                                name <-  pred
+                                g = verification::roc.area(obs1, pred1)
+                                di <- "direct"
+                                if (g$A < 0.5) {
+                                  g =   verification::roc.area(obs1,-1 * pred1)
+                                  di <- "indirect"
+                                }
+                                result <- as.data.frame(cbind(
+                                  name =  pred  ,
+                                  round((do.call(cbind, g)), 4),
+                                  "Direction" = di
+                                ))
+                                # cat("Results saved in `self$result`\n")
+                                result
+                                
+                              }, 
+                              cutoff = function(data = NULL, obs, pred, spliter.label = NULL) {
+                                obs1 <- c(data[[obs]])
+                                n.pred = length(pred)
+                                for (pr in 1:n.pred) {
+                                  
+                                  pred1 <- c(data[[pred[pr]]]) 
+                                  # print(spliter.label)
+                                  aa1= pROC::roc(response = obs1, predictor = pred1)
+                                  a.yu1= pROC::ci.coords(aa1,x= "best",best.method="youden",best.policy="random",boot.n=10000)
+                                  a.yu1 = as.data.frame(a.yu1)
+                                  cut.points = data.frame(spliter = spliter.label,
+                                                          name = pred[pr] ,
+                                                          Threshold = paste0(round(a.yu1[1,2],2)," (",round(a.yu1[1,1],3),",",round(a.yu1[1,3],3),")" ),
+                                                          Specificity = paste0(round(a.yu1[1,5]*100,2)," (",round(a.yu1[1,4]*100,3),",",round(a.yu1[1,6]*100,3),")" ),
+                                                          Sensitivity = paste0(round(a.yu1[1,8]*100,2)," (",round(a.yu1[1,7]*100,3),",",round(a.yu1[1,9]*100,3),")" )
+                                  )
+                                  self$Cut.off.points<-  rbind(self$Cut.off.points,cut.points)
+                                }
+                              },
+                              gg.Roc.1factor = function(data , x , y , x.lab, spliter,spliter.lab ){
+                                temp<-  na.omit(data[,c(x,y,spliter)])
+                                data<-  temp
+                                fe<- unique(temp[[spliter]])
+                                fe.n <- length(fe)
+                                temp<- split(temp,as.factor(temp[[spliter]]) )
+                                data[["variable"]] <- "999"
+                                # if(length(x.lab) == fe) cat("Use x.lab for spliter labels.")
+                                x.lab2<- c() 
+                                for (i in 1:fe.n) {
+                                  self$result <- rbind(self$result, cbind(spliter = paste0(spliter, " - ", spliter.lab[i]),
+                                                                          private$myroc.area (temp[[i]], obs =as.character(y),pred = as.character(x)), stringsAsFactors =FALSE))
+                                  a= as.numeric(as.character( private$myroc.area (temp[[i]], obs =as.character(y),pred = as.character(x))[["A"]]))
+                                  # dir<<-   private$myroc.area (temp[[i]], obs =as.character(y),pred = as.character(x))[["Direction"]] 
+                                  p= as.numeric(as.character( private$myroc.area (temp[[i]], obs=as.character(y), as.character(x))[["p.value"]]))
+                                  x.lab2[i] = paste0(spliter.lab[i], "\nAUC = ", round(a,2), ", p = ", round(p,3),"\n")
+                                  
+                                  if (p < 0.0009999999999){
+                                    p <- "p<0.001"
+                                    x.lab2[i] =   paste0(spliter.lab[i], "\nAUC = ", round(a,2),", ",   p,"\n")
+                                    
+                                  }      
+                                  data[["variable"]][which(data[[spliter]]== fe[i])] <-  x.lab2[i]
+                                  # if (dir == "indirect") data[[x]] <- -1*data[[x]]
+                                }
+                                
+                                
+                                
+                                ggplot(data=data, aes(d = .data[[y]], m = .data[[x]],
+                                                      color= variable,
+                                                      linetype= variable)) + 
+                                  style_roc(guide = TRUE)+
+                                  geom_roc(n.cuts = 0, labels = FALSE, size = 2)+
+                                  geom_abline(slope = 1, intercept = 0, color = "grey",linetype= "dashed")+
+                                  labs(colour="",linetype="")+
+                                  theme( legend.position = "bottom",
+                                         axis.text=element_text(face = "bold",size = 12,colour = "black") ,
+                                         legend.text=element_text(face = "bold" ,size = 12,colour = "black") ,
+                                         axis.title= element_text(face ="bold" ,size = 16,colour = "black"))+
+                                  theme( legend.key.width = unit(1.5,"cm"))+
+                                  scale_linetype_manual(values=c("solid","dotted", "dashed",  "dotdash" ,  "longdash" ,  "twodash"))#
+                              },
+                              gg.Roc = function(data , x , y , x.lab ){
+                                fe<- length(x) 
+                                temp<- data[,c(x,y)]
+                                
+                                x.lab2<- c()
+                                for (i in 1:fe) {
+                                  self$result <- rbind(self$result, cbind(spliter = "NO SPLIT",
+                                                                          private$myroc.area (data, obs =as.character(y),pred = as.character(x[i])), stringsAsFactors =FALSE))
+                                  a= as.numeric(as.character(private$myroc.area (data, obs =as.character(y),pred = as.character(x[i]))[["A"]]))
+                                  # dir<<-  private$myroc.area (data, obs =as.character(y),pred = as.character(x[i]))[["Direction"]] 
+                                  p= as.numeric(as.character( private$myroc.area (data, obs=as.character(y), as.character(x[i]))[["p.value"]]))
+                                  x.lab2[i] = paste0(x.lab[i], "\nAUC = ", round(a,2), ", p = ", round(p,3),"\n")
+                                  if (p <0.000999999999999){
+                                    p <- "p<0.001"
+                                    x.lab2[i] =   paste0(x.lab[i], "\nAUC = ", round(a,2),", ",   p,"\n")
+                                  }
+                                  # if (dir == "indirect") temp[[x.lab2[i]]]<- -1*temp[[x.lab2[i]]]
+                                  #####################################################                     
+                                  # private$cutoff(data = data, obs = as.character(y), pred =as.character(x[i])) 
+                                }
+                                names(temp) <- c(x.lab2, y)
+                                temp.melt <- reshape2::melt(temp, id.vars=y ,measure.vars = x.lab2)
+                                temp.melt$variable <- as.factor(temp.melt$variable)
+                                temp.melt[[y]] <- c(temp.melt[[y]]) 
+                                
+                                
+                                
+                                
+                                ggplot(data=temp.melt, aes(d = temp.melt[[y]], m = value, 
+                                                           color= variable,
+                                                           linetype= variable)) + 
+                                  style_roc(guide = TRUE)+
+                                  geom_roc(n.cuts = 0, labels = FALSE, size = 2)+
+                                  geom_abline(slope = 1, intercept = 0, color = "grey",linetype= "dashed")+
+                                  labs(colour="",linetype="")+
+                                  theme( legend.position = "bottom",
+                                         axis.text=element_text(face = "bold",size = 12,colour = "black") ,
+                                         legend.text=element_text(face = "bold" ,size = 12,colour = "black") ,
+                                         axis.title= element_text(face ="bold" ,size = 16,colour = "black"))+
+                                  theme( legend.key.width = unit(1.5,"cm"))+
+                                  scale_linetype_manual(values=c("solid","dotted", "dashed",  "dotdash" ,  "longdash" ,  "twodash"))#
                               }
-                              # if (dir == "indirect") temp[[x.lab2[i]]]<- -1*temp[[x.lab2[i]]]
-       #####################################################                     
-                              private$cutoff(data = data, obs = as.character(y), pred =as.character(x[i])) 
-                              }
-                            names(temp) <- c(x.lab2, y)
-                            temp.melt <- reshape2::melt(temp, id.vars=y ,measure.vars = x.lab2)
-                            temp.melt$variable <- as.factor(temp.melt$variable)
-                            temp.melt[[y]] <- c(temp.melt[[y]]) 
-                            
-                            
-                            
-                            
-                            ggplot(data=temp.melt, aes(d = temp.melt[[y]], m = value, 
-                                                       color= variable,
-                                                       linetype= variable)) + 
-                              style_roc(guide = TRUE)+
-                              geom_roc(n.cuts = 0, labels = FALSE, size = 2)+
-                              geom_abline(slope = 1, intercept = 0, color = "grey",linetype= "dashed")+
-                              labs(colour="",linetype="")+
-                              theme( legend.position = "bottom",
-                                     axis.text=element_text(face = "bold",size = 12,colour = "black") ,
-                                     legend.text=element_text(face = "bold" ,size = 12,colour = "black") ,
-                                     axis.title= element_text(face ="bold" ,size = 16,colour = "black"))+
-                              theme( legend.key.width = unit(1.5,"cm"))+
-                              scale_linetype_manual(values=c("solid","dotted", "dashed",  "dotdash" ,  "longdash" ,  "twodash"))#
-                          }
-                         )
+                            )
 )
 
- 
+
 
 
 # Example
