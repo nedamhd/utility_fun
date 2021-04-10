@@ -412,3 +412,33 @@ bar.chart <-
 #   # distance = 14,
 # )
 # )
+######################################################################
+
+# data = data.frame(
+#     x= factor(rbinom(1000,1,0.5)),
+#     x1= abs(rnorm(1000)) ,
+#     x3= abs(rnorm(1000)) ,
+#     x2= abs(rnorm(1000)) ,
+#     z1= factor(rbinom(1000,1,0.5)),
+#     z= factor(0)))
+# 
+# bar.chart  (data,
+#            x =  c("x1", "x2", "x3" ),
+#            y=   NULL,
+#            z = "z1",
+#            x.lab = NULL,
+#            x.main.lab = NULL,
+#            y.lab = NULL,
+#            z.lab  = NULL,
+#            alpha = 0.05,
+#            # transformation = FALSE,
+#            type = c("mean.ci", "median.quan","mean.sd")[3],
+#            p.label = c("1","2", "3"), # p value labels
+#            adjust = NULL ,
+#            colorful = TRUE,
+#            main.title = NULL,
+#            distance = NULL,
+#            font=0) 
+
+
+
