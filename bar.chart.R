@@ -1,4 +1,4 @@
-# source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/bar.chart.R")
+ # source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/bar.chart.R")
 
 bar.chart <-
   function(data = NULL,
@@ -10,8 +10,7 @@ bar.chart <-
            y.lab = NULL,
            z.lab  = NULL,
            alpha = 0.05,
-           transformation = function(b)
-             return(b),
+           transformation = function(b) return(b),
            type = c("mean.ci", "median.quan", "mean.sd")[1],
            p.label = NULL,
            # p value labels
@@ -50,7 +49,7 @@ bar.chart <-
         stop(
           "x can be only one factor(for other type, remove y
           and enter the vector of quantitative varibles by x.)"
-          )
+        )
       temp.w =  na.omit(data[, c(x, y, z)])
       if (!is.factor(temp.w[[x]]))
         stop("x must be factor")
@@ -75,7 +74,9 @@ bar.chart <-
         y.lab = y.name
       data.melt = temp.w
     }
-    
+ 
+##########################################    
+       
     if (!type %in%  c("mean.ci", "median.quan", "mean.sd"))
       stop("Type must be  c(\"mean.ci\", \"median.quan\",\"mean.sd\")")
     
@@ -107,6 +108,7 @@ bar.chart <-
       names(data.melt)[1] <- "z.lab"
       
     }
+################################
     
     data.melt$value =  transformation(data.melt$value)
     
@@ -139,6 +141,7 @@ bar.chart <-
       
     }
     
+ ################################   
     
     if (type == "mean.sd") {
       if (is.null(z.lab))
@@ -162,6 +165,7 @@ bar.chart <-
             .groups = 'drop'
           )
     }
+###########################
     
     if (type == "median.quan") {
       if (is.null(z.lab))
@@ -200,44 +204,43 @@ bar.chart <-
     
     require(ggplot2)
     require(grid)
-    # if(is.null(z.lab))
-    
+     
     
     
     if (!is.null(z.lab)) {
       p = ggplot() +
-      stat_summary(
-        geom = "bar",
-        fun  = "mean",
-        mapping = aes(
-          x = variable,
-          y = value,
-          color =  z.lab,
-          fill =  z.lab
-        ),
-        data = data.melt,
-        position = position_dodge(width = .4),
-        na.rm = TRUE,
-        width = 0.35,
-        alpha = 1
-      ) +
-      geom_errorbar(
-        data = summray_data,
-        mapping = aes(
-          ymax = ymax,
-          ymin = ymin,
-          width = 0.1,
-          
-          y = y,
-          x = variable,
-          linetype = z.lab ,
-        ),
-        size = 1.1,
-        show.legend = FALSE,
-        # color = "black",
-        position = position_dodge(width = .4)
-      ) +
-      theme_classic() +
+        stat_summary(
+          geom = "bar",
+          fun  = "mean",
+          mapping = aes(
+            x = variable,
+            y = value,
+            color =  z.lab,
+            fill =  z.lab
+          ),
+          data = data.melt,
+          position = position_dodge(width = .4),
+          na.rm = TRUE,
+          width = 0.35,
+          alpha = 1
+        ) +
+        geom_errorbar(
+          data = summray_data,
+          mapping = aes(
+            ymax = ymax,
+            ymin = ymin,
+            width = 0.1,
+            
+            y = y,
+            x = variable,
+            linetype = z.lab ,
+          ),
+          size = 1.1,
+          show.legend = FALSE,
+          # color = "black",
+          position = position_dodge(width = .4)
+        ) +
+        theme_classic() +
         theme(
           panel.background = element_blank() ,
           panel.grid = element_blank(),
@@ -284,6 +287,7 @@ bar.chart <-
           #     max(data.melt[["value"]], na.rm = TRUE),
           #   length.out = 5
           # ) - .009, 2)) +
+        )+
           scale_linetype_manual(values = rep(1, 8)) +
             guides(color = guide_legend(override.aes = list(size = 5)))
           
@@ -326,20 +330,23 @@ bar.chart <-
     
     
     if (is.null(z.lab)) {
-      p <<- ggplot() +
+      p <- ggplot() +
         stat_summary(
           geom = "bar",
           fun  = "mean",
           mapping = aes(x = variable,
                         y = value,
-                        # color =  z.lab,
-                        # fill =  z.lab ),
+                        # fill =  z.lab
+                        ),                        
+                       color =  "black",
+                       fill =  "black",
+          
                         data = data.melt,
                         position = position_dodge(width = .4),
                         na.rm = TRUE,
-                        width = 0.35,
+                        width = .7,
                         alpha = 1
-          ) +
+          )  +
             
             geom_errorbar(
               data = summray_data,
@@ -362,7 +369,7 @@ bar.chart <-
             theme(
               panel.background = element_blank() ,
               panel.grid = element_blank(),
-              axis.line = element_line(size = 1),
+              axis.line = element_line(size = 1.25),
               axis.text = element_text(
                 size = 12 + font,
                 face = "bold",
@@ -397,7 +404,7 @@ bar.chart <-
                  # fill = z.lab,
                  # shape = z.lab,
                  title =  main.title) +
-            scale_y_continuous(#expand = c(0.0, 0.5),) +
+            # scale_y_continuous(#expand = c(0.0, 0.5),) +
               scale_linetype_manual(values = rep(1, 8)) +
                 guides(color = guide_legend(override.aes = list(size = 5)))
               
@@ -457,7 +464,7 @@ bar.chart <-
     
     
     ######################
-   if (!is.null(p.label))
+    if (!is.null(p.label))
       if (!is.null(z)) {
         if (length(p.label) != dim(d1)[1])
           stop(paste0("The length of p.label is not equall to ", dim(d1)[1]))
@@ -514,49 +521,12 @@ bar.chart <-
     p$result <- summray_data
     p
   }
-# v1$Group = factor(v1$Group, levels=c(0,1),
-#                   labels = c("Control", "Patient") )
-#
-# v1$rs132.Cat = factor(v1$rs132.Cat, levels=c(0,1),
-#                  labels = c("TT", "CT+CC") )
-#
-# ( gg= bar.chart (
-#     v1,
-#     x = c("HOMAIR", "HOMABCF"),
-#     x.lab = c("nonHDL-C/HDL-C", "nonHDL-C/PON1"),
-#     z = "Group",
-#     log.transformation = FALSE,
-#     type = "mean.ci",
-#     y.lab = "log(Values) \n[Error bars: Median and IQR]",
-#     p.label =NULL, #c("P=0.221", "P<0.001"),
-#       colorful = FALSE,
-#     z.lab  = "  ",
-#     main.title = "A)",
-#     font = -2,
-#      # adjust = 2,
-#       # distance = 14,
-#   ))
-# ggsave("g.jpg",gg, height = 3,width = 5)
-#
-# ( gg= bar.chart (
-#   data = v1,
-#   x = "rs132.Cat" ,
-#   x.main.lab = "rs13266634",
-#   y = "HOMAIR",
-#   x.lab = c("TT", "CT+CC"),
-#   z = "Group",
-#   log.transformation = FALSE,
-#   type = "median.quan",
-#   y.lab = "HOMA-IR \n[Error bars: 95% CI]",
-#   p.label = c("P=0.221", "P<0.001"),
-#   colorful = FALSE,
-#   z.lab  = "  ",
-#   main.title = "A)",
-#   font = 2,
-#   # adjust = 2,
-#   # distance = 14,
-# )
-# )
+ 
+
+
+
+
+
 ########################################Example##############################
 
 # data = data.frame(
@@ -566,7 +536,7 @@ bar.chart <-
 #     x2= abs(rnorm(1000)) ,
 #     z= factor(rbinom(1000,1,0.5)),
 #     z1= factor(0))
-#
+# 
 # ####################### for one x (factor) and one y(quantitative)
 # bar.chart  (data,
 #            x =  c("x"),
@@ -586,7 +556,7 @@ bar.chart <-
 #            main.title = NULL,
 #            distance = NULL,
 #            font=0)
-#
+# 
 # ####################### for multiple x (quantitative) as y and z as factor
 # bar.chart  (data,
 #             x =  c("x3", "x2"),
@@ -606,9 +576,9 @@ bar.chart <-
 #             main.title = NULL,
 #             distance = NULL,
 #             font=0)
-#
-#
-# ####################### for one x (factor), one y (quantitative) and  z as factor
+# 
+# #
+# # ####################### for one x (factor), one y (quantitative) and  z as factor
 # bar.chart  (data,
 #             x =  "x",
 #             y=  "y",
@@ -627,7 +597,7 @@ bar.chart <-
 #             main.title = NULL,
 #             distance = NULL,
 #             font=0)
-#
+# #
 #
 #
 #
