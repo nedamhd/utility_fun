@@ -596,101 +596,101 @@ bar.chart <-
 # )
 ########################################Example##############################
 
-data = data.frame(
-    x= factor(rbinom(1000,4,0.5)),
-    y= abs(rnorm(1000)) ,
-    x3= abs(rnorm(1000)) ,
-    x2= abs(rnorm(1000)) ,
-    z= factor(rbinom(1000,1,0.5)),
-    z1= factor(0))
-
-####################### for one x (factor) and one y(quantitative)
-bar.chart  (data,
-           x =  c("x"),
-           y=  "y",
-           z = NULL,
-           x.lab = NULL,
-           x.main.lab = NULL,
-           y.lab = NULL,
-           z.lab  = NULL,
-           alpha = 0.05,
-           # transformation = FALSE,
-           type = c("mean.ci", "median.quan","mean.sd")[1],
-           p.label = letters[1:5], # p value labels
-             p.algorithm.labels = letters[1:5] , # type 2 of p value labels based on letters
-           adjust = NULL ,
-           colorful = TRUE,
-           main.title = NULL,
-           distance = NULL,
-           font=0)
-  
-####################### for multiple x (quantitative) as y and z as factor
-bar.chart  (data,
-            x =  c("x3", "x2"),
-            y=  NULL,
-            z = "z",
-            x.lab = NULL,
-            x.main.lab = NULL,
-            y.lab = NULL,
-            z.lab  = NULL,
-            alpha = 0.05,
-            # transformation = FALSE,
-            type = c("mean.ci", "median.quan","mean.sd")[1],
-            p.label = letters[5:6], # p value labels
-            p.algorithm.labels = letters[1:4] , # type 2 of p value labels based on letters
-            adjust = NULL ,
-            colorful = TRUE,
-            main.title = NULL,
-            distance = NULL,
-            font=0)
-
-
-####################### for one x (factor), one y (quantitative) and  z as factor
-bar.chart  (data,
-            x =  "x",
-            y=  "y",
-            z = "z",
-            x.lab = NULL,
-            x.main.lab = NULL,
-            y.lab = NULL,
-            z.lab  = NULL,
-            alpha = 0.05,
-            # transformation = FALSE,
-            type = c("mean.ci", "median.quan","mean.sd")[1],
-            p.label = letters[1:5], # p value labels
-            p.algorithm.labels = letters[1:10] , # type 2 of p value labels based on letters
-            adjust = NULL ,
-            colorful = TRUE,
-            main.title = NULL,
-            distance = NULL,
-            font=0)
-
-
-
-
-
-
-################################## for ANOVA_table
-
-bar.chart  (
-  # data,
-  # x =  c("x"),
-  # y=  "y",
-  # z = NULL,
-  x.lab = NULL,
-  x.main.lab = NULL,
-  y.lab = NULL,
-  z.lab  = NULL,
-  alpha = 0.05,
-  # transformation = FALSE,
-  type = c("mean.ci", "median.quan","mean.sd")[2],
-  p.label = NULL,   #letters[1:5], # p value labels
-  p.algorithm.labels = NULL,  #letters[1:5] , # type 2 of p value labels based on letters
-  adjust = NULL ,
-  colorful = TRUE,
-  main.title = NULL,
-  distance = NULL,
-  font=0,
-  ANOVA_table = D,
-  report.p.algorithm.labeling.for.ANOVA_table = TRUE
-)
+# data = data.frame(
+#     x= factor(rbinom(1000,4,0.5)),
+#     y= abs(rnorm(1000)) ,
+#     x3= abs(rnorm(1000)) ,
+#     x2= abs(rnorm(1000)) ,
+#     z= factor(rbinom(1000,1,0.5)),
+#     z1= factor(0))
+# 
+# ####################### for one x (factor) and one y(quantitative)
+# bar.chart  (data,
+#            x =  c("x"),
+#            y=  "y",
+#            z = NULL,
+#            x.lab = NULL,
+#            x.main.lab = NULL,
+#            y.lab = NULL,
+#            z.lab  = NULL,
+#            alpha = 0.05,
+#            # transformation = FALSE,
+#            type = c("mean.ci", "median.quan","mean.sd")[1],
+#            p.label = letters[1:5], # p value labels
+#              p.algorithm.labels = letters[1:5] , # type 2 of p value labels based on letters
+#            adjust = NULL ,
+#            colorful = TRUE,
+#            main.title = NULL,
+#            distance = NULL,
+#            font=0)
+#   
+# ####################### for multiple x (quantitative) as y and z as factor
+# bar.chart  (data,
+#             x =  c("x3", "x2"),
+#             y=  NULL,
+#             z = "z",
+#             x.lab = NULL,
+#             x.main.lab = NULL,
+#             y.lab = NULL,
+#             z.lab  = NULL,
+#             alpha = 0.05,
+#             # transformation = FALSE,
+#             type = c("mean.ci", "median.quan","mean.sd")[1],
+#             p.label = letters[5:6], # p value labels
+#             p.algorithm.labels = letters[1:4] , # type 2 of p value labels based on letters
+#             adjust = NULL ,
+#             colorful = TRUE,
+#             main.title = NULL,
+#             distance = NULL,
+#             font=0)
+# 
+# 
+# ####################### for one x (factor), one y (quantitative) and  z as factor
+# bar.chart  (data,
+#             x =  "x",
+#             y=  "y",
+#             z = "z",
+#             x.lab = NULL,
+#             x.main.lab = NULL,
+#             y.lab = NULL,
+#             z.lab  = NULL,
+#             alpha = 0.05,
+#             # transformation = FALSE,
+#             type = c("mean.ci", "median.quan","mean.sd")[1],
+#             p.label = letters[1:5], # p value labels
+#             p.algorithm.labels = letters[1:10] , # type 2 of p value labels based on letters
+#             adjust = NULL ,
+#             colorful = TRUE,
+#             main.title = NULL,
+#             distance = NULL,
+#             font=0)
+# 
+# 
+# 
+# 
+# 
+# 
+# ################################## for ANOVA_table
+# 
+# bar.chart  (
+#   # data,
+#   # x =  c("x"),
+#   # y=  "y",
+#   # z = NULL,
+#   x.lab = NULL,
+#   x.main.lab = NULL,
+#   y.lab = NULL,
+#   z.lab  = NULL,
+#   alpha = 0.05,
+#   # transformation = FALSE,
+#   type = c("mean.ci", "median.quan","mean.sd")[2],
+#   p.label = NULL,   #letters[1:5], # p value labels
+#   p.algorithm.labels = NULL,  #letters[1:5] , # type 2 of p value labels based on letters
+#   adjust = NULL ,
+#   colorful = TRUE,
+#   main.title = NULL,
+#   distance = NULL,
+#   font=0,
+#   ANOVA_table = D,
+#   report.p.algorithm.labeling.for.ANOVA_table = TRUE
+# )
