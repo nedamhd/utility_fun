@@ -32,6 +32,18 @@ bar.chart <-
       x  = ANOVA_table$group
       y =  ANOVA_table$deps.quantitative
       data = ANOVA_table$data
+      test = ANOVA_table$results$Test
+      if(is.null(y.lab))
+        y.lab = y
+      
+      
+      if(test == "Kruskalâ€“Wallis"){
+         type = c("mean.ci", "median.quan", "mean.sd")[2]
+         y.lab = paste0(y.lab,"\n[Median (IQR)]")
+      } else {
+         y.lab = paste0(y.lab,"\n[Mean (95% CI)]")
+          }
+        
       z    = NULL
       if (report.p.algorithm.labeling.for.ANOVA_table)
         p.algorithm.labels = D$.__enclos_env__$private$result.for.plot$label
@@ -330,6 +342,8 @@ bar.chart <-
     
     
     if (is.null(z.lab)) {
+      
+      
       p <- ggplot() +
         stat_summary(
           geom = "bar",
@@ -406,6 +420,7 @@ bar.chart <-
                  title =  main.title) +
             # scale_y_continuous(#expand = c(0.0, 0.5),) +
               scale_linetype_manual(values = rep(1, 8)) +
+          scale_x_discrete(labels=x.lab)+
                 guides(color = guide_legend(override.aes = list(size = 5)))
               
               
@@ -441,13 +456,13 @@ bar.chart <-
         ))
       summray_data$xx  = xx
       summray_data$p.algorithm.labels  = p.algorithm.labels
-      summray_data <<- summray_data
+      summray_data <- summray_data
       
       p = p + geom_text(
         data = summray_data,
         mapping = aes(
           x = xx,
-          y =  ymax + 1 * adjust   ,
+          y =  ymax + 2 * adjust + distance  ,
           label = p.algorithm.labels
         ),
         show.legend = FALSE ,
