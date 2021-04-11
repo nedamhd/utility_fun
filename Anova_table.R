@@ -1,8 +1,8 @@
 
- 
+
 ANOVA_table <-   R6::R6Class(
   "ANOVA_table",
-   public =  list(
+  public =  list(
     data                 = NULL,
     group                = NULL, 
     model                = list(),
@@ -10,49 +10,51 @@ ANOVA_table <-   R6::R6Class(
     kruskal_wallis        = FALSE,
     results              = data.frame(),
     initialize          = function(data, group, 
-                          deps.quantitative=NULL, 
-                          kruskal_wallis = FALSE, posthoc= "Tukey", p.adj= "holm", shapiro.t = TRUE) {
-       self$data = data 
-       self$group = group
-       self$deps.quantitative = deps.quantitative
-       self$kruskal_wallis = kruskal_wallis
-       self$add.quantitative(posthoc = posthoc, p.adj = p.adj, 
-                             shapiro.t = shapiro.t
-       )
-     },
+                                   deps.quantitative=NULL, 
+                                   kruskal_wallis = FALSE, posthoc= "Tukey", p.adj= "holm", shapiro.t = TRUE) {
+      self$data = data 
+      self$group = group
+      self$deps.quantitative = deps.quantitative
+      self$kruskal_wallis = kruskal_wallis
+      self$add.quantitative(posthoc = posthoc, p.adj = p.adj, 
+                            shapiro.t = shapiro.t
+      )
+    },
+    
+    add.quantitative = function(data = NULL, 
+                                group = NULL, 
+                                deps.quantitative = NULL, 
+                                kruskal_wallis = NULL, 
+                                posthoc= "Tukey", 
+                                p.adj="holm", shapiro.t=TRUE) {
       
-     add.quantitative = function(data = NULL, 
-                                 group = NULL, 
-                                 deps.quantitative = NULL, 
-                                 kruskal_wallis = NULL, posthoc= "Tukey", p.adj="holm", shapiro.t=TRUE) {
-       
-     if(is.null(data))               data               = self$data
-     if(is.null(group))              group              = self$group
-     if(is.null(deps.quantitative))  deps.quantitative  = self$deps.quantitative
-     if(is.null(kruskal_wallis))     kruskal_wallis     = self$kruskal_wallis
-       
-       private$ANOVA(data = data, group = group, 
-                     deps = deps.quantitative, 
-                     kruskal_wallis = kruskal_wallis,
-                     posthoc = posthoc, p.adj = p.adj,
-                     shapiro.t = shapiro.t
-                     )
-     },
-   
+      if(is.null(data))               data               = self$data
+      if(is.null(group))              group              = self$group
+      if(is.null(deps.quantitative))  deps.quantitative  = self$deps.quantitative
+      if(is.null(kruskal_wallis))     kruskal_wallis     = self$kruskal_wallis
+      
+      private$ANOVA(data = data, group = group, 
+                    deps = deps.quantitative, 
+                    kruskal_wallis = kruskal_wallis,
+                    posthoc = posthoc, p.adj = p.adj,
+                    shapiro.t = shapiro.t
+      )
+    },
+    
     
     wd.Table = function(x= NULL,..., filename=NULL, path = ""){
-        if(is.null(x))
+      if(is.null(x))
         x <- as.data.frame(self$results)
-         if("RDCOMClient" %in% rownames(installed.packages()) == FALSE)  { 
-          # Sys.setenv("TAR" = "internal") # if you need it.
-          # devtools::install_github("omegahat/RDCOMClient")
-          install.packages('RDCOMClient', repos = 'http://www.omegahat.org/R') }
-        R2wd::wdGet(filename,path , method="RDCOMClient")
-        R2wd::wdBody("\n\n")
-        R2wd::wdTable(as.data.frame(x), ...)
-        cat("Done!\n")
-      }
-    ),
+      if("RDCOMClient" %in% rownames(installed.packages()) == FALSE)  { 
+        # Sys.setenv("TAR" = "internal") # if you need it.
+        # devtools::install_github("omegahat/RDCOMClient")
+        install.packages('RDCOMClient', repos = 'http://www.omegahat.org/R') }
+      R2wd::wdGet(filename,path , method="RDCOMClient")
+      R2wd::wdBody("\n\n")
+      R2wd::wdTable(as.data.frame(x), ...)
+      cat("Done!\n")
+    }
+  ),
   private  = list(
     result.for.plot = data.frame(),
     ANOVA = function(data, group, deps, 
@@ -61,7 +63,7 @@ ANOVA_table <-   R6::R6Class(
       if(!(length(deps)== length(kruskal_wallis) | length(kruskal_wallis) == 1 ))
         stop("length of kruskal_wallis must be the same as deps or one!")
       
-       
+      
       i = 0
       G.shapiro = c()
       leng= c()
@@ -75,12 +77,12 @@ ANOVA_table <-   R6::R6Class(
         leng [jj] = length(table(rm.group.level))
       }
       deps1 = deps[which(counts==FALSE)  ] 
-       deps2 = deps1[ which(leng[which(counts==FALSE)] == max(leng[which(counts==FALSE)])) ] 
-       rm.deps2 = deps[which(!(deps %in% deps2))]
-       if(length(deps2)!=length(deps)) 
+      deps2 = deps1[ which(leng[which(counts==FALSE)] == max(leng[which(counts==FALSE)])) ] 
+      rm.deps2 = deps[which(!(deps %in% deps2))]
+      if(length(deps2)!=length(deps)) 
         cat("Some deps.quantitatives removed due to empty cells.
         \nRemoved: \n", rm.deps2,  
-        "\n\nNew deps.quantitative:\n", deps2)
+            "\n\nNew deps.quantitative:\n", deps2)
       deps = deps2
       if(length(kruskal_wallis )> 1) {
         kruskal_wallis1= kruskal_wallis[which(counts==FALSE)]
@@ -97,25 +99,26 @@ ANOVA_table <-   R6::R6Class(
         group.level<- sort(unique(group.value))
         d= rm.data[[dep]]
         
-       
-       l = data.frame()
+        
+        l = data.frame()
         for (j in 1:length(group.level)) {
-        l =rbind(l, data.frame(dep, group.level[j],
-        private$descriptive(d[group.value==group.level[j]])))
-         
+          l =rbind(l, data.frame(dep, group.level[j],
+                                private$descriptive(d[group.value==group.level[j]])))
+          
           # if(count [j] > 3)
-            # {
-         G.shapiro[j] <-  shapiro.test(d[which(group.value==group.level[j])])$p.value  
+          # {
+          if(isTRUE(shapiro.t))
+          G.shapiro[j] <-  shapiro.test(d[which(group.value==group.level[j])])$p.value  
           # } else{
           # G.shapiro[j] <- 1#ks.test(d[which(group.value==group.level[j])], "pnorm", 0, 1, exact = TRUE)$p.value 
           # }
         }
-
+        
         
         if(isTRUE(shapiro.t)) 
         {shapiro    <- all(G.shapiro > 0.05) }else{
           shapiro    <- FALSE
-          }
+        }
         
         formula <- paste0(dep, "~as.factor(",  group, ")")
         formula <- as.formula(formula)
@@ -123,43 +126,58 @@ ANOVA_table <-   R6::R6Class(
         k= k+1
         self$model[[k]] = model
         test.r <- "ANOVA" 
-        if(isTRUE(shapiro))  {results <- kruskal.test(formula, data =  rm.data); test.r <- "Kruskal–Wallis" }  
+        if(isTRUE(shapiro.t))
+           if(!isTRUE(shapiro))  
+             {results <- kruskal.test(formula, data =  rm.data); test.r <- "KruskalWallis" }  
         
         if(length(kruskal_wallis) > 1){
-            if(isTRUE(kruskal_wallis[i])) {results <- kruskal.test(formula, data =  rm.data); test.r <- "Kruskal–Wallis" } 
-           }
-          
-        if(length(kruskal_wallis)==1){
-            if(isTRUE(kruskal_wallis)) {results <- kruskal.test(formula, data =  rm.data); test.r <- "Kruskal–Wallis" } 
-       
+          if(isTRUE(kruskal_wallis[i])) {results <- kruskal.test(formula, data =  rm.data); test.r <- "KruskalWallis" } 
         }
-           if(test.r=="Kruskal–Wallis")
-               p.value = sprintf("%.3f", round(results$p.value, 3)) 
-           if(test.r=="ANOVA")
-               p.value = sprintf("%.3f", round(summary(model)[[1]][["Pr(>F)"]][1], 3)) 
-           
-           label = private$regenerate_label_summary(model = model, posthoc= posthoc, p.adj= p.adj)$labels.df$labels
-         
-         # label = multcompView::multcompLetters(
-         #   TukeyHSD(model)[[1]][,"p adj"]  )$Letters
-         l = cbind(l, label=label)
-         private$result.for.plot <- rbind(private$result.for.plot, l)
-
-         values = data.frame( t(c(
-           Factor= dep, 
-                paste0(sprintf("%.2f", round(l[,4], 2)),
-                                             ' \u00B1 ', 
-                       sprintf("%.2f", round(l[,5], 2)), label), 
-                p.value,test = test.r)))
         
-           names(values)<-   c("Factor", paste0("Level ", l[,2]) ,"P value", "Test")
+        if(length(kruskal_wallis)==1){
+          if(isTRUE(kruskal_wallis)) {results <- kruskal.test(formula, data =  rm.data); test.r <- "KruskalWallis" } 
+          
+        }
+        if(test.r=="KruskalWallis")
+          p.value = sprintf("%.3f", round(results$p.value, 3)) 
+        if(test.r=="ANOVA")
+          p.value = sprintf("%.3f", round(summary(model)[[1]][["Pr(>F)"]][1], 3)) 
+        
+        label = private$regenerate_label_summary(model = model, posthoc= posthoc, p.adj= p.adj)$labels.df$labels
+        
+        # label = multcompView::multcompLetters(
+        #   TukeyHSD(model)[[1]][,"p adj"]  )$Letters
+        l = cbind(l, label=label)
+        private$result.for.plot <- rbind(private$result.for.plot, l)
+        
+        values2 = data.frame( t(c(
+          Factor= dep, 
+          paste0(sprintf("%.2f", round(l[,9], 2)),
+                 ' (', 
+                 sprintf("%.2f", round(l[,10], 2)), ', ',
+                 sprintf("%.2f", round(l[,11], 2)), ')',
+                 label), 
+          p.value,test = test.r)))
+        
+        values1 = data.frame( t(c(
+          Factor= dep, 
+          paste0(sprintf("%.2f", round(l[,4], 2)),
+                 ' \u00B1 ', 
+                 sprintf("%.2f", round(l[,5], 2)), label), 
+          p.value,test = test.r)))
+        
+        values = values1
+        if(test.r == "KruskalWallis")
+          values = values2
+        
+        names(values)<-   c("Factor", paste0("Level ", l[,2]) ,"P value", "Test")
         self$results <- rbind(self$results,values)
         rm(values)       
         rm(l)
-
-
+        
+        
       }
-       
+      
     },
     
     descriptive = function(x, alpha = 0.05) {
@@ -168,10 +186,13 @@ ANOVA_table <-   R6::R6Class(
       m = mean(x, na.rm = TRUE)
       s = sd(x, na.rm = TRUE)
       se = s/sqrt(n)
-      l.ci = m- se*qnorm(1-(alpha/2))
-      u.ci = m+ se*qnorm(1-(alpha/2))
+      l.ci = m - se*qnorm(1-(alpha/2))
+      u.ci = m + se*qnorm(1-(alpha/2))
+      med = quantile(x, p= 0.5)
+      q1 = quantile(x, p= 0.25)
+      q3 = quantile(x, p= 0.75)
       
-      data.frame(n, m, s, se, l.ci, u.ci, alpha)
+      data.frame(n, m, s, se, l.ci, u.ci, med, q1, q3, alpha)
     },
     
     
@@ -190,10 +211,14 @@ ANOVA_table <-   R6::R6Class(
         summary.me<- function(d=d,y=y,flev=flev){ 
           summa<- function(x) c(length=sum(!is.na(x)), mean=mean(x,na.rm=TRUE),sd= sd(x,na.rm=TRUE),se=se(x),
                                 ci.l=mean(x,na.rm=TRUE) -1.96*se(x),
-                                ci.u=mean(x,na.rm=TRUE) +1.96*se(x) 
+                                ci.u=mean(x,na.rm=TRUE) +1.96*se(x) ,
+                                med = quantile(x, p= 0.5),
+                                q1 = quantile(x, p= 0.25),
+                                q3 = quantile(x, p= 0.75)
           )
+          
           summary_data <-  aggregate(d[[y]],   by=list(  d[[flev]]),FUN=  summa)
-          colnames(summary_data$x)<-      c("Length","Mean","SD","SE","CI.Lower","CI.Upper")
+          colnames(summary_data$x)<-      c("Length","Mean","SD","SE","CI.Lower","CI.Upper", "Median", "Q1", "Q3")
           cbind(level=summary_data$Group.1,summary_data$x)
         }
         summary_data<-data.frame(  summary.me(d=d,y=y,flev=flev))
@@ -241,9 +266,9 @@ ANOVA_table <-   R6::R6Class(
       }
     
     
+  )
 )
-)
- 
+
 
 # D<-  Table_One$new(data = data, group =  "HbA1c.Cat8", 
 #                    deps.qualitative = c("Sex", "Metforminuse","Sulfonylureause",
@@ -257,6 +282,3 @@ ANOVA_table <-   R6::R6Class(
 # D$combine()
 # D$wd.Table()
 # D$results
-
- 
-
