@@ -1,10 +1,10 @@
 # source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/bar.chart.R")
 
 bar.chart <-
-  function(data,
-           x,
+  function(data = NULL,
+           x = NULL,
            y= NULL,
-           z,
+           z = NULL,
            x.lab = NULL,
            x.main.lab = NULL,
            y.lab = NULL,
@@ -13,11 +13,37 @@ bar.chart <-
            transformation = function(b) return(b),
            type = c("mean.ci", "median.quan","mean.sd")[1],
            p.label = NULL, # p value labels
+           p.algorithm.labels = NULL , # type 2 of p value labels based on letters
            adjust = NULL ,
            colorful = TRUE,
            main.title = NULL,
            distance = NULL,
-           font=0) {
+           font=0,
+           ANOVA_table = NULL,
+           report.p.algorithm.labeling.for.ANOVA_table = TRUE
+           ) {
+    
+ ##############################for  ANOVA_table##################
+   
+    if(!is.null(ANOVA_table)){
+      if(class(ANOVA_table)[1]!="ANOVA_table")
+        stop("The class of ANOVA_table is not correct!")
+        
+    x  = ANOVA_table$group
+    y =  ANOVA_table$deps.quantitative
+    data = ANOVA_table$data
+    z    = NULL
+    if(report.p.algorithm.labeling.for.ANOVA_table)
+       p.algorithm.labels = D$.__enclos_env__$private$result.for.plot$label
+
+    
+    }
+    
+###########################    
+    
+    
+    
+    
     label <-  p.label
     
     if(!is.null(y)){
@@ -30,7 +56,13 @@ bar.chart <-
       
       temp.w.name =  names(temp.w)
       
+      
+      if(!is.null(z)){
       names(temp.w) = c("variable", "value", "z.lab")
+      } else {
+      names(temp.w) = c("variable", "value")
+     }
+      
       x.name = temp.w.name[1] 
       y.name = temp.w.name[2] 
       z.name = temp.w.name[3] 
@@ -41,7 +73,7 @@ bar.chart <-
       if (is.null(y.lab))
         y.lab = y.name
       data.melt = temp.w
-     }  
+    }  
     
     if (!type %in%  c("mean.ci", "median.quan", "mean.sd"))
       stop("Type must be  c(\"mean.ci\", \"median.quan\",\"mean.sd\")")
@@ -72,10 +104,10 @@ bar.chart <-
                                   id.vars =  z.name,
                                   measure.vars = x.name)
       names(data.melt)[1] <- "z.lab"
+      
+    }
     
-      }
-    
-       data.melt$value =  transformation(data.melt$value)
+    data.melt$value =  transformation(data.melt$value)
     
     
     
@@ -157,10 +189,14 @@ bar.chart <-
     }
     
     require(ggplot2)
-    library(grid)
+    require(grid)
     # if(is.null(z.lab))
-      
-      p = ggplot() +
+  
+    
+    
+    if(!is.null(z.lab)){
+
+    p = ggplot() +
       # geom_point(
       #   mapping = aes(
       #     x = variable,
@@ -285,6 +321,8 @@ bar.chart <-
       ) +
       scale_linetype_manual(values = rep(1, 8)) +
       guides(color = guide_legend(override.aes = list(size = 5)))
+      
+    
     
     if (!isTRUE(colorful))
       p =  p +
@@ -312,11 +350,155 @@ bar.chart <-
                xend,
                ystart = c(height + distance),
                yend = c(height + adjust + distance))   %>% as.data.frame()
+  
+    }    
+      
+  #########################  
     
     
     
     
-    if(!is.null(p.label)) {
+    if(is.null(z.lab)){
+      p<<- ggplot() +
+        stat_summary( geom = "bar", fun  = "mean",
+                      mapping = aes(
+                        x = variable,
+                        y = value,
+                        # color =  z.lab,  
+                        # fill =  z.lab 
+                      ),
+                      data = data.melt,
+                      position = position_dodge(width = .4),
+                      na.rm = TRUE,
+                      width = 0.35,  
+                      alpha = 1)+
+        
+        geom_errorbar(
+          data = summray_data,
+          mapping = aes(
+            ymax = ymax,
+            ymin = ymin,
+            width = 0.1,
+            
+            y = y,
+            x = variable,
+            # linetype = z.lab ,
+          ),
+          size = 1.1,
+          show.legend = FALSE,
+          # color = "black",
+          position = position_dodge(  width = .4 )
+        ) +
+        
+        theme_classic() +
+        theme(
+          panel.background = element_blank() ,
+          panel.grid = element_blank(),
+          axis.line = element_line(size = 1),
+          axis.text = element_text(
+            size = 12 + font,
+            face = "bold",
+            color = "black"
+          ),
+          axis.title  = element_text(
+            size = 12 + font,
+            face = "bold",
+            color = "black"
+          ),
+          legend.text = element_text(
+            size = 14 + font,
+            face = "bold",
+            color = "black"
+          ),
+          legend.title = element_text(
+            size = 16 + font,
+            face = "bold",
+            color = "black"
+          ),
+          plot.title = element_text(
+            size = 16 + font,
+            face = "bold",
+            color = "black"
+          )
+          
+          
+        )  +
+        labs(
+          x =  x.main.lab ,
+          y = y.lab,
+          # color = z.lab,
+          # fill = z.lab,
+          # shape = z.lab,
+          title =  main.title
+        ) +
+        scale_y_continuous(#expand = c(0.0, 0.5),
+        ) +
+        scale_linetype_manual(values = rep(1, 8)) +
+        guides(color = guide_legend(override.aes = list(size = 5)))
+  
+      
+      
+      if (!isTRUE(colorful))
+        p =  p +
+          scale_colour_grey(start = 0.3 , end = 0.7) +
+          scale_fill_grey(start = 0.3 , end = 0.7)
+      
+      
+      
+      base.of.y = ggplot_build(p)$layout$panel_params[[1]]$y.range
+      if (is.null(adjust))
+        adjust = (abs(base.of.y[2]) + abs(base.of.y[1])) / 40
+      
+      if (is.null(distance))
+        distance = (abs(base.of.y[2]) + abs(base.of.y[1])) / 40
+      
+      xx <- ggplot_build(p)$data[[2]]$x  
+      
+      
+      
+        } 
+    
+
+    ########################################
+    
+  if(!is.null(p.algorithm.labels)){
+    if(length(p.algorithm.labels) != dim(summray_data)[1])
+       stop(paste0("The length of p.algorithm.labels is not equall to ", dim(summray_data)[1]))
+    summray_data$xx  = xx  
+    summray_data$p.algorithm.labels  = p.algorithm.labels  
+    summray_data <<- summray_data
+ 
+  p = p + geom_text(
+      data = summray_data,
+      mapping = aes(
+        x = xx,
+        y =  ymax + 1 * adjust   ,
+        label = p.algorithm.labels 
+      ),
+      show.legend = FALSE ,
+      color = "black",
+      size =3 + font
+    )   
+    
+    
+  }   
+    
+    
+    
+    
+    
+    
+ ######################   
+    
+    
+    
+    if(!is.null(p.label)) 
+      if(!is.null(z)) {
+        
+      
+      if(length(p.label) != dim(d1)[1])
+        stop(paste0("The length of p.label is not equall to ", dim(d1)[1]))
+    
       p=  p +
         geom_segment(
           data = d1,
@@ -412,33 +594,103 @@ bar.chart <-
 #   # distance = 14,
 # )
 # )
-######################################################################
+########################################Example##############################
 
-# data = data.frame(
-#     x= factor(rbinom(1000,1,0.5)),
-#     x1= abs(rnorm(1000)) ,
-#     x3= abs(rnorm(1000)) ,
-#     x2= abs(rnorm(1000)) ,
-#     z1= factor(rbinom(1000,1,0.5)),
-#     z= factor(0)))
-# 
-# bar.chart  (data,
-#            x =  c("x1", "x2", "x3" ),
-#            y=   NULL,
-#            z = "z1",
-#            x.lab = NULL,
-#            x.main.lab = NULL,
-#            y.lab = NULL,
-#            z.lab  = NULL,
-#            alpha = 0.05,
-#            # transformation = FALSE,
-#            type = c("mean.ci", "median.quan","mean.sd")[3],
-#            p.label = c("1","2", "3"), # p value labels
-#            adjust = NULL ,
-#            colorful = TRUE,
-#            main.title = NULL,
-#            distance = NULL,
-#            font=0) 
+data = data.frame(
+    x= factor(rbinom(1000,4,0.5)),
+    y= abs(rnorm(1000)) ,
+    x3= abs(rnorm(1000)) ,
+    x2= abs(rnorm(1000)) ,
+    z= factor(rbinom(1000,1,0.5)),
+    z1= factor(0))
+
+####################### for one x (factor) and one y(quantitative)
+bar.chart  (data,
+           x =  c("x"),
+           y=  "y",
+           z = NULL,
+           x.lab = NULL,
+           x.main.lab = NULL,
+           y.lab = NULL,
+           z.lab  = NULL,
+           alpha = 0.05,
+           # transformation = FALSE,
+           type = c("mean.ci", "median.quan","mean.sd")[1],
+           p.label = letters[1:5], # p value labels
+             p.algorithm.labels = letters[1:5] , # type 2 of p value labels based on letters
+           adjust = NULL ,
+           colorful = TRUE,
+           main.title = NULL,
+           distance = NULL,
+           font=0)
+  
+####################### for multiple x (quantitative) as y and z as factor
+bar.chart  (data,
+            x =  c("x3", "x2"),
+            y=  NULL,
+            z = "z",
+            x.lab = NULL,
+            x.main.lab = NULL,
+            y.lab = NULL,
+            z.lab  = NULL,
+            alpha = 0.05,
+            # transformation = FALSE,
+            type = c("mean.ci", "median.quan","mean.sd")[1],
+            p.label = letters[5:6], # p value labels
+            p.algorithm.labels = letters[1:4] , # type 2 of p value labels based on letters
+            adjust = NULL ,
+            colorful = TRUE,
+            main.title = NULL,
+            distance = NULL,
+            font=0)
+
+
+####################### for one x (factor), one y (quantitative) and  z as factor
+bar.chart  (data,
+            x =  "x",
+            y=  "y",
+            z = "z",
+            x.lab = NULL,
+            x.main.lab = NULL,
+            y.lab = NULL,
+            z.lab  = NULL,
+            alpha = 0.05,
+            # transformation = FALSE,
+            type = c("mean.ci", "median.quan","mean.sd")[1],
+            p.label = letters[1:5], # p value labels
+            p.algorithm.labels = letters[1:10] , # type 2 of p value labels based on letters
+            adjust = NULL ,
+            colorful = TRUE,
+            main.title = NULL,
+            distance = NULL,
+            font=0)
 
 
 
+
+
+
+################################## for ANOVA_table
+
+bar.chart  (
+  # data,
+  # x =  c("x"),
+  # y=  "y",
+  # z = NULL,
+  x.lab = NULL,
+  x.main.lab = NULL,
+  y.lab = NULL,
+  z.lab  = NULL,
+  alpha = 0.05,
+  # transformation = FALSE,
+  type = c("mean.ci", "median.quan","mean.sd")[2],
+  p.label = NULL,   #letters[1:5], # p value labels
+  p.algorithm.labels = NULL,  #letters[1:5] , # type 2 of p value labels based on letters
+  adjust = NULL ,
+  colorful = TRUE,
+  main.title = NULL,
+  distance = NULL,
+  font=0,
+  ANOVA_table = D,
+  report.p.algorithm.labeling.for.ANOVA_table = TRUE
+)
