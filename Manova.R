@@ -380,7 +380,7 @@ Manova.fun<- function(data, formula){
     aa[[i]]<-as.data.frame(aa[[i]])
     aa[[i]][,"F"] <-paste0(round(aa[[i]][,2],2)," (", aa[[i]][,1],"," ,aa[[i]][,4], ")"   )
   }
-  main.table<- table.me [,c("eta^2","Pr(>F)")]
+  main.table<- table.me [,c("test stat","Pr(>F)")]
   main.table$F= paste0(round(table.me$`approx F`,2), " (", table.me$`num Df`, ", ", table.me$`den Df`, ")")
   main.table<- data.frame("Pillai test"=round(  main.table[,1] ,3),main.table[,3] ,"P.value"=round(  main.table[,2],3))
   name.main.table<- c("Pillai test" ,"F (df1, df2)", "P.value" )
