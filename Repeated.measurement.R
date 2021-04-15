@@ -2,22 +2,15 @@
 Repeat.measurment =  function(data, 
                               formula  , 
                               ID,
-                              comparison.formula   
+                              comparison.formula, 
+                              adjust ="none"
                              ){
   
   # data: wide data
   # formula: like 'cbind(y1, y2, y3) ~(Age+ Sex+ Group)*Time'
   # ID: A variable to identify the subjects 
   # comparison.formula: Formula for multiple comparison like  '~ Group|Time' or '~ Group*Time'
-    
-library(car)
-require(heplots)
-require(broom)
-require(sjstats)
-library("emmeans")
-library(reshape2)
-library(nlme)
-   
+  # adjust: p value adjustment. see '?p.adjust()'
  
 DV.names = all.vars(update(formula, . ~ 1))
 IV.names = all.vars(update(formula, 1 ~ .))
@@ -25,18 +18,17 @@ Time = factor(c(DV.names))
 if(! "Time" %in% IV.names) stop("The name of within subjevt varible in the formula must be 'Time'.")
 IV.names = IV.names[which(IV.names != "Time")]
 
-melt.data = melt(data,id= c(ID,IV.names), measure.vars = DV.names, variable.name = "Time")   
+melt.data = reshape2::melt(data,id= c(ID,IV.names), measure.vars = DV.names, variable.name = "Time")   
 IV.names = c(IV.names, "Time")
 
 options(contrasts = c("contr.sum","contr.poly"))
 ...fixed123456789 <<-Reduce(paste, deparse(update(formula, value ~ .)))
-M1 <-lme(fixed= as.formula(...fixed123456789),
+M1 <-nlme::lme(fixed= as.formula(...fixed123456789),
        random= as.formula(paste0("~ 1|", ID)), data=melt.data,
        method="REML",
-       correlation=corCompSymm(form=   as.formula(paste0("~ 1|", ID))      ))
+       correlation=nlme::corCompSymm(form=   as.formula(paste0("~ 1|", ID))      ))
 # M2<- lm( formula,data=data)
-M1$modelStruct$corStruct
-Anova.M1 <- Anova(M1 , type = "III")
+Anova.M1 <- car::Anova(M1 , type = "III")
 # Anova.M1 = Anova(M2, idata=data.frame(Time), idesign=~Time, type = "III")
 main.table =as.data.frame(Anova.M1)  
 main.table$Chisqstat= paste0(round(Anova.M1$Chisq,2), " (", Anova.M1$Df, ")")
@@ -49,7 +41,7 @@ row.names(main.table) = row.names(Anova.M1)
 l=NULL
 if(!is.null(comparison.formula)){
 emm <- emmeans::emmeans(M1, comparison.formula)
-comparison.object = emmeans::contrast(emm, interaction = "pairwise") 
+comparison.object = emmeans::contrast(emm, interaction = "pairwise", adjust = adjust) 
 comparison = data.frame(comparison.object)
 # pairs(emm)  # adjust argument not specified -> default p-value adjustment in this case is "tukey"  
 
