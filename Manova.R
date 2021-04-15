@@ -49,7 +49,7 @@ table.m<-function(data,interction.formula, model,type="CI",
   list(main.table=da, result=vv)
 }
 
-summary.me<- function(data,interction.formula){ 
+summary.me<- function(data, interction.formula){ 
     formula=interction.formula
     y= all.vars(update(formula, . ~ 1))
     flev= all.vars(update(formula, 1 ~ .))
