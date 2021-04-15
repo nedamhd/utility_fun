@@ -1,6 +1,4 @@
-# names(data)[7:8] =c("ANBpre", "ANBpost" )  
 
-# formula = cbind(`ANBpre`, `ANBpost`) ~ as.factor(Group)*Time
 Repeat.measurment =  function(data, 
                               formula  , 
                               ID,
@@ -21,7 +19,6 @@ library(reshape2)
 library(nlme)
    
  
-# require(biotools)
 DV.names = all.vars(update(formula, . ~ 1))
 IV.names = all.vars(update(formula, 1 ~ .))
 Time = factor(c(DV.names))
@@ -32,11 +29,7 @@ melt.data = melt(data,id= c(ID,IV.names), measure.vars = DV.names, variable.name
 IV.names = c(IV.names, "Time")
 
 options(contrasts = c("contr.sum","contr.poly"))
-# as.formula((update(formula, value ~ .)))
 fixed123456789 <<-Reduce(paste, deparse(update(formula, value ~ .)))
-
-
- # update(.formula, value ~ .)
 M1 <-lme(fixed= as.formula(fixed123456789),
        random= as.formula(paste0("~ 1|", ID)), data=melt.data,
        method="REML",
@@ -94,7 +87,7 @@ class(res) = "Repeat.measurment"
 res
  }
   
-###################Example
+###################Examples#######################
 # Data  = data.frame(
 #   R = 1:1000,
 #   Age = abs(rnorm(1000,32,10)),
