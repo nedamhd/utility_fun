@@ -29,8 +29,8 @@ melt.data = melt(data,id= c(ID,IV.names), measure.vars = DV.names, variable.name
 IV.names = c(IV.names, "Time")
 
 options(contrasts = c("contr.sum","contr.poly"))
-fixed123456789 <<-Reduce(paste, deparse(update(formula, value ~ .)))
-M1 <-lme(fixed= as.formula(fixed123456789),
+...fixed123456789 <<-Reduce(paste, deparse(update(formula, value ~ .)))
+M1 <-lme(fixed= as.formula(...fixed123456789),
        random= as.formula(paste0("~ 1|", ID)), data=melt.data,
        method="REML",
        correlation=corCompSymm(form=   as.formula(paste0("~ 1|", ID))      ))
@@ -76,8 +76,8 @@ l =do.call(rbind,l)
 row.names(l)= by
 }
  
-fixed123456789<<- NULL  
- 
+...fixed123456789<<- NULL  
+rm(...fixed123456789, envir = globalenv()) 
 res = list(main.results = list( main.table = main.table, comparison = comparison, letter= l),
            invisible.results = list(lme.model = M1, car.Anova = Anova.M1, emmeans = list(emmeans = emm, contrast = comparison.object))                 
            
