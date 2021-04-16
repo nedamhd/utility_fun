@@ -4,11 +4,12 @@ bar.chart <-
   function(data = NULL,
            x = NULL,
            y = NULL,
-           z = NULL,
-           x.lab = NULL,
+           z = NULL,           
            x.main.lab = NULL,
-           y.lab = NULL,
-           z.lab  = NULL,
+           x.text.lab = NULL,
+           y.main.lab = NULL,
+           z.main.lab  = NULL,
+           z.text.lab = NULL,
            alpha = 0.05,
            transformation = function(b) return(b),
            type = c("mean.ci", "median.quan", "mean.sd")[1],
@@ -22,8 +23,17 @@ bar.chart <-
            distance = NULL,
            font = 0,
            ANOVA_table = NULL,
-           report.p.algorithm.labeling.for.ANOVA_table = TRUE) {
-    ##############################for  ANOVA_table##################
+           Repeat.measurment = NULL,
+           report.p.algorithm.labeling = TRUE) {
+    x.lab   =   x.text.lab
+    z.lab   =   z.main.lab
+    y.lab   =   y.main.lab
+    
+    # if(is.null(z) & is.null(x) & is.null(y))
+    # if(is.null(x.text.lab)){
+    #    levels(data[,x])
+    #   x.text.lab = x
+     ##############################for  ANOVA_table##################
     
     if (!is.null(ANOVA_table)) {
       if (class(ANOVA_table)[1] != "ANOVA_table")
@@ -31,13 +41,15 @@ bar.chart <-
       
       x  = ANOVA_table$group
       y =  ANOVA_table$deps.quantitative
+      if(length(y) > 1) stop("The length of deps.quantitative must be one.")
+      
       data = ANOVA_table$data
       test = ANOVA_table$results$Test
       if(is.null(y.lab))
         y.lab = y
       
       
-      if(test == "Kruskalâ€“Wallis"){
+      if(test == "KruskalWallis"){
          type = c("mean.ci", "median.quan", "mean.sd")[2]
          y.lab = paste0(y.lab,"\n[Median (IQR)]")
       } else {
@@ -45,14 +57,41 @@ bar.chart <-
           }
         
       z    = NULL
-      if (report.p.algorithm.labeling.for.ANOVA_table)
+      if (report.p.algorithm.labeling)
         p.algorithm.labels = D$.__enclos_env__$private$result.for.plot$label
       
       
     }
     
-    ###########################
+    ########################### for Repeat.measurment #######
+      if (!is.null(Repeat.measurment)) {
+      if (class(Repeat.measurment)[1] != "Repeat.measurment")
+        stop("The class of Repeat.measurment is not correct!")
+      
+      x                  =   "Time"
+      y                  =   "value"
+      data               =   Repeat.measurment$invisible.results$data
+      comparison.formula =   Repeat.measurment$invisible.results$comparison.formula
+      IV.names = all.vars(comparison.formula)
+      IV.names = IV.names[which(IV.names != "Time")]
+      if(length(IV.names) > 1) stop("'bar.chart' just compateble with two variable in comparison.formula.")
+      z = IV.names
+      
+      
+      if(is.null(y.lab))
+        y.lab = y
+      
+      y.lab = paste0(y.lab,"\n[Mean (95% CI)]")
+      
+      if (report.p.algorithm.labeling){
+        p.algorithm.labels = Repeat.measurment$main.results$letter
+      p.algorithm.labels=  c( t(p.algorithm.labels))
+    } 
     
+      }
+    
+    
+ ###########################   
     
     label <-  p.label
     
@@ -78,8 +117,8 @@ bar.chart <-
       x.name = temp.w.name[1]
       y.name = temp.w.name[2]
       z.name = temp.w.name[3]
-      if (is.null(x.lab))
-        x.lab = x.name
+      if (is.null(x.main.lab))
+        x.main.lab = x.name
       if (is.null(z.lab) & !is.null(z))
         z.lab = z.name
       if (is.null(y.lab))
@@ -102,23 +141,26 @@ bar.chart <-
     if (is.null(label))
       label = rep(c(""), length(x.name))
     
+    if(is.null(x.text.lab))
+          x.text.lab = x
+    
     if (is.null(y) & !is.null(z)) {
+      
       x.name <- as.character(substitute(x))[-1]
       z.name <- as.character(substitute(z))
       data <- data[, c(x.name, z.name)]
-      if (is.null(x.lab))
-        x.lab = x.name
+      if (is.null(x.main.lab))
+        x.main.lab = x.name
       if (is.null(z.lab))
         z.lab = z.name
       
-      names(data) <- c(x.lab, z.lab)
-      x.name = x.lab
+      names(data) <- c(x.main.lab, z.lab)
+      x.name = x.main.lab
       z.name = z.lab
       data.melt <- reshape2::melt(data = data,
                                   id.vars =  z.name,
                                   measure.vars = x.name)
       names(data.melt)[1] <- "z.lab"
-      
     }
 ################################
     
@@ -300,15 +342,23 @@ bar.chart <-
           #   length.out = 5
           # ) - .009, 2)) +
         )+
-          scale_linetype_manual(values = rep(1, 8)) +
+        # scale_x_discrete(labels=x.lab)+
+        # scale_fill_discrete(labels=z.text.lab)+
+        # scale_color_discrete(labels=z.text.lab)+
+        scale_linetype_manual(values = rep(1, 8)) +
             guides(color = guide_legend(override.aes = list(size = 5)))
           
-          
-          
+      if(!is.null(x.lab))
+      p = p + scale_x_discrete(labels=x.lab) 
+     
+       if(!is.null(z.text.lab))
+        p = p + scale_fill_discrete(labels=z.text.lab)+
+        scale_color_discrete(labels=z.text.lab)
+       
           if (!isTRUE(colorful))
             p =  p +
-            scale_colour_grey(start = 0.3 , end = 0.7) +
-            scale_fill_grey(start = 0.3 , end = 0.7)
+            scale_colour_grey(start = 0.3 , end = 0.7 ) +
+            scale_fill_grey(start = 0.3 , end = 0.7 )
           
           
           
@@ -557,10 +607,11 @@ bar.chart <-
 #            x =  c("x"),
 #            y=  "y",
 #            z = NULL,
-#            x.lab = NULL,
 #            x.main.lab = NULL,
-#            y.lab = NULL,
-#            z.lab  = NULL,
+#            x.text.lab = NULL,
+#            y.main.lab = NULL,
+#            z.main.lab = NULL,
+#            z.text.lab = NULL,
 #            alpha = 0.05,
 #            # transformation = FALSE,
 #            type = c("mean.ci", "median.quan","mean.sd")[1],
@@ -574,41 +625,45 @@ bar.chart <-
 # 
 # ####################### for multiple x (quantitative) as y and z as factor
 # bar.chart  (data,
-#             x =  c("x3", "x2"),
+#             x =  c("x3", "x2", "y"),
 #             y=  NULL,
 #             z = "z",
-#             x.lab = NULL,
 #             x.main.lab = NULL,
-#             y.lab = NULL,
-#             z.lab  = NULL,
+#             x.text.lab = c("x3", "x2", "y"),
+#             y.main.lab = NULL,
+#             z.main.lab = NULL,
+#             z.text.lab = NULL, 
 #             alpha = 0.05,
 #             # transformation = FALSE,
 #             type = c("mean.ci", "median.quan","mean.sd")[1],
-#             p.label = letters[5:6], # p value labels
-#             p.algorithm.labels = letters[1:4] , # type 2 of p value labels based on letters
+#             p.label = letters[5:7], # p value labels
+#             p.algorithm.labels = letters[1:6] , # type 2 of p value labels based on letters
 #             adjust = NULL ,
 #             colorful = TRUE,
 #             main.title = NULL,
 #             distance = NULL,
 #             font=0)
-# 
+# # 
 # #
 # # ####################### for one x (factor), one y (quantitative) and  z as factor
+# LETTERS[1:5],
 # bar.chart  (data,
 #             x =  "x",
 #             y=  "y",
 #             z = "z",
-#             x.lab = NULL,
 #             x.main.lab = NULL,
-#             y.lab = NULL,
-#             z.lab  = NULL,
+#             x.text.lab = NULL,
+#             y.main.lab = NULL,
+#             z.main.lab = NULL,
+#             z.text.lab = NULL, 
+#          
 #             alpha = 0.05,
 #             # transformation = FALSE,
 #             type = c("mean.ci", "median.quan","mean.sd")[1],
 #             p.label = letters[1:5], # p value labels
 #             p.algorithm.labels = letters[1:10] , # type 2 of p value labels based on letters
 #             adjust = NULL ,
-#             colorful = TRUE,
+#             colorful = FALSE,
 #             main.title = NULL,
 #             distance = NULL,
 #             font=0)
@@ -620,18 +675,31 @@ bar.chart <-
 #
 # ################################## for ANOVA_table
 #
+# Data  = data.frame(
+#   R = 1:1000,
+#   Age = abs(rnorm(1000,32,10)),
+#   Group = factor(rbinom(1000,3,0.5)+1),
+#   Sex = factor(rbinom(1000,1,0.5)),
+#   y1 =  (rnorm(1000)),
+#   y2 =  (rnorm(1000)) ,
+#   y3 = abs(rnorm(1000))
+# )
+# D<-  ANOVA_table$new(data = Data, group =  "Group",
+#                      deps.quantitative = c("y1"))
+# 
 # bar.chart  (
 #   # data,
 #   # x =  c("x"),
 #   # y=  "y",
 #   # z = NULL,
-#   x.lab = NULL,
 #   x.main.lab = NULL,
-#   y.lab = NULL,
-#   z.lab  = NULL,
+#   x.text.lab = NULL,
+#   y.main.lab = NULL,
+#   z.main.lab = NULL,
+#   z.text.lab = NULL, 
 #   alpha = 0.05,
 #   # transformation = FALSE,
-#   type = c("mean.ci", "median.quan","mean.sd")[2],
+#   type = c("mean.ci", "median.quan","mean.sd")[1],
 #   p.label = NULL,   #letters[1:5], # p value labels
 #   p.algorithm.labels = NULL,  #letters[1:5] , # type 2 of p value labels based on letters
 #   adjust = NULL ,
@@ -640,5 +708,48 @@ bar.chart <-
 #   distance = NULL,
 #   font=0,
 #   ANOVA_table = D,
-#   report.p.algorithm.labeling.for.ANOVA_table = TRUE
+#   report.p.algorithm.labeling = TRUE
 # )
+
+# ################################## for Repeat.measurment
+#
+# Data  = data.frame(
+#   R = 1:1000,
+#   Age = abs(rnorm(1000,32,10)),
+#   Group = factor(rbinom(1000,3,0.5)),
+#   Sex = factor(rbinom(1000,1,0.5)),
+#   y1 =  (rnorm(1000)),
+#   y2 =  (rnorm(1000)) ,
+#   y3 = abs(rnorm(1000))
+# )
+# 
+# 
+# MM1 =Repeat.measurment (data =Data, formula = cbind(y1, y2, y3) ~(Age+ Sex+ Group)*Time,
+#                         ID = "R",
+#                         comparison.formula = ~ Group|Time)
+# 
+#   bar.chart  (
+#   # data,
+#   # x =  c("x"),
+#   # y=  "y",
+#   # z = NULL,
+#   x.text.lab =  NULL,
+#   y.main.lab = "Salam",
+#   z.main.lab = "ASD",
+#   z.text.lab = letters[1:4],
+#   x.main.lab = "Time (h)",
+#   alpha = 0.05,
+#   # transformation = FALSE,
+#   type = c("mean.ci", "median.quan","mean.sd")[3],
+#   p.label = NULL,   #letters[1:5], # p value labels
+#   p.algorithm.labels = NULL,  #letters[1:5] , # type 2 of p value labels based on letters
+#   adjust = NULL ,
+#   colorful = FALSE,
+#   main.title = NULL,
+#   distance = NULL,
+#   font=0,
+#   ANOVA_table = NULL,
+#   Repeat.measurment = MM1,
+#   report.p.algorithm.labeling = TRUE
+# )
+ 

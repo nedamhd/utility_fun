@@ -5,7 +5,6 @@ Repeat.measurment =  function(data,
                               comparison.formula, 
                               adjust ="none"
                              ){
-  
   # data: wide data
   # formula: like 'cbind(y1, y2, y3) ~(Age+ Sex+ Group)*Time'
   # ID: A variable to identify the subjects 
@@ -70,8 +69,18 @@ row.names(l)= by
  
 ...fixed123456789<<- NULL  
 rm(...fixed123456789, envir = globalenv()) 
-res = list(main.results = list( main.table = main.table, comparison = comparison, letter= l),
-           invisible.results = list(lme.model = M1, car.Anova = Anova.M1, emmeans = list(emmeans = emm, contrast = comparison.object))                 
+ 
+
+
+res = list(main.results = list( main.table = main.table, 
+                                comparison = comparison, 
+                                letter= l),
+      invisible.results = list(data = melt.data, 
+                               comparison.formula = comparison.formula,
+                               lme.model = M1, 
+                               car.Anova = Anova.M1, 
+                               emmeans = list(emmeans = emm, 
+                                              contrast = comparison.object))                 
            
            
            )
@@ -91,11 +100,10 @@ res
 # )
 # 
 # 
-# MM1 =Repeat.measurment (data =Data, formula = cbind(y1, y2, y3) ~(Age+ Sex+ Group)*Time, 
+# MM1 =Repeat.measurment (data =Data, formula = cbind(y1, y2, y3) ~(Age+ Sex+ Group)*Time,
 #                         ID = "R",
 #                         comparison.formula = ~ Group|Time)
-# 
-# MM1$main.results
+# MM1$main.results$letter
 # 
 # MM2 =Repeat.measurment (data =Data, formula = cbind(y1, y2, y3) ~(Age+ Sex+ Group)*Time, 
 #                         ID = "R",

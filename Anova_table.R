@@ -254,11 +254,15 @@ ANOVA_table <-   R6::R6Class(
         
         
         
-        plot.levels <- data.frame(plot.labels, labels = Tukey.labels[['Letters']],
+        plot.levels <- data.frame(plot.labels, 
+                                  labels = Tukey.labels[['Letters']],
                                   stringsAsFactors = FALSE)
         
         # Merge it with the labels
-        labels.df <- merge(plot.levels, summary_data, by.x = 'plot.labels', by.y = "level", sort = FALSE)
+        labels.df <- merge(plot.levels, summary_data, 
+                           by.x = 'plot.labels', 
+                           by.y = "level", 
+                           sort = FALSE)
         # if (all(labels.df$labels=="a")) {
         #   labels.df$labels<- rep(NA,length(labels.df$labels))
         # }
@@ -267,18 +271,26 @@ ANOVA_table <-   R6::R6Class(
     
     
   )
+
 )
 
 
-# D<-  Table_One$new(data = data, group =  "HbA1c.Cat8", 
-#                    deps.qualitative = c("Sex", "Metforminuse","Sulfonylureause",
-#                                         "Statinuse"),
-#                    deps.quantitative =
-#                      c("AIPlogTGHDLC","HOMAIR", 
-#                        "PON1activity", "Age","BMI" ))
-# # D$deps.quantitative()
-# # D$add.qualitative()
-# # D$add.qualitative(deps.qualitative = "rs115.Cat")
+
+# Data  = data.frame(
+#   R = 1:1000,
+#   Age = abs(rnorm(1000,32,10)),
+#   Group = factor(rbinom(1000,3,0.5)+1),
+#   Sex = factor(rbinom(1000,1,0.5)),
+#   y1 =  (rnorm(1000)),
+#   y2 =  (rnorm(1000)) ,
+#   y3 = abs(rnorm(1000))
+# )
+# D<-  ANOVA_table$new(data = Data, group =  "Group",
+#                      deps.quantitative = c("y1", "y2")  )
+
+# D$deps.quantitative()
+# D$add.qualitative()
+# D$add.qualitative(deps.qualitative = "rs115.Cat")
 # D$combine()
 # D$wd.Table()
 # D$results
