@@ -19,8 +19,12 @@ bar.chart <-
            # type 2 of p value labels based on letters
            adjust = NULL ,
            colorful = TRUE,
+           width = 0.7,
+           width.errorbar =0.1,
+           width.dodge = 0.8,
            main.title = NULL,
            distance = NULL,
+           plot.adjust = 40,
            font = 0,
            ANOVA_table = NULL,
            Repeat.measurment = NULL,
@@ -176,8 +180,8 @@ bar.chart <-
       if (is.null(z.lab))
         summray_data <-  data.melt  %>% group_by(variable) %>%
           summarise(
-            ymax = mean(value, na.rm = TRUE) + (qnorm(1 - (alpha / 2)) * sd(value, na.rm = TRUE)) / length(na.omit(value)),
-            ymin = mean(value, na.rm = TRUE) - (qnorm(1 - (alpha / 2)) * sd(value, na.rm = TRUE)) / length(na.omit(value)),
+            ymax = mean(value, na.rm = TRUE) + (qnorm(1 - (alpha / 2)) * sd(value, na.rm = TRUE)) / sqrt(length(na.omit(value))),
+            ymin = mean(value, na.rm = TRUE) - (qnorm(1 - (alpha / 2)) * sd(value, na.rm = TRUE)) / sqrt(length(na.omit(value))),
             y = mean(value, na.rm = TRUE),
             max = max(value, na.rm = TRUE),
             .groups = 'drop'
@@ -186,8 +190,8 @@ bar.chart <-
         summray_data <-
           data.melt  %>% group_by(variable, z.lab) %>%
           summarise(
-            ymax = mean(value, na.rm = TRUE) + (qnorm(1 - (alpha / 2)) * sd(value, na.rm = TRUE)) / length(na.omit(value)),
-            ymin = mean(value, na.rm = TRUE) - (qnorm(1 - (alpha / 2)) * sd(value, na.rm = TRUE)) / length(na.omit(value)),
+            ymax = mean(value, na.rm = TRUE) + (qnorm(1 - (alpha / 2)) * sd(value, na.rm = TRUE)) / sqrt(length(na.omit(value))),
+            ymin = mean(value, na.rm = TRUE) - (qnorm(1 - (alpha / 2)) * sd(value, na.rm = TRUE)) / sqrt(length(na.omit(value))),
             y = mean(value, na.rm = TRUE),
             max = max(value, na.rm = TRUE),
             .groups = 'drop'
@@ -273,9 +277,9 @@ bar.chart <-
             fill =  z.lab
           ),
           data = data.melt,
-          position = position_dodge(width = .4),
+          position = position_dodge(width = width.dodge),
           na.rm = TRUE,
-          width = 0.35,
+          width = width,
           alpha = 1
         ) +
         geom_errorbar(
@@ -283,7 +287,7 @@ bar.chart <-
           mapping = aes(
             ymax = ymax,
             ymin = ymin,
-            width = 0.1,
+            width = width.errorbar,
             
             y = y,
             x = variable,
@@ -292,7 +296,7 @@ bar.chart <-
           size = 1.1,
           show.legend = FALSE,
           # color = "black",
-          position = position_dodge(width = .4)
+          position = position_dodge(width = width.dodge)
         ) +
         theme_classic() +
         theme(
@@ -310,12 +314,12 @@ bar.chart <-
             color = "black"
           ),
           legend.text = element_text(
-            size = 14 + font,
+            size = 12 + font,
             face = "bold",
             color = "black"
           ),
           legend.title = element_text(
-            size = 16 + font,
+            size = 12 + font,
             face = "bold",
             color = "black"
           ),
@@ -351,23 +355,35 @@ bar.chart <-
       if(!is.null(x.lab))
       p = p + scale_x_discrete(labels=x.lab) 
      
-       if(!is.null(z.text.lab))
+      if (isTRUE(colorful)){
+          if(!is.null(z.text.lab))
         p = p + scale_fill_discrete(labels=z.text.lab)+
-        scale_color_discrete(labels=z.text.lab)
-       
-          if (!isTRUE(colorful))
-            p =  p +
-            scale_colour_grey(start = 0.3 , end = 0.7 ) +
-            scale_fill_grey(start = 0.3 , end = 0.7 )
+          scale_color_discrete(labels=z.text.lab)
+      
+          if (!isTRUE(colorful)){
+            if(!is.null(z.text.lab))
+              p =  p +
+            scale_colour_grey(start = 0.3 , end = 0.7,labels=z.text.lab ) +
+            scale_fill_grey(start = 0.3 , end = 0.7,labels=z.text.lab )
+            
+            if(is.null(z.text.lab))
+              p =  p +
+                scale_colour_grey(start = 0.3 , end = 0.7 ) +
+                scale_fill_grey(start = 0.3 , end = 0.7)
+            
+          } 
+            
+            
+        
           
           
           
           base.of.y = ggplot_build(p)$layout$panel_params[[1]]$y.range
           if (is.null(adjust))
-            adjust = (abs(base.of.y[2]) + abs(base.of.y[1])) / 40
+            adjust = (abs(base.of.y[2]) + abs(base.of.y[1])) / plot.adjust
           
           if (is.null(distance))
-            distance = (abs(base.of.y[2]) + abs(base.of.y[1])) / 40
+            distance = (abs(base.of.y[2]) + abs(base.of.y[1])) / plot.adjust
           
           xx <- ggplot_build(p)$data[[2]]$x
           xstart = xx [(1:length(xx)) %% 2 == 0]
@@ -406,9 +422,9 @@ bar.chart <-
                        fill =  "black",
           
                         data = data.melt,
-                        position = position_dodge(width = .4),
+                        position = position_dodge(width = width.dodge),
                         na.rm = TRUE,
-                        width = .7,
+                        width = width,
                         alpha = 1
           )  +
             
@@ -417,7 +433,7 @@ bar.chart <-
               mapping = aes(
                 ymax = ymax,
                 ymin = ymin,
-                width = 0.1,
+                width = width.errorbar,
                 
                 y = y,
                 x = variable,
@@ -426,7 +442,7 @@ bar.chart <-
               size = 1.1,
               show.legend = FALSE,
               # color = "black",
-              position = position_dodge(width = .4)
+              position = position_dodge(width = width.dodge)
             ) +
             
             theme_classic() +
@@ -445,12 +461,12 @@ bar.chart <-
                 color = "black"
               ),
               legend.text = element_text(
-                size = 14 + font,
+                size = 12 + font,
                 face = "bold",
                 color = "black"
               ),
               legend.title = element_text(
-                size = 16 + font,
+                size = 12 + font,
                 face = "bold",
                 color = "black"
               ),
@@ -484,10 +500,10 @@ bar.chart <-
               
               base.of.y = ggplot_build(p)$layout$panel_params[[1]]$y.range
               if (is.null(adjust))
-                adjust = (abs(base.of.y[2]) + abs(base.of.y[1])) / 40
+                adjust = (abs(base.of.y[2]) + abs(base.of.y[1])) / plot.adjust
               
               if (is.null(distance))
-                distance = (abs(base.of.y[2]) + abs(base.of.y[1])) / 40
+                distance = (abs(base.of.y[2]) + abs(base.of.y[1])) / plot.adjust
               
               xx <- ggplot_build(p)$data[[2]]$x
               
