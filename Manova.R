@@ -50,27 +50,27 @@ table.m<-function(data,interction.formula, model,type="CI",
 }
 
 summary.me<- function(data, interction.formula){ 
-    formula=interction.formula
-    y= all.vars(update(formula, . ~ 1))
-    flev= all.vars(update(formula, 1 ~ .))
-    x<-data[,flev]
-    if(length(flev)==1) x<-list(x)
-    yy=data[,y]
-    se = function(x) sd(x,na.rm=TRUE)/ sqrt(sum(!is.na(x))) 
-    summa<- function(x) c(length=sum(!is.na(x)), mean=mean(x,na.rm=TRUE),
-                          sd= sd(x,na.rm=TRUE),se=se(x),ci=1.96*se(x))
-    summary_data <-  aggregate(yy,   by=(x) ,FUN=  summa)
-    if(length(flev)==1){
-      names(summary_data)[2] <- "x"
-      summary_data<- cbind(level=summary_data$Group.1,summary_data$x)}
-    if(length(flev)!=1){
-      names(summary_data)[length(flev)+1] <- "x"
-      summary_data<- cbind(level=summary_data[,c(flev)],summary_data$x)
-    }
-    colnames(summary_data)<-      c(flev,"Length","Mean","SD","SE","CI")
-    summary_data
-  } 
- 
+  formula=interction.formula
+  y= all.vars(update(formula, . ~ 1))
+  flev= all.vars(update(formula, 1 ~ .))
+  x<-data[,flev]
+  if(length(flev)==1) x<-list(x)
+  yy=data[,y]
+  se = function(x) sd(x,na.rm=TRUE)/ sqrt(sum(!is.na(x))) 
+  summa<- function(x) c(length=sum(!is.na(x)), mean=mean(x,na.rm=TRUE),
+                        sd= sd(x,na.rm=TRUE),se=se(x),ci=1.96*se(x))
+  summary_data <-  aggregate(yy,   by=(x) ,FUN=  summa)
+  if(length(flev)==1){
+    names(summary_data)[2] <- "x"
+    summary_data<- cbind(level=summary_data$Group.1,summary_data$x)}
+  if(length(flev)!=1){
+    names(summary_data)[length(flev)+1] <- "x"
+    summary_data<- cbind(level=summary_data[,c(flev)],summary_data$x)
+  }
+  colnames(summary_data)<-      c(flev,"Length","Mean","SD","SE","CI")
+  summary_data
+} 
+
 my.ggplot.manova<- function(model,
                             type="CI",
                             x,
@@ -84,7 +84,7 @@ my.ggplot.manova<- function(model,
                             upper.dist = NULL,
                             wi.bl = FALSE,
                             erroebar.title = FALSE 
-                               ){
+){
   if(class(model)!="Main.Manova") stop('The class of object is not "Main.Manova"')
   summary_data<- model$table$result
   require(ggplot2) 
@@ -175,24 +175,24 @@ my.ggplot.manova<- function(model,
 
 
 
-  my.ggplot.manova.line <- function(model,
-                                 type="CI",
-                                 x,
-                                 x.lab=NULL,
-                                 y.lab=NULL,
-                                 fill=NULL,
-                                 fill.lab=NULL,
-                                 fill.labels=NULL,
-                                 shape=NULL,
-                                 shape.lab=NULL,
-                                 grid=NULL,
-                                 grid.labels=NULL,
-                                 upper.dist=NULL,
-                                 wi.bl=FALSE,
-                                 erroebar=FALSE,
-                                 erroebar.title=FALSE,
-                                 ancillary.data=NULL
-                                   ){
+my.ggplot.manova.line <- function(model,
+                                  type="CI",
+                                  x,
+                                  x.lab=NULL,
+                                  y.lab=NULL,
+                                  fill=NULL,
+                                  fill.lab=NULL,
+                                  fill.labels=NULL,
+                                  shape=NULL,
+                                  shape.lab=NULL,
+                                  grid=NULL,
+                                  grid.labels=NULL,
+                                  upper.dist=NULL,
+                                  wi.bl=FALSE,
+                                  erroebar=FALSE,
+                                  erroebar.title=FALSE,
+                                  ancillary.data=NULL
+){
   if(is.null(ancillary.data)){
     if(class(model)!="Main.Manova") stop('The class of object is not "Main.Manova"')
     summary_data<- model$table$result} else summary_data<-  ancillary.data
@@ -371,8 +371,10 @@ Manova.fun<- function(data, formula){
   for(i in 1:length(DV.names)) Anova.M2[[i]]<- Anova(M2[[i]], type="III")
   for(i in 1:length(DV.names)) eta[[i]]<-   round(etasq(  M2[[i]], anova = TRUE, type="III" ), 3) 
   
-  for(i in 1:length(DV.names)) Tuk.M2[[i]]<- TukeyHSD(M2[[i]])
-  names(Tuk.M2)<- DV.names
+  # for(i in 1:length(DV.names))     Tuk.M2[[i]]<- TukeyHSD(M2[[i]])
+  # names(Tuk.M2)<- DV.names
+  
+  
   aa<-list()
   for(i in 1:length(DV.names)){
     Anova.M2[[i]][,"Df.r"]<-Anova.M2[[i]][length(ID.names)+2,2]
@@ -392,25 +394,27 @@ Manova.fun<- function(data, formula){
   }
   row.names(main.table)<-c("(Intercept)",ID.names)
   ######
-  xx=list(Manova.Table=main.table,Tukeu.tests=Tuk.M2)
+  # xx=list(Manova.Table=main.table,Tukeu.tests=Tuk.M2)
+  xx=list(Manova.Table=main.table )
   class(xx)<- "Manova"
   xx}
 
 Main.Manova<- function(formula,data,interaction.formula,type="CI",y.lab=NULL,compare = NULL, by=NULL, ...) { 
   DV.names=all.vars(update(formula, . ~ 1))
-if(length(DV.names) == 1) {
-   My.Manova<-Anova.fun(formula=formula,data, compare = compare, by = by,...)
-}else {
-   My.Manova<-Manova.fun(data,formula=formula,...)
-}
-table<- table.m(data,interction.formula=interaction.formula, model=My.Manova,type=type,y.lab=y.lab)
-
-Main.Manova=list(My.Manova=My.Manova,
-                 table=table, 
-                 formula=formula, 
-                 interaction.formula=interaction.formula, compare = compare, by = by)
-class(Main.Manova)<-"Main.Manova"
-Main.Manova
+  if(length(DV.names) == 1) {
+    My.Manova<-Anova.fun(formula=formula,data, compare = compare, by = by,...)
+  }else {
+    My.Manova<-Manova.fun(data,formula=formula,...)
+  }
+  if(!is.null(interaction.formula)){
+  table<- table.m(data,interction.formula=interaction.formula, model=My.Manova,type=type,y.lab=y.lab)
+  }
+  Main.Manova=list(My.Manova=My.Manova,
+                   table=table, 
+                   formula=formula, 
+                   interaction.formula=interaction.formula, compare = compare, by = by)
+  class(Main.Manova)<-"Main.Manova"
+  Main.Manova
 }
 
 
@@ -422,7 +426,7 @@ Data  = data.frame(
   y2 = abs(rnorm(1000)),
   y3 = abs(rnorm(1000))
 )
- 
+
 # s=Manova.fun(data = Data, formula = cbind( y1,y3, y2) ~ x2*x3   )  
 # s=Anova.fun(data = Data, formula = y2 ~ x2*x3   )  
 # model=Main.Manova(formula,data = Data,interaction.formula = y3  ~ x2:x3 ,
