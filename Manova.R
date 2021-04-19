@@ -1,4 +1,87 @@
 
+Anova.fun<- function(data, formula, compare = NULL , by = NULL){ 
+  # formula: main model frmula
+  # by: condition on it in posthoc analysis
+  library(car)
+  library(heplots)
+  library(broom)
+  library(sjstats)
+  
+  
+  M1<- lm( formula,data=data)
+  options(contrasts = c("contr.sum", "contr.poly"))
+  Anova.M1<- Anova(M1, type="III")  # Type III tests
+  s.Anova.M1<- summary(M1)
+  # p.Anova.M1<-print(Anova.M1)
+  
+  comparison = NULL
+  if(!is.null(by)){
+    if(is.null(compare)) stop("Please define `compare`!")
+    conts = emmeans::emmeans( M1, as.formula(paste0("pairwise ~",compare))  , by = by) 
+    comparison= as.data.frame(conts$contrasts) 
+    
+    
+    by.list = levels(comparison[,2] )
+    
+    l = list()
+    require(multcompView)                       
+    for(i in 1:length(by.list)) {
+      comparison.by =comparison[which(comparison[,2] == by.list[i]), c(1,7)]
+      comparison.by.p =  comparison.by[,2]
+      comparison.by.name =  strsplit(as.character(comparison.by[,1]), " - ")
+      comparison.by.name2 = c()
+      for (ii in 1:length(comparison.by.name)) {
+        comparison.by.name2[ii] = paste0(comparison.by.name[[ii]], collapse = "-")
+      }
+      names(comparison.by.p) = comparison.by.name2
+      k =multcompLetters(
+        comparison.by.p
+      )$Letters
+      
+      l[[i]]<- data.frame(cbind(b= by.list[i], co=names(k), k))
+      names(l[[i]]) =  c(by, compare, "labels")
+    }
+    l =do.call(rbind,l)
+    
+    # row.names(l)= by  
+    comparison = list(comparison = comparison, letter = l)
+  } 
+  
+  
+  DV.names=all.vars(update(formula, . ~ 1))
+  ID.names<-  attr(terms(formula),"term.labels")        # all.vars(update(formula, 1 ~ .))
+  
+  formulas<-   paste0(DV.names ,"~",paste0(ID.names, collapse  = "+") )
+  M2<- list()
+  Anova.M2<-list()
+  Tuk.M2<-list()
+  for(i in 1:length(DV.names)) M2[[i]]<- aov(as.formula(  formulas [i]),data=data)
+  for(i in 1:length(DV.names)) Anova.M2[[i]]<- Anova(M2[[i]], type="III")
+  for(i in 1:length(DV.names)) Tuk.M2[[i]]<- TukeyHSD(M2[[i]])
+  names(Tuk.M2)<- DV.names
+  aa<-list()
+  for(i in 1:length(DV.names)){
+    Anova.M2[[i]][,"Df.r"]<-Anova.M2[[i]][length(ID.names)+2,2]
+    aa[[i]]<-Anova.M2[[i]][1:(length(ID.names)+1),c(2,3,4,5)]
+    aa[[i]]<-as.data.frame(aa[[i]])
+    aa[[i]][,"F"] <-paste0(round(aa[[i]][,2],2)," (", aa[[i]][,1],"," ,aa[[i]][,4], ")"   )
+  }
+  
+  # main.table<- table.me[,c(3,7)]
+  # main.table<- data.frame(round(  main.table[,1] ,2),round(  main.table[,2],3))
+  # name.main.table<- c("Pillai test" , "P.value" )
+  for(i in 1:length(DV.names)){
+    main.table<- data.frame( aa[[i]][,c(5)],"P Value"=  round(aa[[i]][,c(3)],3))
+    name.main.table<- c(paste0("F.Value.",DV.names[i]),paste0("P.value.",DV.names[i]))
+    names(main.table)<-name.main.table
+  }
+  row.names(main.table)<-c("(Intercept)",ID.names)
+  ######
+  xx=list(Anova.Table=main.table, Tukeu.tests=Tuk.M2,
+          conditional_posthoc=comparison, data = data)
+  class(xx)<- "Anova"
+  xx}
+
 
 letter.creator<- function(interction.formula,model=MM1){
   formula=interction.formula
@@ -11,6 +94,7 @@ letter.creator<- function(interction.formula,model=MM1){
   
   ddd<-multcompLetters(
     model[["Tukeu.tests"]][[y]][[inter.term]][,"p adj"]
+    
   )
   
   
@@ -33,8 +117,11 @@ table.m<-function(data,interction.formula, model,type="CI",
     flev= all.vars(update(formula, 1 ~ .))
     
     vv1<-summary.me(data,interction.formula=interction.formula)
-    vv2<-letter.creator(interction.formula,model=model)
-    vv<- merge(vv1,vv2,x.by= flev,y.by= flev)} else { vv<-ancillary.data}
+    if(class(model)=="Anova"){
+      vv2<- model$conditional_posthoc$letter}  else{
+     vv2<-letter.creator(interction.formula,model=model)
+  } 
+     vv<-  base::merge(vv1,vv2, by= (flev) )} else { vv<-ancillary.data}
   
   vv<-as.data.frame(vv)
   if(type=="CI")  MSD<-paste0( round(vv[,"Mean"],2), " (",round(vv[,"Mean"]-vv[,"CI"],2),",",
@@ -118,7 +205,7 @@ my.ggplot.manova<- function(model,
       # facet_grid(.~ factor(.grid))+
       geom_errorbar(aes(ymax =.ymax  ,ymin = .ymin ),
                     width=0.1, colour="black",position=position_dodge(width=0.9))+
-      theme_bw (base_size=18)+
+      theme_bw (base_size=16)+
       geom_text(aes(
         y = .y  + .type+upper.dist, 
         label = .labels),
@@ -144,7 +231,7 @@ my.ggplot.manova<- function(model,
         ymin = .ymin ),
         width=0.1, colour="black",
         position=position_dodge(width=0.9))+
-      theme_bw (base_size=18)+
+      theme_bw (base_size=16)+
       geom_text(aes(#fill=.fill,
         y = .y  + .type+upper.dist, 
         label = .labels),
@@ -289,60 +376,6 @@ my.ggplot.manova.line <- function(model,
     gg }
 
 
-Anova.fun<- function(data, formula, compare = NULL , by = NULL){ 
-  # formula: main model frmula
-  # by: condition on it in posthoc analysis
-  library(car)
-  library(heplots)
-  library(broom)
-  library(sjstats)
-  
-  
-  M1<- lm( formula,data=data)
-  options(contrasts = c("contr.sum", "contr.poly"))
-  Anova.M1<- Anova(M1, type="III")  # Type III tests
-  s.Anova.M1<- summary(M1)
-  # p.Anova.M1<-print(Anova.M1)
-  
-  conditional_posthoc = NULL
-  if(!is.null(by)){
-    if(is.null(compare)) stop("Please define `compare`!")
-    conts = emmeans::emmeans( M1, as.formula(paste0("pairwise ~",compare))  , by = by) 
-    conditional_posthoc= as.data.frame(conts$contrasts) 
-  }    
-  DV.names=all.vars(update(formula, . ~ 1))
-  ID.names<-  attr(terms(formula),"term.labels")        # all.vars(update(formula, 1 ~ .))
-  
-  formulas<-   paste0(DV.names ,"~",paste0(ID.names, collapse  = "+") )
-  M2<- list()
-  Anova.M2<-list()
-  Tuk.M2<-list()
-  for(i in 1:length(DV.names)) M2[[i]]<- aov(as.formula(  formulas [i]),data=data)
-  for(i in 1:length(DV.names)) Anova.M2[[i]]<- Anova(M2[[i]], type="III")
-  for(i in 1:length(DV.names)) Tuk.M2[[i]]<- TukeyHSD(M2[[i]])
-  names(Tuk.M2)<- DV.names
-  aa<-list()
-  for(i in 1:length(DV.names)){
-    Anova.M2[[i]][,"Df.r"]<-Anova.M2[[i]][length(ID.names)+2,2]
-    aa[[i]]<-Anova.M2[[i]][1:(length(ID.names)+1),c(2,3,4,5)]
-    aa[[i]]<-as.data.frame(aa[[i]])
-    aa[[i]][,"F"] <-paste0(round(aa[[i]][,2],2)," (", aa[[i]][,1],"," ,aa[[i]][,4], ")"   )
-  }
-  
-  # main.table<- table.me[,c(3,7)]
-  # main.table<- data.frame(round(  main.table[,1] ,2),round(  main.table[,2],3))
-  # name.main.table<- c("Pillai test" , "P.value" )
-  for(i in 1:length(DV.names)){
-    main.table<- data.frame( aa[[i]][,c(5)],"P Value"=  round(aa[[i]][,c(3)],3))
-    name.main.table<- c(paste0("F.Value.",DV.names[i]),paste0("P.value.",DV.names[i]))
-    names(main.table)<-name.main.table
-  }
-  row.names(main.table)<-c("(Intercept)",ID.names)
-  ######
-  xx=list(Anova.Table=main.table,Tukeu.tests=Tuk.M2,
-          conditional_posthoc=conditional_posthoc, data = data)
-  class(xx)<- "Anova"
-  xx}
 
 Manova.fun<- function(data, formula){ 
   # formula: main model frmula
@@ -402,12 +435,12 @@ Manova.fun<- function(data, formula){
 Main.Manova<- function(formula,data,interaction.formula,type="CI",y.lab=NULL,compare = NULL, by=NULL, ...) { 
   DV.names=all.vars(update(formula, . ~ 1))
   if(length(DV.names) == 1) {
-    My.Manova<-Anova.fun(formula=formula,data, compare = compare, by = by,...)
+    My.Manova<-Anova.fun(formula=formula,data, compare = compare, by = by)
   }else {
     My.Manova<-Manova.fun(data,formula=formula,...)
   }
   if(!is.null(interaction.formula)){
-  table<- table.m(data,interction.formula=interaction.formula, model=My.Manova,type=type,y.lab=y.lab)
+    table<- table.m(data,interction.formula=interaction.formula, model=My.Manova,type=type,y.lab=y.lab)
   }
   Main.Manova=list(My.Manova=My.Manova,
                    table=table, 
@@ -436,8 +469,5 @@ Data  = data.frame(
 # 
 # my.ggplot.manova(model=model, x="x2", fill = "x3")
 # my.ggplot.manova.line(model=model, x="x2", fill = "x3")
-
-
-
 
 
