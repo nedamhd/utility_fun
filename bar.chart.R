@@ -603,3 +603,166 @@ bar.chart <-
    
     
     
+
+
+########################################Example##############################
+
+# data = data.frame(
+#     x= factor(rbinom(1000,4,0.5)),
+#     y= abs(rnorm(1000)) ,
+#     x3= abs(rnorm(1000)) ,
+#     x2= abs(rnorm(1000)) ,
+#     z= factor(rbinom(1000,1,0.5)),
+#     z1= factor(0))
+# 
+# ####################### for one x (factor) and one y(quantitative)
+# bar.chart  (data,
+#            x =  c("x"),
+#            y=  "y",
+#            z = NULL,
+#            x.main.lab = NULL,
+#            x.text.lab = NULL,
+#            y.main.lab = NULL,
+#            z.main.lab = NULL,
+#            z.text.lab = NULL,
+#            alpha = 0.05,
+#            # transformation = FALSE,
+#            type = c("mean.ci", "median.quan","mean.sd")[1],
+#            p.label = letters[1:5], # p value labels
+#              p.algorithm.labels = letters[1:5] , # type 2 of p value labels based on letters
+#            adjust = NULL ,
+#            colorful = TRUE,
+#            main.title = NULL,
+#            distance = NULL,
+#            font=0)
+# 
+# ####################### for multiple x (quantitative) as y and z as factor
+# bar.chart  (data,
+#             x =  c("x3", "x2", "y"),
+#             y=  NULL,
+#             z = "z",
+#             x.main.lab = NULL,
+#             x.text.lab = c("x3", "x2", "y"),
+#             y.main.lab = NULL,
+#             z.main.lab = NULL,
+#             z.text.lab = NULL, 
+#             alpha = 0.05,
+#             # transformation = FALSE,
+#             type = c("mean.ci", "median.quan","mean.sd")[1],
+#             p.label = letters[5:7], # p value labels
+#             p.algorithm.labels = letters[1:6] , # type 2 of p value labels based on letters
+#             adjust = NULL ,
+#             colorful = TRUE,
+#             main.title = NULL,
+#             distance = NULL,
+#             font=0)
+# # 
+# #
+# # ####################### for one x (factor), one y (quantitative) and  z as factor
+# LETTERS[1:5],
+# bar.chart  (data,
+#             x =  "x",
+#             y=  "y",
+#             z = "z",
+#             x.main.lab = NULL,
+#             x.text.lab = NULL,
+#             y.main.lab = NULL,
+#             z.main.lab = NULL,
+#             z.text.lab = NULL, 
+#          
+#             alpha = 0.05,
+#             # transformation = FALSE,
+#             type = c("mean.ci", "median.quan","mean.sd")[1],
+#             p.label = letters[1:5], # p value labels
+#             p.algorithm.labels = letters[1:10] , # type 2 of p value labels based on letters
+#             adjust = NULL ,
+#             colorful = FALSE,
+#             main.title = NULL,
+#             distance = NULL,
+#             font=0)
+# #
+#
+#
+#
+#
+#
+# ################################## for ANOVA_table
+#
+# Data  = data.frame(
+#   R = 1:1000,
+#   Age = abs(rnorm(1000,32,10)),
+#   Group = factor(rbinom(1000,3,0.5)+1),
+#   Sex = factor(rbinom(1000,1,0.5)),
+#   y1 =  (rnorm(1000)),
+#   y2 =  (rnorm(1000)) ,
+#   y3 = abs(rnorm(1000))
+# )
+# D<-  ANOVA_table$new(data = Data, group =  "Group",
+#                      deps.quantitative = c("y1"))
+# 
+# bar.chart  (
+#   # data,
+#   # x =  c("x"),
+#   # y=  "y",
+#   # z = NULL,
+#   x.main.lab = NULL,
+#   x.text.lab = NULL,
+#   y.main.lab = NULL,
+#   z.main.lab = NULL,
+#   z.text.lab = NULL, 
+#   alpha = 0.05,
+#   # transformation = FALSE,
+#   type = c("mean.ci", "median.quan","mean.sd")[1],
+#   p.label = NULL,   #letters[1:5], # p value labels
+#   p.algorithm.labels = NULL,  #letters[1:5] , # type 2 of p value labels based on letters
+#   adjust = NULL ,
+#   colorful = TRUE,
+#   main.title = NULL,
+#   distance = NULL,
+#   font=0,
+#   ANOVA_table = D,
+#   report.p.algorithm.labeling = TRUE
+# )
+
+# ################################## for Repeat.measurment
+#
+# Data  = data.frame(
+#   R = 1:1000,
+#   Age = abs(rnorm(1000,32,10)),
+#   Group = factor(rbinom(1000,3,0.5)),
+#   Sex = factor(rbinom(1000,1,0.5)),
+#   y1 =  (rnorm(1000)),
+#   y2 =  (rnorm(1000)) ,
+#   y3 = abs(rnorm(1000))
+# )
+# 
+# 
+# MM1 =Repeat.measurment (data =Data, formula = cbind(y1, y2, y3) ~(Age+ Sex+ Group)*Time,
+#                         ID = "R",
+#                         comparison.formula = ~ Group|Time)
+# 
+#   bar.chart  (
+#   # data,
+#   # x =  c("x"),
+#   # y=  "y",
+#   # z = NULL,
+#   x.text.lab =  NULL,
+#   y.main.lab = "Salam",
+#   z.main.lab = "ASD",
+#   z.text.lab = letters[1:4],
+#   x.main.lab = "Time (h)",
+#   alpha = 0.05,
+#   # transformation = FALSE,
+#   type = c("mean.ci", "median.quan","mean.sd")[3],
+#   p.label = NULL,   #letters[1:5], # p value labels
+#   p.algorithm.labels = NULL,  #letters[1:5] , # type 2 of p value labels based on letters
+#   adjust = NULL ,
+#   colorful = FALSE,
+#   main.title = NULL,
+#   distance = NULL,
+#   font=0,
+#   ANOVA_table = NULL,
+#   Repeat.measurment = MM1,
+#   report.p.algorithm.labeling = TRUE
+# )
+ 
