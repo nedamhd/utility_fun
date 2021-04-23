@@ -18,7 +18,7 @@ GetSummary <- function(data, dep.quantitative, group){
   
   # ??Functions---------------------------------------
   quantileFUN  <- function(x, significant.number = 3) {
-    r =  quantile(x, p =c(0.5, 0.25, 0.75)) 
+    r =  quantile(x, p =c(0.5, 0.25, 0.75), na.rm = TRUE) 
     r2 = paste0(significant.number%f%r[1], 
                 " (", 
                 significant.number%f%r[2], 
