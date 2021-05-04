@@ -228,13 +228,15 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                                       color= variable,
                                                       linetype= variable)) + 
                                   style_roc(guide = TRUE)+
-                                  geom_roc(n.cuts = 0, labels = FALSE, size = 2)+
+                                  geom_roc(n.cuts = 0, labels = FALSE, size = 1)+
                                   geom_abline(slope = 1, intercept = 0, color = "grey",linetype= "dashed")+
                                   labs(colour="",linetype="")+
                                   theme( legend.position = "bottom",
                                          axis.text=element_text(face = "bold",size = 12,colour = "black") ,
                                          legend.text=element_text(face = "bold" ,size = 12,colour = "black") ,
-                                         axis.title= element_text(face ="bold" ,size = 16,colour = "black"))+
+                                         axis.title= element_text(face ="bold" ,size = 16,colour = "black"),
+                                         title =element_text(face ="bold" ,size = 14,colour = "black"))+
+
                                   theme( legend.key.width = unit(1.5,"cm"))+
                                   scale_linetype_manual(values=c("solid","dotted", "dashed",  "dotdash" ,  "longdash" ,  "twodash"))#
                               },
@@ -270,13 +272,14 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                                            color= variable,
                                                            linetype= variable)) + 
                                   style_roc(guide = TRUE)+
-                                  geom_roc(n.cuts = 0, labels = FALSE, size = 2)+
+                                  geom_roc(n.cuts = 0, labels = FALSE, size = 1)+
                                   geom_abline(slope = 1, intercept = 0, color = "grey",linetype= "dashed")+
                                   labs(colour="",linetype="")+
                                   theme( legend.position = "bottom",
                                          axis.text=element_text(face = "bold",size = 12,colour = "black") ,
                                          legend.text=element_text(face = "bold" ,size = 12,colour = "black") ,
-                                         axis.title= element_text(face ="bold" ,size = 16,colour = "black"))+
+                                         axis.title= element_text(face ="bold" ,size = 16,colour = "black"),
+                                        title =element_text(face ="bold" ,size = 14,colour = "black"))+
                                   theme( legend.key.width = unit(1.5,"cm"))+
                                   scale_linetype_manual(values=c("solid","dotted", "dashed",  "dotdash" ,  "longdash" ,  "twodash"))#
                               }
