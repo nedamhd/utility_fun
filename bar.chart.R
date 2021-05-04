@@ -1,768 +1,364 @@
-bar.chart <-
-  function(data = NULL,
-           x = NULL,
-           y = NULL,
-           z = NULL,           
-           x.main.lab = NULL,
-           x.text.lab = NULL,
-           y.main.lab = NULL,
-           z.main.lab  = NULL,
-           z.text.lab = NULL,
-           alpha = 0.05,
-           transformation = function(b) return(b),
-           type = c("mean.ci", "median.quan", "mean.sd")[1],
-           p.label = NULL,
-           # p value labels
-           p.algorithm.labels = NULL ,
-           # type 2 of p value labels based on letters
-           adjust = NULL ,
-           colorful = TRUE,
-           width = 0.7,
-           width.errorbar =0.1,
-           width.dodge = 0.8,
-           main.title = NULL,
-           distance = NULL,
-           plot.adjust = 40,
-           font = 0,
-           ANOVA_table = NULL,
-           Repeat.measurment = NULL,
-           report.p.algorithm.labeling = TRUE) {
-    x.lab   =   x.text.lab
-    z.lab   =   z.main.lab
-    y.lab   =   y.main.lab
-    
-    # if(is.null(z) & is.null(x) & is.null(y))
-    # if(is.null(x.text.lab)){
-    #    levels(data[,x])
-    #   x.text.lab = x
-    ##############################for  ANOVA_table##################
-    
-    if (!is.null(ANOVA_table)) {
-      if (class(ANOVA_table)[1] != "ANOVA_table")
-        stop("The class of ANOVA_table is not correct!")
-      
-      x  = ANOVA_table$group
-      y =  ANOVA_table$deps.quantitative
-      if(length(y) > 1) stop("The length of deps.quantitative must be one.")
-      
-      data = ANOVA_table$data
-      test = ANOVA_table$results$Test
-      if(is.null(y.lab))
-        y.lab = y
-      
-      
-      if(test == "KruskalWallis"){
-        type = c("mean.ci", "median.quan", "mean.sd")[2]
-        y.lab = paste0(y.lab,"\n[Median (IQR)]")
-      } else {
-        y.lab = paste0(y.lab,"\n[Mean (95% CI)]")
-      }
-      
-      z    = NULL
-      if (report.p.algorithm.labeling)
-        p.algorithm.labels = D$.__enclos_env__$private$result.for.plot$label
-      
-      
-    }
-    
-    ########################### for Repeat.measurment #######
-    if (!is.null(Repeat.measurment)) {
-      if (class(Repeat.measurment)[1] != "Repeat.measurment")
-        stop("The class of Repeat.measurment is not correct!")
-      
-      x                  =   "Time"
-      y                  =   "value"
-      data               =   Repeat.measurment$invisible.results$data
-      comparison.formula =   Repeat.measurment$invisible.results$comparison.formula
-      IV.names = all.vars(comparison.formula)
-      IV.names = IV.names[which(IV.names != "Time")]
-      if(length(IV.names) > 1) stop("'bar.chart' just compateble with two variable in comparison.formula.")
-      z = IV.names
-      
-      
-      if(is.null(y.lab))
-        y.lab = y
-      
-      y.lab = paste0(y.lab,"\n[Mean (95% CI)]")
-      
-      if (report.p.algorithm.labeling){
-        p.algorithm.labels = Repeat.measurment$main.results$letter
-        p.algorithm.labels=  c( t(p.algorithm.labels))
-      } 
-      
-    }
-    
-    
-    ###########################   
-    
-    label <-  p.label
-    
-    if (!is.null(y)) {
-      if (length(x) != 1)
-        stop(
-          "x can be only one factor(for other type, remove y
-          and enter the vector of quantitative varibles by x.)"
-        )
-      temp.w =  na.omit(data[, c(x, y, z)])
-      if (!is.factor(temp.w[[x]]))
-        stop("x must be factor")
-      
-      temp.w.name =  names(temp.w)
-      
-      
-      if (!is.null(z)) {
-        names(temp.w) = c("variable", "value", "z.lab")
-      } else {
-        names(temp.w) = c("variable", "value")
-      }
-      
-      x.name = temp.w.name[1]
-      y.name = temp.w.name[2]
-      z.name = temp.w.name[3]
-      if (is.null(x.main.lab))
-        x.main.lab = x.name
-      if (is.null(z.lab) & !is.null(z))
-        z.lab = z.name
-      if (is.null(y.lab))
-        y.lab = y.name
-      data.melt = temp.w
-    }
-    
-    ##########################################    
-    
-    if (!type %in%  c("mean.ci", "median.quan", "mean.sd"))
-      stop("Type must be  c(\"mean.ci\", \"median.quan\",\"mean.sd\")")
-    
-    if (length(z)  > 1)
-      stop("The length of z must be zero or one.")
-    
-    if (!is.null(z))
-      if (!is.factor(data[[z]]))
-        stop("z must be factor")
-    
-    if (is.null(label))
-      label = rep(c(""), length(x.name))
-    
-    if(is.null(x.text.lab))
-      x.text.lab = x
-    
-    if (is.null(y) & !is.null(z)) {
-      
-      x.name <- as.character(substitute(x))[-1]
-      z.name <- as.character(substitute(z))
-      data <- data[, c(x.name, z.name)]
-      if (is.null(x.main.lab))
-        x.main.lab = x.name
-      if (is.null(z.lab))
-        z.lab = z.name
-      
-      names(data) <- c(x.main.lab, z.lab)
-      x.name = x.main.lab
-      z.name = z.lab
-      data.melt <- reshape2::melt(data = data,
-                                  id.vars =  z.name,
-                                  measure.vars = x.name)
-      names(data.melt)[1] <- "z.lab"
-    }
-    ################################
-    
-    data.melt$value =  transformation(data.melt$value)
-    
-    
-    
-    data.melt <- na.omit(data.melt)
-    require(dplyr)
-    
-    if (type == "mean.ci")
-    {
-      if (is.null(z.lab))
-        summray_data <-  data.melt  %>% group_by(variable) %>%
-          summarise(
-            ymax = mean(value, na.rm = TRUE) + (qnorm(1 - (alpha / 2)) * sd(value, na.rm = TRUE)) / sqrt(length(na.omit(value))),
-            ymin = mean(value, na.rm = TRUE) - (qnorm(1 - (alpha / 2)) * sd(value, na.rm = TRUE)) / sqrt(length(na.omit(value))),
-            y = mean(value, na.rm = TRUE),
-            max = max(value, na.rm = TRUE),
-            .groups = 'drop'
-          )
-      if (!is.null(z.lab))
-        summray_data <-
-          data.melt  %>% group_by(variable, z.lab) %>%
-          summarise(
-            ymax = mean(value, na.rm = TRUE) + (qnorm(1 - (alpha / 2)) * sd(value, na.rm = TRUE)) / sqrt(length(na.omit(value))),
-            ymin = mean(value, na.rm = TRUE) - (qnorm(1 - (alpha / 2)) * sd(value, na.rm = TRUE)) / sqrt(length(na.omit(value))),
-            y = mean(value, na.rm = TRUE),
-            max = max(value, na.rm = TRUE),
-            .groups = 'drop'
-          )
-      
-    }
-    
-    ################################   
-    
-    if (type == "mean.sd") {
-      if (is.null(z.lab))
-        summray_data <-  data.melt  %>% group_by(variable) %>%
-          summarise(
-            ymax = mean(value, na.rm = TRUE) +   sd(value, na.rm = TRUE),
-            ymin = mean(value, na.rm = TRUE) -   sd(value, na.rm = TRUE),
-            y = mean(value, na.rm = TRUE),
-            max = max(value, na.rm = TRUE),
-            .groups = 'drop'
-          )
-      
-      if (!is.null(z.lab))
-        summray_data <-
-          data.melt  %>% group_by(variable, z.lab) %>%
-          summarise(
-            ymax = mean(value, na.rm = TRUE) +   sd(value, na.rm = TRUE),
-            ymin = mean(value, na.rm = TRUE) -   sd(value, na.rm = TRUE),
-            y = mean(value, na.rm = TRUE),
-            max = max(value, na.rm = TRUE),
-            .groups = 'drop'
-          )
-    }
-    ###########################
-    
-    if (type == "median.quan") {
-      if (is.null(z.lab))
-        summray_data <-  data.melt  %>% group_by(variable) %>%
-          summarise(
-            ymax = quantile(value, probs = 0.75, na.rm = TRUE),
-            ymin = quantile(value, probs = 0.25, na.rm = TRUE),
-            y = median(value, na.rm = TRUE),
-            max = max(value, na.rm = TRUE),
-            .groups = 'drop'
-          )
-      if (!is.null(z.lab))
-        summray_data <-
-          data.melt  %>% group_by(variable, z.lab) %>%
-          summarise(
-            ymax = quantile(value, probs = 0.75, na.rm = TRUE),
-            ymin = quantile(value, probs = 0.25, na.rm = TRUE),
-            y = median(value, na.rm = TRUE),
-            max = max(value, na.rm = TRUE),
-            .groups = 'drop'
-          )
-    }
-    
-    
-    
-    
-    m <-  summray_data  %>% group_by(variable) %>%
-      summarise(max = max(ymax, na.rm = TRUE), .groups = 'drop')
-    height <- m$max
-    if (is.null(z))
-      height <- max(height)
-    if (!is.null(z)) {
-      data.melt$z.lab <- as.factor(data.melt$z.lab)
-      summray_data$z.lab <- as.factor(summray_data$z.lab)
-    }
-    
-    require(ggplot2)
-    require(grid)
-    
-    
-    
-    if (!is.null(z.lab)) {
-      p = ggplot() +
-        stat_summary(
-          geom = "bar",
-          fun  = "mean",
-          mapping = aes(
-            x = variable,
-            y = value,
-            color =  z.lab,
-            fill =  z.lab
-          ),
-          data = data.melt,
-          position = position_dodge(width = width.dodge),
-          na.rm = TRUE,
-          width = width,
-          alpha = 1
-        ) +
-        geom_errorbar(
-          data = summray_data,
-          mapping = aes(
-            ymax = ymax,
-            ymin = ymin,
-            width = width.errorbar,
-            
-            y = y,
-            x = variable,
-            linetype = z.lab ,
-          ),
-          size = 1.1,
-          show.legend = FALSE,
-          # color = "black",
-          position = position_dodge(width = width.dodge)
-        ) +
-        theme_classic() +
-        theme(
-          panel.background = element_blank() ,
-          panel.grid = element_blank(),
-          axis.line = element_line(size = 1),
-          axis.text = element_text(
-            size = 12 + font,
-            face = "bold",
-            color = "black"
-          ),
-          axis.title  = element_text(
-            size = 12 + font,
-            face = "bold",
-            color = "black"
-          ),
-          legend.text = element_text(
-            size = 12 + font,
-            face = "bold",
-            color = "black"
-          ),
-          legend.title = element_text(
-            size = 12 + font,
-            face = "bold",
-            color = "black"
-          ),
-          plot.title = element_text(
-            size = 16 + font,
-            face = "bold",
-            color = "black"
-          )
-          
-          
-        )  +
-        labs(
-          x =  x.main.lab ,
-          y = y.lab,
-          color = z.lab,
-          fill = z.lab,
-          shape = z.lab,
-          title =  main.title
-        ) +
-        scale_y_continuous(#expand = c(0.0, 0.5),
-          # breaks = round(seq(
-          #     min(data.melt[["value"]], na.rm = TRUE),
-          #     max(data.melt[["value"]], na.rm = TRUE),
-          #   length.out = 5
-          # ) - .009, 2)) +
-        )+
-        # scale_x_discrete(labels=x.lab)+
-        # scale_fill_discrete(labels=z.text.lab)+
-        # scale_color_discrete(labels=z.text.lab)+
-        scale_linetype_manual(values = rep(1, 8)) +
-        guides(color = guide_legend(override.aes = list(size = 5)))
-      
-      if(!is.null(x.lab))
-        p = p + scale_x_discrete(labels=x.lab) 
-      
-      if (isTRUE(colorful)) 
-        if(!is.null(z.text.lab))
-          p = p + scale_fill_discrete(labels=z.text.lab)+
-            scale_color_discrete(labels=z.text.lab)
-        
-        if (!isTRUE(colorful)){
-          if(!is.null(z.text.lab))
-            p =  p +
-              scale_colour_grey(start = 0.3 , end = 0.7,labels=z.text.lab ) +
-              scale_fill_grey(start = 0.3 , end = 0.7,labels=z.text.lab )
-          
-          if(is.null(z.text.lab))
-            p =  p +
-              scale_colour_grey(start = 0.3 , end = 0.7 ) +
-              scale_fill_grey(start = 0.3 , end = 0.7)
-          
-        } 
-        
-        
-        
-        
-        
-        
-        base.of.y = ggplot_build(p)$layout$panel_params[[1]]$y.range
-        if (is.null(adjust))
-          adjust = (abs(base.of.y[2]) + abs(base.of.y[1])) / plot.adjust
-        
-        if (is.null(distance))
-          distance = (abs(base.of.y[2]) + abs(base.of.y[1])) / plot.adjust
-        
-        xx <- ggplot_build(p)$data[[2]]$x
-        xstart = xx [(1:length(xx)) %% 2 == 0]
-        xend = xx [(1:length(xx)) %% 2 != 0]
-        
-        d1 = cbind(
-          xstart,
-          xend,
-          ystart = c(height + adjust + distance),
-          yend = c(height + adjust + distance)
-        )   %>% as.data.frame()
-        d2 = cbind(
-          xstart,
-          xend,
-          ystart = c(height + distance),
-          yend = c(height + adjust + distance)
-        )   %>% as.data.frame()
-        
-      }
-      
-      #########################
-      
-      
-      if (is.null(z.lab)) {
-        
-        
-        p <- ggplot() +
-          stat_summary(
-            geom = "bar",
-            fun  = "mean",
-            mapping = aes(x = variable,
-                          y = value,
-                          # fill =  z.lab
-            ),                        
-            color =  "black",
-            fill =  "black",
-            
-            data = data.melt,
-            position = position_dodge(width = width.dodge),
-            na.rm = TRUE,
-            width = width,
-            alpha = 1
-          )  +
-          
-          geom_errorbar(
-            data = summray_data,
-            mapping = aes(
-              ymax = ymax,
-              ymin = ymin,
-              width = width.errorbar,
-              
-              y = y,
-              x = variable,
-              # linetype = z.lab ,
-            ),
-            size = 1.1,
-            show.legend = FALSE,
-            # color = "black",
-            position = position_dodge(width = width.dodge)
-          ) +
-          
-          theme_classic() +
-          theme(
-            panel.background = element_blank() ,
-            panel.grid = element_blank(),
-            axis.line = element_line(size = 1.25),
-            axis.text = element_text(
-              size = 12 + font,
-              face = "bold",
-              color = "black"
-            ),
-            axis.title  = element_text(
-              size = 12 + font,
-              face = "bold",
-              color = "black"
-            ),
-            legend.text = element_text(
-              size = 12 + font,
-              face = "bold",
-              color = "black"
-            ),
-            legend.title = element_text(
-              size = 12 + font,
-              face = "bold",
-              color = "black"
-            ),
-            plot.title = element_text(
-              size = 16 + font,
-              face = "bold",
-              color = "black"
-            )
-            
-            
-          )  +
-          labs(x =  x.main.lab ,
-               y = y.lab,
-               # color = z.lab,
-               # fill = z.lab,
-               # shape = z.lab,
-               title =  main.title) +
-          # scale_y_continuous(#expand = c(0.0, 0.5),) +
-          scale_linetype_manual(values = rep(1, 8)) +
-          scale_x_discrete(labels=x.lab)+
-          guides(color = guide_legend(override.aes = list(size = 5)))
-        
-        
-        
-        if (!isTRUE(colorful))
-          p =  p +
-            scale_colour_grey(start = 0.3 , end = 0.7) +
-            scale_fill_grey(start = 0.3 , end = 0.7)
-        
-        
-        
-        base.of.y = ggplot_build(p)$layout$panel_params[[1]]$y.range
-        if (is.null(adjust))
-          adjust = (abs(base.of.y[2]) + abs(base.of.y[1])) / plot.adjust
-        
-        if (is.null(distance))
-          distance = (abs(base.of.y[2]) + abs(base.of.y[1])) / plot.adjust
-        
-        xx <- ggplot_build(p)$data[[2]]$x
-        
-        
-        
-      }
-      
-      
-      ########################################
-      
-      if (!is.null(p.algorithm.labels)) {
-        if (length(p.algorithm.labels) != dim(summray_data)[1])
-          stop(paste0(
-            "The length of p.algorithm.labels is not equall to ",
-            dim(summray_data)[1]
-          ))
-        summray_data$xx  = xx
-        summray_data$p.algorithm.labels  = p.algorithm.labels
-        summray_data <- summray_data
-        
-        p = p + geom_text(
-          data = summray_data,
-          mapping = aes(
-            x = xx,
-            y =  ymax + 2 * adjust + distance  ,
-            label = p.algorithm.labels
-          ),
-          show.legend = FALSE ,
-          color = "black",
-          size = 3 + font
-        )
-        
-        
-      }
-      
-      
-      
-      
-      
-      
-      ######################
-      if (!is.null(p.label))
-        if (!is.null(z)) {
-          if (length(p.label) != dim(d1)[1])
-            stop(paste0("The length of p.label is not equall to ", dim(d1)[1]))
-          
-          p =  p +
-            geom_segment(
-              data = d1,
-              mapping = aes(
-                x = xstart,
-                xend = xend,
-                y = ystart,
-                yend = yend
-              ),
-              show.legend = FALSE,
-              size = 1.1,
-              color = "black"
-            ) +
-            geom_segment(
-              data = d2,
-              mapping = aes(
-                x = xstart,
-                xend = xstart,
-                y = ystart,
-                yend = yend
-              ),
-              show.legend = FALSE,
-              size = 1.1,
-              color = "black"
-            ) +
-            geom_segment(
-              data = d2,
-              mapping = aes(
-                x = xend,
-                xend = xend,
-                y = ystart,
-                yend = yend
-              ),
-              show.legend = FALSE,
-              size = 1.1,
-              color = "black"
-            ) +
-            geom_text(
-              data = d1,
-              mapping = aes(
-                x = (xstart + xend) / 2,
-                y = height + 3 * adjust + distance ,
-                label = label
-              ),
-              show.legend = FALSE ,
-              color = "black",
-              size = 3 + font
-            )
-        }
-      p$result <- summray_data
-      p
-    }
-   
-    
-    
 
-
-########################################Example##############################
-
-# data = data.frame(
-#     x= factor(rbinom(1000,4,0.5)),
-#     y= abs(rnorm(1000)) ,
-#     x3= abs(rnorm(1000)) ,
-#     x2= abs(rnorm(1000)) ,
-#     z= factor(rbinom(1000,1,0.5)),
-#     z1= factor(0))
-# 
-# ####################### for one x (factor) and one y(quantitative)
-# bar.chart  (data,
-#            x =  c("x"),
-#            y=  "y",
-#            z = NULL,
-#            x.main.lab = NULL,
-#            x.text.lab = NULL,
-#            y.main.lab = NULL,
-#            z.main.lab = NULL,
-#            z.text.lab = NULL,
-#            alpha = 0.05,
-#            # transformation = FALSE,
-#            type = c("mean.ci", "median.quan","mean.sd")[1],
-#            p.label = letters[1:5], # p value labels
-#              p.algorithm.labels = letters[1:5] , # type 2 of p value labels based on letters
-#            adjust = NULL ,
-#            colorful = TRUE,
-#            main.title = NULL,
-#            distance = NULL,
-#            font=0)
-# 
-# ####################### for multiple x (quantitative) as y and z as factor
-# bar.chart  (data,
-#             x =  c("x3", "x2", "y"),
-#             y=  NULL,
-#             z = "z",
-#             x.main.lab = NULL,
-#             x.text.lab = c("x3", "x2", "y"),
-#             y.main.lab = NULL,
-#             z.main.lab = NULL,
-#             z.text.lab = NULL, 
-#             alpha = 0.05,
-#             # transformation = FALSE,
-#             type = c("mean.ci", "median.quan","mean.sd")[1],
-#             p.label = letters[5:7], # p value labels
-#             p.algorithm.labels = letters[1:6] , # type 2 of p value labels based on letters
-#             adjust = NULL ,
-#             colorful = TRUE,
-#             main.title = NULL,
-#             distance = NULL,
-#             font=0)
-# # 
-# #
-# # ####################### for one x (factor), one y (quantitative) and  z as factor
-# LETTERS[1:5],
-# bar.chart  (data,
-#             x =  "x",
-#             y=  "y",
-#             z = "z",
-#             x.main.lab = NULL,
-#             x.text.lab = NULL,
-#             y.main.lab = NULL,
-#             z.main.lab = NULL,
-#             z.text.lab = NULL, 
-#          
-#             alpha = 0.05,
-#             # transformation = FALSE,
-#             type = c("mean.ci", "median.quan","mean.sd")[1],
-#             p.label = letters[1:5], # p value labels
-#             p.algorithm.labels = letters[1:10] , # type 2 of p value labels based on letters
-#             adjust = NULL ,
-#             colorful = FALSE,
-#             main.title = NULL,
-#             distance = NULL,
-#             font=0)
-# #
-#
-#
-#
-#
-#
-# ################################## for ANOVA_table
-#
-# Data  = data.frame(
-#   R = 1:1000,
-#   Age = abs(rnorm(1000,32,10)),
-#   Group = factor(rbinom(1000,3,0.5)+1),
-#   Sex = factor(rbinom(1000,1,0.5)),
-#   y1 =  (rnorm(1000)),
-#   y2 =  (rnorm(1000)) ,
-#   y3 = abs(rnorm(1000))
-# )
-# D<-  ANOVA_table$new(data = Data, group =  "Group",
-#                      deps.quantitative = c("y1"))
-# 
-# bar.chart  (
-#   # data,
-#   # x =  c("x"),
-#   # y=  "y",
-#   # z = NULL,
-#   x.main.lab = NULL,
-#   x.text.lab = NULL,
-#   y.main.lab = NULL,
-#   z.main.lab = NULL,
-#   z.text.lab = NULL, 
-#   alpha = 0.05,
-#   # transformation = FALSE,
-#   type = c("mean.ci", "median.quan","mean.sd")[1],
-#   p.label = NULL,   #letters[1:5], # p value labels
-#   p.algorithm.labels = NULL,  #letters[1:5] , # type 2 of p value labels based on letters
-#   adjust = NULL ,
-#   colorful = TRUE,
-#   main.title = NULL,
-#   distance = NULL,
-#   font=0,
-#   ANOVA_table = D,
-#   report.p.algorithm.labeling = TRUE
-# )
-
-# ################################## for Repeat.measurment
-#
-# Data  = data.frame(
-#   R = 1:1000,
-#   Age = abs(rnorm(1000,32,10)),
-#   Group = factor(rbinom(1000,3,0.5)),
-#   Sex = factor(rbinom(1000,1,0.5)),
-#   y1 =  (rnorm(1000)),
-#   y2 =  (rnorm(1000)) ,
-#   y3 = abs(rnorm(1000))
-# )
-# 
-# 
-# MM1 =Repeat.measurment (data =Data, formula = cbind(y1, y2, y3) ~(Age+ Sex+ Group)*Time,
-#                         ID = "R",
-#                         comparison.formula = ~ Group|Time)
-# 
-#   bar.chart  (
-#   # data,
-#   # x =  c("x"),
-#   # y=  "y",
-#   # z = NULL,
-#   x.text.lab =  NULL,
-#   y.main.lab = "Salam",
-#   z.main.lab = "ASD",
-#   z.text.lab = letters[1:4],
-#   x.main.lab = "Time (h)",
-#   alpha = 0.05,
-#   # transformation = FALSE,
-#   type = c("mean.ci", "median.quan","mean.sd")[3],
-#   p.label = NULL,   #letters[1:5], # p value labels
-#   p.algorithm.labels = NULL,  #letters[1:5] , # type 2 of p value labels based on letters
-#   adjust = NULL ,
-#   colorful = FALSE,
-#   main.title = NULL,
-#   distance = NULL,
-#   font=0,
-#   ANOVA_table = NULL,
-#   Repeat.measurment = MM1,
-#   report.p.algorithm.labeling = TRUE
-# )
+ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = FALSE,
+                            public         = list(
+                              mainData     = NULL,
+                              data        = NULL,
+                              obs         = NULL,
+                              pred        = NULL,
+                              result      = data.frame( ),
+                              spliter     = NULL,
+                              x.lab       = NULL,
+                              spliter.lab = NULL,
+                              plot        = NULL,
+                              line.size   = NULL,
+                              Cut.off.points =   NULL,
+                              colorful = NULL,
+                              initialize = function(data , obs, pred, 
+                                                    pred.lab = NULL, spliter =NULL,
+                                                    spliter.lab = NULL, 
+                                                    line.size = 1,
+                                                    colorful = TRUE) {
+                                x.lab = pred.lab
+                                self$obs = obs
+                                self$line.size = line.size 
+                                self$colorful = colorful 
+                                self$pred = pred 
+                                
+                                # omit = function(data, obs, pred, spliter =NULL){
+                                #   temp = cbind(FlagID... = seq(1,dim()) ,data)
+                                # }
+                                self$mainData = data
+                                self$data =  (data[,c(obs,pred,spliter)]) #na.omit
+                                if(!is.null(x.lab)){self$x.lab <- x.lab} else {self$x.lab <- pred}
+                                if(!is.null(spliter)){
+                                  self$spliter <- spliter
+                                  if(!is.null(spliter.lab)){self$spliter.lab <- spliter.lab} else 
+                                  {self$spliter.lab <- unique(self$data[[spliter]])}
+                                  
+                                }
+                                # self$result <- private$myroc.area()
+                                self$ROCplot()
+                                invisible(self)
+                              },
+                              add = function(data=NULL , obs=NULL, pred, 
+                                             pred.lab = NULL, spliter =NULL,
+                                             spliter.lab = NULL) {
+                                x.lab <- pred.lab
+                                if(is.null(obs)) obs =  self$obs
+                                self$obs = obs
+                                self$pred = pred
+                                if(is.null(data)) data =  self$mainData
+                                self$data = (data[,c(obs,pred,spliter)])#na.omit
+                                if(!is.null(x.lab)){self$x.lab <- x.lab} else {self$x.lab <- pred}
+                                if(!is.null(spliter)){
+                                  self$spliter <- spliter
+                                  if(!is.null(spliter.lab)){self$spliter.lab <- spliter.lab} else 
+                                  {self$spliter.lab <- unique(self$data[[spliter]])}
+                                }else {
+                                  self$spliter     <- NULL
+                                  self$spliter.lab <- NULL  
+                                }
+                                # self$result <- private$myroc.area()
+                                self$ROCplot()
+                                invisible(self)
+                              },
+                              ROCplot = function(data =  self$data,
+                                                 x = self$pred,
+                                                 y = self$obs,
+                                                 x.lab= self$x.lab, 
+                                                 spliter =   self$spliter,
+                                                 spliter.lab = self$spliter.lab,
+                                                 line.size=self$line.size,
+                                                 colorful = self$colorful){
+                                require(ggplot2); require(verification);require(plotROC)
+                                
+                                if(is.null(spliter))  {
+                                  g= list(private$gg.Roc(data = data, x = x, y = y, x.lab = x.lab, 
+                                                         line.size= line.size, colorful = colorful))
+                                  private$cutoff(data = data, obs = y, pred = x) 
+                                  ###########
+                                  names(g)<- paste0(x, collapse = " & ")
+                                  
+                                  
+                                }
+                                
+                                if(!is.null(spliter) && (length(x) >1)) {
+                                  data <- split(data, f = as.factor(data[[spliter]]))
+                                  s.l <- length(data)
+                                  g = list()
+                                  for (i in 1:s.l){
+                                    g[[i]] <-    private$gg.Roc(data=data[[i]] ,  x = x, y = y, x.lab = x.lab, 
+                                                                line.size= line.size,
+                                                                colorful = colorful)
+                                    private$cutoff(data = data[[i]], obs = y, pred = x,
+                                                   spliter.label = paste0(spliter,": ", names(data)[i]) )
+                                    
+                                    cat("Element ", i," of list output is for ",spliter, ": '", names(data)[i],
+                                        "' (See names of elements of the list ).\n")
+                                    names(g)[i]<- paste0(spliter," - ", names(data)[i])
+                                    
+                                  }
+                                  
+                                  # self<<-self
+                                  # self<<-FF
+                                  di= dim(self$result)[1]
+                                  self$result$spliter <- c(self$result$spliter)
+                                  self$result[(di- (s.l*length(x))+1):di, "spliter"]<- rep(names(g),each=length(x))
+                                }
+                                
+                                if( !is.null(spliter) && (length(x)==1) )     {
+                                  g= list(private$gg.Roc.1factor(data = data, x = x, y = y,
+                                                                 x.lab = x.lab, spliter = spliter,spliter.lab = spliter.lab,
+                                                                 , line.size= line.size,
+                                                                 colorful = colorful))
+                                  names(g)<- paste0(x)
+                                  
+                                  data <- split(data, f = as.factor(data[[spliter]]))
+                                  s.l <- length(data)
+                                  for (i in 1:s.l){
+                                    private$cutoff(data = data[[i]], obs = y, pred = x, 
+                                                   spliter.label =  paste0(spliter,": ", names(data)[i])) 
+                                  }
+                                  
+                                }
+                                
+                                
+                                 print(g)
  
+                                self$plot <- c(self$plot,g) 
+                              },
+                              
+                              ggsave = function(filename=NULL,...) {
+                                n= length(self$plot)
+                                if(!is.null(filename) && (length(filename) == n)){
+                                  for (i in 1:n) {
+                                    ggsave(filename[i], plot=self$plot[[i]],...)
+                                  }
+                                } else {
+                                  filename= paste0(names(self$plot), ".jpg")
+                                  cat("The length of filename is not ", n, ". We change to ", 
+                                      paste0(filename, collapse = " & "),"\n\n")
+                                  for (i in 1:n) {
+                                    ggsave(filename[i], plot=self$plot[[i]],...)
+                                  }
+                                }} ,
+                              wd.Table = function(x= self$result,..., filename=NULL, path = ""){
+                                if("RDCOMClient" %in% rownames(installed.packages()) == FALSE)  { 
+                                  # Sys.setenv("TAR" = "internal") # if you need it.
+                                  # devtools::install_github("omegahat/RDCOMClient")
+                                  install.packages('RDCOMClient', repos = 'http://www.omegahat.org/R') }
+                                R2wd::wdGet(filename,path , method="RDCOMClient")
+                                R2wd::wdBody("\n\n")
+                                R2wd::wdTable(as.data.frame(x), ...)
+                                cat("Done!\n")
+                              },
+                              write.cb= function(x = self$result, row.names=TRUE, col.names=TRUE, comment=FALSE, text=NULL, ...){ 
+                                datafile <- file("clipboard", open='wt')
+                                on.exit(close(datafile))
+                                if(comment == TRUE)   {
+                                  if(is.null(comment(x))) warning("There is no comment for x! first add one by comment(x) = '...'") else
+                                    writeLines(comment(x), con=datafile)}
+                                write.table(x, file = datafile, sep = "\t", row.names = row.names,
+                                            col.names = col.names, ...)
+                                if(!is.null(text))   {writeLines(text , con=datafile)}
+                              }
+                            ),
+                            private = list(
+                              myroc.area = function(data = self$data, obs = self$obs, 
+                                                    pred = self$pred) {
+                                # y, obs:  A binary observation (coded {0, 1 }).
+                                # x,  pred:  A probability prediction on the interval [0,1].
+                                
+                                if (!is.null(data)) {
+                                  if (!(is.character(obs) &&
+                                        is.character(pred)))
+                                    stop("obs and pred must be charecter!")
+                                  pred1 <- c(data[[as.character(pred)]])
+                                  obs1 <- c(data[[as.character(obs)]])
+                                  
+                                } else {
+                                  obs1  <- obs
+                                  pred1 <- pred
+                                }
+                                name <-  pred
+                                g = verification::roc.area(obs1, pred1)
+                                di <- "direct"
+                                if (g$A < 0.5) {
+                                  g =   verification::roc.area(obs1,-1 * pred1)
+                                  di <- "indirect"
+                                }
+                                result <- as.data.frame(cbind(
+                                  name =  pred  ,
+                                  round((do.call(cbind, g)), 4),
+                                  "Direction" = di
+                                ))
+                                # cat("Results saved in `self$result`\n")
+                                result
+                                
+                              }, 
+                              cutoff = function(data = NULL, obs, pred, spliter.label = NULL) {
+                                obs1 <- c(data[[obs]])
+                                n.pred = length(pred)
+                                for (pr in 1:n.pred) {
+                                  
+                                  pred1 <- c(data[[pred[pr]]]) 
+                                  # print(spliter.label)
+                                  aa1= pROC::roc(response = obs1, predictor = pred1)
+                                  a.yu1= pROC::ci.coords(aa1,x= "best",best.method="youden",best.policy="random",boot.n=10000)
+                                  a.yu1 = as.data.frame(a.yu1)
+                                  cut.points = data.frame(spliter = spliter.label,
+                                                          name = pred[pr] ,
+                                                          Threshold = paste0(round(a.yu1[1,2],2)," (",round(a.yu1[1,1],3),",",round(a.yu1[1,3],3),")" ),
+                                                          Specificity = paste0(round(a.yu1[1,5]*100,2)," (",round(a.yu1[1,4]*100,3),",",round(a.yu1[1,6]*100,3),")" ),
+                                                          Sensitivity = paste0(round(a.yu1[1,8]*100,2)," (",round(a.yu1[1,7]*100,3),",",round(a.yu1[1,9]*100,3),")" )
+                                  )
+                                  self$Cut.off.points<-  rbind(self$Cut.off.points,cut.points)
+                                }
+                              },
+                              gg.Roc.1factor = function(data , x , y , x.lab, spliter,spliter.lab, line.size, colorful ){
+                                temp<-  na.omit(data[,c(x,y,spliter)])
+                                data<-  temp
+                                fe<- unique(temp[[spliter]])
+                                fe.n <- length(fe)
+                                temp<- split(temp,as.factor(temp[[spliter]]) )
+                                data[["variable"]] <- "999"
+                                # if(length(x.lab) == fe) cat("Use x.lab for spliter labels.")
+                                x.lab2<- c() 
+                                for (i in 1:fe.n) {
+                                  self$result <- rbind(self$result, cbind(spliter = paste0(spliter, " - ", spliter.lab[i]),
+                                                                          private$myroc.area (temp[[i]], obs =as.character(y),pred = as.character(x)), stringsAsFactors =FALSE))
+                                  a= as.numeric(as.character( private$myroc.area (temp[[i]], obs =as.character(y),pred = as.character(x))[["A"]]))
+                                  # dir<<-   private$myroc.area (temp[[i]], obs =as.character(y),pred = as.character(x))[["Direction"]] 
+                                  p= as.numeric(as.character( private$myroc.area (temp[[i]], obs=as.character(y), as.character(x))[["p.value"]]))
+                                  x.lab2[i] = paste0(spliter.lab[i], "\nAUC = ", round(a,2), ", p = ", round(p,3),"\n")
+                                  
+                                  if (p < 0.0009999999999){
+                                    p <- "p<0.001"
+                                    x.lab2[i] =   paste0(spliter.lab[i], "\nAUC = ", round(a,2),", ",   p,"\n")
+                                    
+                                  }      
+                                  data[["variable"]][which(data[[spliter]]== fe[i])] <-  x.lab2[i]
+                                  # if (dir == "indirect") data[[x]] <- -1*data[[x]]
+                                }
+                                
+                                
+                                
+                             g=    ggplot(data=data, aes(d = .data[[y]], m = .data[[x]],
+                                                      color= variable,
+                                                      linetype= variable)) + 
+                                  style_roc(guide = TRUE)+
+                                  geom_roc(n.cuts = 0, labels = FALSE, size = line.size)+
+                                  geom_abline(slope = 1, intercept = 0, color = "grey",linetype= "dashed")+
+                                  labs(colour="",linetype="")+
+                                  theme( legend.position = "bottom",
+                                         axis.text=element_text(face = "bold",size = 12,colour = "black") ,
+                                         legend.text=element_text(face = "bold" ,size = 12,colour = "black") ,
+                                         axis.title= element_text(face ="bold" ,size = 16,colour = "black"),
+                                         title =element_text(face ="bold" ,size = 14,colour = "black"))+
+                                  
+                                  theme( legend.key.width = unit(1.25,"cm"))+
+                                  scale_linetype_manual(values=c("solid", "dashed",  "dotted","dotdash" ,  "longdash" ,  "twodash"))#
+                              
+                             if(isFALSE(colorful)){
+                               g =  g +
+                                 scale_colour_grey(start = 0.01 , end = 0.01 )  } 
+                             return(g)  
+                             
+                                },
+                              gg.Roc = function(data , x , y , x.lab, line.size, colorful ){
+                                fe<- length(x) 
+                                temp<- data[,c(x,y)]
+                                
+                                x.lab2<- c()
+                                for (i in 1:fe) {
+                                  self$result <- rbind(self$result, cbind(spliter = "NO SPLIT",
+                                                                          private$myroc.area (data, obs =as.character(y),pred = as.character(x[i])), stringsAsFactors =FALSE))
+                                  a= as.numeric(as.character(private$myroc.area (data, obs =as.character(y),pred = as.character(x[i]))[["A"]]))
+                                  # dir<<-  private$myroc.area (data, obs =as.character(y),pred = as.character(x[i]))[["Direction"]] 
+                                  p= as.numeric(as.character( private$myroc.area (data, obs=as.character(y), as.character(x[i]))[["p.value"]]))
+                                  x.lab2[i] = paste0(x.lab[i], "\nAUC = ", round(a,2), ", p = ", round(p,3),"\n")
+                                  if (p <0.000999999999999){
+                                    p <- "p<0.001"
+                                    x.lab2[i] =   paste0(x.lab[i], "\nAUC = ", round(a,2),", ",   p,"\n")
+                                  }
+                                  # if (dir == "indirect") temp[[x.lab2[i]]]<- -1*temp[[x.lab2[i]]]
+                                  #####################################################                     
+                                  # private$cutoff(data = data, obs = as.character(y), pred =as.character(x[i])) 
+                                }
+                                names(temp) <- c(x.lab2, y)
+                                temp.melt <- reshape2::melt(temp, id.vars=y ,measure.vars = x.lab2)
+                                temp.melt$variable <- as.factor(temp.melt$variable)
+                                temp.melt[[y]] <- c(temp.melt[[y]]) 
+                                
+                                
+                                
+                                
+                              g=  ggplot(data=temp.melt, aes(d = temp.melt[[y]], m = value, 
+                                                           color= variable,
+                                                           linetype= variable)) + 
+                                  style_roc(guide = TRUE)+
+                                  geom_roc(n.cuts = 0, labels = FALSE, size = line.size)+
+                                  geom_abline(slope = 1, intercept = 0, color = "grey",linetype= "dashed")+
+                                  labs(colour="",linetype="")+
+                                  theme( legend.position = "bottom",
+                                         axis.text=element_text(face = "bold",size = 12,colour = "black") ,
+                                         legend.text=element_text(face = "bold" ,size = 12,colour = "black") ,
+                                         axis.title= element_text(face ="bold" ,size = 16,colour = "black"),
+                                         title =element_text(face ="bold" ,size = 14,colour = "black"))+
+                                  theme( legend.key.width = unit(1.25,"cm"))+
+                                  scale_linetype_manual(values=c("solid","dashed", "dotted",  "dotdash" ,  "longdash" ,  "twodash"))#
+                              if(isFALSE(colorful)){
+                                g =  g +
+                                  scale_colour_grey(start = 0.01 , end = 0.01 )  }
+                            return(g)  
+                              
+                              }
+                            )
+)
+
+
+
+
+# Example
+
+# data = data.frame(TG =rnorm(1000),
+#                   LDL = rnorm(1000),
+#                   HDL = rnorm(1000),
+#                   CAD = rbinom(1000,1,0.5),
+#                   Sex = rbinom(1000,1,0.5),
+#                   Smoking =rbinom(1000,1,0.5) 
+#            )
+# 
+#  D<-ROC_Analysis$new(data = data,
+#                      pred = "TG",
+#                      obs = "CAD", 
+#                      pred.lab = c("TG Horm"),
+#                      spliter = "Sex",
+#                      spliter.lab = c("M", "F")
+#                      ) 
+# D$result
+#  
+# D$add(data =  data, 
+#       pred = c("LDL","HDL") ,
+#       obs = "CAD", 
+#       spliter = "Smoking",
+#       spliter.lab = c("M", "F")
+#       )
+# D$result
+# 
+# D$add(data =  data, 
+#       pred = c("LDL","HDL") ,
+#       obs = "CAD" 
+# )
+# D$result 
+# 
+# D$add(data =  data, 
+#       pred = c("LDL") ,
+#       obs = "CAD"
+# )
+# D$result 
+# 
+# D$ggsave(  width = 5, height=5)
+# names(D$plot) 
+#  
+#  
