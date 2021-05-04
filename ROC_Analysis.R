@@ -10,13 +10,20 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                               x.lab       = NULL,
                               spliter.lab = NULL,
                               plot        = NULL,
+                              line.size   = NULL,
                               Cut.off.points =   NULL,
+                              colorful = NULL,
                               initialize = function(data , obs, pred, 
                                                     pred.lab = NULL, spliter =NULL,
-                                                    spliter.lab = NULL) {
+                                                    spliter.lab = NULL, 
+                                                    line.size = 1,
+                                                    colorful = TRUE) {
                                 x.lab = pred.lab
                                 self$obs = obs
+                                self$line.size = line.size 
+                                self$colorful = colorful 
                                 self$pred = pred 
+                                
                                 # omit = function(data, obs, pred, spliter =NULL){
                                 #   temp = cbind(FlagID... = seq(1,dim()) ,data)
                                 # }
@@ -60,14 +67,19 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                                  y = self$obs,
                                                  x.lab= self$x.lab, 
                                                  spliter =   self$spliter,
-                                                 spliter.lab = self$spliter.lab ){
+                                                 spliter.lab = self$spliter.lab,
+                                                 line.size=self$line.size,
+                                                 colorful = self$colorful){
                                 require(ggplot2); require(verification);require(plotROC)
                                 
                                 if(is.null(spliter))  {
-                                  g= list(private$gg.Roc(data = data, x = x, y = y, x.lab = x.lab))
+                                  g= list(private$gg.Roc(data = data, x = x, y = y, x.lab = x.lab, 
+                                                         line.size= line.size, colorful = colorful))
                                   private$cutoff(data = data, obs = y, pred = x) 
                                   ###########
                                   names(g)<- paste0(x, collapse = " & ")
+                                  
+                                  
                                 }
                                 
                                 if(!is.null(spliter) && (length(x) >1)) {
@@ -75,7 +87,9 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                   s.l <- length(data)
                                   g = list()
                                   for (i in 1:s.l){
-                                    g[[i]] <-    private$gg.Roc(data=data[[i]] ,  x = x, y = y, x.lab = x.lab)
+                                    g[[i]] <-    private$gg.Roc(data=data[[i]] ,  x = x, y = y, x.lab = x.lab, 
+                                                                line.size= line.size,
+                                                                colorful = colorful)
                                     private$cutoff(data = data[[i]], obs = y, pred = x,
                                                    spliter.label = paste0(spliter,": ", names(data)[i]) )
                                     
@@ -94,7 +108,9 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                 
                                 if( !is.null(spliter) && (length(x)==1) )     {
                                   g= list(private$gg.Roc.1factor(data = data, x = x, y = y,
-                                                                 x.lab = x.lab, spliter = spliter,spliter.lab = spliter.lab))
+                                                                 x.lab = x.lab, spliter = spliter,spliter.lab = spliter.lab,
+                                                                 , line.size= line.size,
+                                                                 colorful = colorful))
                                   names(g)<- paste0(x)
                                   
                                   data <- split(data, f = as.factor(data[[spliter]]))
@@ -105,7 +121,10 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                   }
                                   
                                 }
-                                print(g)
+                                
+                                
+                                 print(g)
+ 
                                 self$plot <- c(self$plot,g) 
                               },
                               
@@ -196,7 +215,7 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                   self$Cut.off.points<-  rbind(self$Cut.off.points,cut.points)
                                 }
                               },
-                              gg.Roc.1factor = function(data , x , y , x.lab, spliter,spliter.lab ){
+                              gg.Roc.1factor = function(data , x , y , x.lab, spliter,spliter.lab, line.size, colorful ){
                                 temp<-  na.omit(data[,c(x,y,spliter)])
                                 data<-  temp
                                 fe<- unique(temp[[spliter]])
@@ -224,11 +243,11 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                 
                                 
                                 
-                                ggplot(data=data, aes(d = .data[[y]], m = .data[[x]],
+                             g=    ggplot(data=data, aes(d = .data[[y]], m = .data[[x]],
                                                       color= variable,
                                                       linetype= variable)) + 
                                   style_roc(guide = TRUE)+
-                                  geom_roc(n.cuts = 0, labels = FALSE, size = 1)+
+                                  geom_roc(n.cuts = 0, labels = FALSE, size = line.size)+
                                   geom_abline(slope = 1, intercept = 0, color = "grey",linetype= "dashed")+
                                   labs(colour="",linetype="")+
                                   theme( legend.position = "bottom",
@@ -236,11 +255,17 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                          legend.text=element_text(face = "bold" ,size = 12,colour = "black") ,
                                          axis.title= element_text(face ="bold" ,size = 16,colour = "black"),
                                          title =element_text(face ="bold" ,size = 14,colour = "black"))+
-
-                                  theme( legend.key.width = unit(1.5,"cm"))+
-                                  scale_linetype_manual(values=c("solid","dotted", "dashed",  "dotdash" ,  "longdash" ,  "twodash"))#
-                              },
-                              gg.Roc = function(data , x , y , x.lab ){
+                                  
+                                  theme( legend.key.width = unit(1.25,"cm"))+
+                                  scale_linetype_manual(values=c("solid", "dashed",  "dotted","dotdash" ,  "longdash" ,  "twodash"))#
+                              
+                             if(isFALSE(colorful)){
+                               g =  g +
+                                 scale_colour_grey(start = 0.01 , end = 0.01 )  } 
+                             return(g)  
+                             
+                                },
+                              gg.Roc = function(data , x , y , x.lab, line.size, colorful ){
                                 fe<- length(x) 
                                 temp<- data[,c(x,y)]
                                 
@@ -268,20 +293,25 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                 
                                 
                                 
-                                ggplot(data=temp.melt, aes(d = temp.melt[[y]], m = value, 
+                              g=  ggplot(data=temp.melt, aes(d = temp.melt[[y]], m = value, 
                                                            color= variable,
                                                            linetype= variable)) + 
                                   style_roc(guide = TRUE)+
-                                  geom_roc(n.cuts = 0, labels = FALSE, size = 1)+
+                                  geom_roc(n.cuts = 0, labels = FALSE, size = line.size)+
                                   geom_abline(slope = 1, intercept = 0, color = "grey",linetype= "dashed")+
                                   labs(colour="",linetype="")+
                                   theme( legend.position = "bottom",
                                          axis.text=element_text(face = "bold",size = 12,colour = "black") ,
                                          legend.text=element_text(face = "bold" ,size = 12,colour = "black") ,
                                          axis.title= element_text(face ="bold" ,size = 16,colour = "black"),
-                                        title =element_text(face ="bold" ,size = 14,colour = "black"))+
-                                  theme( legend.key.width = unit(1.5,"cm"))+
-                                  scale_linetype_manual(values=c("solid","dotted", "dashed",  "dotdash" ,  "longdash" ,  "twodash"))#
+                                         title =element_text(face ="bold" ,size = 14,colour = "black"))+
+                                  theme( legend.key.width = unit(1.25,"cm"))+
+                                  scale_linetype_manual(values=c("solid","dashed", "dotted",  "dotdash" ,  "longdash" ,  "twodash"))#
+                              if(isFALSE(colorful)){
+                                g =  g +
+                                  scale_colour_grey(start = 0.01 , end = 0.01 )  }
+                            return(g)  
+                              
                               }
                             )
 )
