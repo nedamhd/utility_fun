@@ -236,14 +236,17 @@ my.ggplot.manova<- function(model,
         y = .y  + .type+upper.dist, 
         label = .labels),
         position=position_dodge(width=0.9))+
-      labs(x=x.lab,y=y.lab,fill=fill.lab)+
+      labs(x=x.lab,y=y.lab,fill=fill.lab, title =title)+
       theme(panel.grid = element_blank())
     
     
     if(is.null(grid)){
       
       g2<- g+scale_fill_grey( start =0)
-      ifelse(isTRUE(wi.bl),print(g2),print(g))}
+      if(isTRUE(wi.bl)) g = g2 
+    
+    
+    }
     
     if(!is.null(fill)){
       if(!is.null(grid)){
@@ -253,7 +256,9 @@ my.ggplot.manova<- function(model,
         k= g+facet_grid(.~ factor(.grid))
         
         k2<- k+scale_fill_grey( start =0)
-        ifelse(isTRUE(wi.bl),print(k2),print(k))
+        g = k
+        if(isTRUE(wi.bl)) g = k2
+        
         
       }
     }
