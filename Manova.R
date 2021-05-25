@@ -170,7 +170,7 @@ my.ggplot.manova<- function(model,
                             fill.labels = NULL,
                             upper.dist = NULL,
                             wi.bl = FALSE,
-                            erroebar.title = FALSE 
+                            erroebar.title = FALSE , title =NULL
 ){
   if(class(model)!="Main.Manova") stop('The class of object is not "Main.Manova"')
   summary_data<- model$table$result
@@ -210,7 +210,7 @@ my.ggplot.manova<- function(model,
         y = .y  + .type+upper.dist, 
         label = .labels),
         position=position_dodge(width=0.9))+
-      labs(x=x.lab,y=y.lab)+
+      labs(x=x.lab,y=y.lab, title =title)+
       theme(panel.grid = element_blank())
     
     print(m)}
