@@ -258,7 +258,9 @@ my.ggplot.manova<- function(model,
       }
     }
     
-  }}
+  }
+g
+}
 
 
 
