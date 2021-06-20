@@ -9,7 +9,7 @@
 librares<- c("ggplot2","dplyr", "wrapr","R2wd")
 for(i in librares)
   if(i %in% rownames(installed.packages()) == FALSE) install.packages(i)
-
+rm(librares)
 
 ##########################
 # Important common libraries
