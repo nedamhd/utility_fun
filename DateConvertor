@@ -1,0 +1,104 @@
+DateConvertor =
+  function(x,
+           original.calender =  "gregorian" ,
+           converted.calender =  "persian" ,
+           original.format = "%Y/%m/%d",
+           converted.format = "%Y-%m-%d",
+           clipboard = FALSE) {
+    #Check and install ConvCalendar package
+    if ("ConvCalendar" %in% rownames(installed.packages()) == FALSE) {
+      download.file(
+        "https://cran.r-project.org/src/contrib/Archive/ConvCalendar/ConvCalendar_1.2.tar.gz",
+        "ConvCalendar"
+      )
+      install.packages("ConvCalendar", repos = NULL, type = "source")
+    }
+    #Handeling NA
+    require(ConvCalendar)
+    mydates = as.Date(x, format = original.format)
+    na.number = which(is.na(mydates))
+    mydates[na.number] <-
+      format(as.Date("2000-1-1"))#################
+    
+    if (all(is.na(mydates) == TRUE))
+      stop(
+        "Please check the \"original.format\" argument. It is not adapt with your input vector format."
+      )
+    year <-
+      as.numeric(format(mydates, format = "%Y"))
+    month <-
+      as.numeric(format(mydates, format = "%m"))
+    day <-
+      as.numeric(format(mydates, format = "%d"))
+    original.date <-
+      OtherDate(
+        day = day,
+        month = month,
+        year = year,
+        calendar = original.calender[1]
+      )
+    converted.date <-
+      as.OtherDate(original.date , calendar = converted.calender[1] )
+ 
+    
+############# formating new calender (because there is a bug in format argoman of as.OtherDate for persian calender)     
+   Y = converted.date$year 
+   m = converted.date$month 
+   d = converted.date$day
+    
+ s =  strsplit(converted.format, split= "")[[1]]    
+ w.s = which(s == "%")   
+
+ if(length(w.s ) == 3){    
+ converted.date <-   paste0(
+   get(s[w.s[1] + 1]),
+  ifelse(w.s[1]+2  < w.s[2], paste0(s[(w.s[1] + 2):(w.s[2] - 1)], collapse = ""), ""),
+   get(s[w.s[2] + 1]),
+  ifelse(w.s[2]+2  < w.s[3], paste0(s[(w.s[2] + 2):(w.s[3] - 1)], collapse = ""), ""),
+   get(s[w.s[3] + 1]),
+  ifelse( w.s[3]+1  < length(s), paste0(s[(w.s[3] + 2):(length(s))], collapse = ""), "")
+  
+ ) }
+ 
+ if(length(w.s ) == 2) {   
+   converted.date <-   paste0(
+     get(s[w.s[1] + 1]),
+     ifelse(w.s[1]+2  < w.s[2], paste0(s[(w.s[1] + 2):(w.s[2] - 1)], collapse = ""), ""),
+     get(s[w.s[2] + 1]),
+     ifelse( w.s[2]+1  < length(s), paste0(s[(w.s[2] + 2):(length(s))], collapse = ""), "")
+     
+   ) }
+ 
+ if(length(w.s ) == 1) {   
+   converted.date <-  paste0(   
+     get(s[w.s[1] + 1]) ,
+ ifelse( 2  < length(s), paste0(s[(w.s[1] + 2):(length(s))], collapse = ""), "")
+ )}
+############################### 
+   
+
+                                   
+    if (clipboard == TRUE) {
+      converted.date2 = data.frame(Date = as.character(converted.date))
+      converted.date2[na.number, ] <- NA
+      #define write.cb function
+      write.cb <-
+        function(x,
+                 row.names = FALSE,
+                 col.names = FALSE,
+                 ...)
+          write.table(
+            x,
+            file = "clipboard",
+            sep =  "\t",
+            row.names = row.names,
+            col.names = col.names,
+            ...
+          )
+      
+      write.cb(converted.date2)
+    }
+    
+    converted.date[na.number] <- NA
+    converted.date
+  }
