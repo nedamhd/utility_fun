@@ -1,4 +1,4 @@
-GetSummary <- function(data, dep.quantitative, group){
+GetSummary <- function(data, dep.quantitative, group = NULL){
   # data$group <- as.group(data[,group])
   
   ## Pipes ---------------------------------
