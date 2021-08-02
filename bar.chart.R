@@ -78,6 +78,9 @@ bar.chart <-
       IV.names = IV.names[which(IV.names != "Time")]
       if(length(IV.names) > 1) stop("'bar.chart' just compateble with two variable in comparison.formula.")
       z = IV.names
+
+      if(length(IV.names) == 0)
+        z = NULL
       
       
       if(is.null(y.lab))
@@ -400,209 +403,209 @@ bar.chart <-
           yend = c(height + adjust + distance)
         )   %>% as.data.frame()
         
-      }
+    }
+    
+    #########################
+    
+    
+    if (is.null(z.lab)) {
       
-      #########################
       
-      
-      if (is.null(z.lab)) {
-        
-        
-        p <- ggplot() +
-          stat_summary(
-            geom = "bar",
-            fun  = "mean",
-            mapping = aes(x = variable,
-                          y = value,
-                          # fill =  z.lab
-            ),                        
-            color =  "black",
-            fill =  "black",
-            
-            data = data.melt,
-            position = position_dodge(width = width.dodge),
-            na.rm = TRUE,
-            width = width,
-            alpha = 1
-          )  +
+      p <- ggplot() +
+        stat_summary(
+          geom = "bar",
+          fun  = "mean",
+          mapping = aes(x = variable,
+                        y = value,
+                        # fill =  z.lab
+          ),                        
+          color =  "black",
+          fill =  "black",
           
-          geom_errorbar(
-            data = summray_data,
-            mapping = aes(
-              ymax = ymax,
-              ymin = ymin,
-              width = width.errorbar,
-              
-              y = y,
-              x = variable,
-              # linetype = z.lab ,
-            ),
-            size = 1.1,
-            show.legend = FALSE,
-            # color = "black",
-            position = position_dodge(width = width.dodge)
-          ) +
-          
-          theme_classic() +
-          theme(
-            panel.background = element_blank() ,
-            panel.grid = element_blank(),
-            axis.line = element_line(size = 1.25),
-            axis.text = element_text(
-              size = 12 + font,
-              face = "bold",
-              color = "black"
-            ),
-            axis.title  = element_text(
-              size = 12 + font,
-              face = "bold",
-              color = "black"
-            ),
-            legend.text = element_text(
-              size = 12 + font,
-              face = "bold",
-              color = "black"
-            ),
-            legend.title = element_text(
-              size = 12 + font,
-              face = "bold",
-              color = "black"
-            ),
-            plot.title = element_text(
-              size = 16 + font,
-              face = "bold",
-              color = "black"
-            )
-            
-            
-          )  +
-          labs(x =  x.main.lab ,
-               y = y.lab,
-               # color = z.lab,
-               # fill = z.lab,
-               # shape = z.lab,
-               title =  main.title) +
-          # scale_y_continuous(#expand = c(0.0, 0.5),) +
-          scale_linetype_manual(values = rep(1, 8)) +
-          scale_x_discrete(labels=x.lab)+
-          guides(color = guide_legend(override.aes = list(size = 5)))
+          data = data.melt,
+          position = position_dodge(width = width.dodge),
+          na.rm = TRUE,
+          width = width,
+          alpha = 1
+        )  +
         
-        
-        
-        if (!isTRUE(colorful))
-          p =  p +
-            scale_colour_grey(start = 0.3 , end = 0.7) +
-            scale_fill_grey(start = 0.3 , end = 0.7)
-        
-        
-        
-        base.of.y = ggplot_build(p)$layout$panel_params[[1]]$y.range
-        if (is.null(adjust))
-          adjust = (abs(base.of.y[2]) + abs(base.of.y[1])) / plot.adjust
-        
-        if (is.null(distance))
-          distance = (abs(base.of.y[2]) + abs(base.of.y[1])) / plot.adjust
-        
-        xx <- ggplot_build(p)$data[[2]]$x
-        
-        
-        
-      }
-      
-      
-      ########################################
-      
-      if (!is.null(p.algorithm.labels)) {
-        if (length(p.algorithm.labels) != dim(summray_data)[1])
-          stop(paste0(
-            "The length of p.algorithm.labels is not equall to ",
-            dim(summray_data)[1]
-          ))
-        summray_data$xx  = xx
-        summray_data$p.algorithm.labels  = p.algorithm.labels
-        summray_data <- summray_data
-        
-        p = p + geom_text(
+        geom_errorbar(
           data = summray_data,
           mapping = aes(
-            x = xx,
-            y =  ymax + 2 * adjust + distance  ,
-            label = p.algorithm.labels
+            ymax = ymax,
+            ymin = ymin,
+            width = width.errorbar,
+            
+            y = y,
+            x = variable,
+            # linetype = z.lab ,
           ),
-          show.legend = FALSE ,
-          color = "black",
-          size = 3 + font
-        )
+          size = 1.1,
+          show.legend = FALSE,
+          # color = "black",
+          position = position_dodge(width = width.dodge)
+        ) +
         
-        
-      }
-      
-      
-      
-      
-      
-      
-      ######################
-      if (!is.null(p.label))
-        if (!is.null(z)) {
-          if (length(p.label) != dim(d1)[1])
-            stop(paste0("The length of p.label is not equall to ", dim(d1)[1]))
+        theme_classic() +
+        theme(
+          panel.background = element_blank() ,
+          panel.grid = element_blank(),
+          axis.line = element_line(size = 1.25),
+          axis.text = element_text(
+            size = 12 + font,
+            face = "bold",
+            color = "black"
+          ),
+          axis.title  = element_text(
+            size = 12 + font,
+            face = "bold",
+            color = "black"
+          ),
+          legend.text = element_text(
+            size = 12 + font,
+            face = "bold",
+            color = "black"
+          ),
+          legend.title = element_text(
+            size = 12 + font,
+            face = "bold",
+            color = "black"
+          ),
+          plot.title = element_text(
+            size = 16 + font,
+            face = "bold",
+            color = "black"
+          )
           
-          p =  p +
-            geom_segment(
-              data = d1,
-              mapping = aes(
-                x = xstart,
-                xend = xend,
-                y = ystart,
-                yend = yend
-              ),
-              show.legend = FALSE,
-              size = 1.1,
-              color = "black"
-            ) +
-            geom_segment(
-              data = d2,
-              mapping = aes(
-                x = xstart,
-                xend = xstart,
-                y = ystart,
-                yend = yend
-              ),
-              show.legend = FALSE,
-              size = 1.1,
-              color = "black"
-            ) +
-            geom_segment(
-              data = d2,
-              mapping = aes(
-                x = xend,
-                xend = xend,
-                y = ystart,
-                yend = yend
-              ),
-              show.legend = FALSE,
-              size = 1.1,
-              color = "black"
-            ) +
-            geom_text(
-              data = d1,
-              mapping = aes(
-                x = (xstart + xend) / 2,
-                y = height + 3 * adjust + distance ,
-                label = label
-              ),
-              show.legend = FALSE ,
-              color = "black",
-              size = 3 + font
-            )
-        }
-      p$result <- summray_data
-      p
+          
+        )  +
+        labs(x =  x.main.lab ,
+             y = y.lab,
+             # color = z.lab,
+             # fill = z.lab,
+             # shape = z.lab,
+             title =  main.title) +
+        # scale_y_continuous(#expand = c(0.0, 0.5),) +
+        scale_linetype_manual(values = rep(1, 8)) +
+        scale_x_discrete(labels=x.lab)+
+        guides(color = guide_legend(override.aes = list(size = 5)))
+      
+      
+      
+      if (!isTRUE(colorful))
+        p =  p +
+          scale_colour_grey(start = 0.3 , end = 0.7) +
+          scale_fill_grey(start = 0.3 , end = 0.7)
+      
+      
+      
+      base.of.y = ggplot_build(p)$layout$panel_params[[1]]$y.range
+      if (is.null(adjust))
+        adjust = (abs(base.of.y[2]) + abs(base.of.y[1])) / plot.adjust
+      
+      if (is.null(distance))
+        distance = (abs(base.of.y[2]) + abs(base.of.y[1])) / plot.adjust
+      
+      xx <- ggplot_build(p)$data[[2]]$x
+      
+      
+      
     }
-   
     
     
+    ########################################
+    
+    if (!is.null(p.algorithm.labels)) {
+      if (length(p.algorithm.labels) != dim(summray_data)[1])
+        stop(paste0(
+          "The length of p.algorithm.labels is not equall to ",
+          dim(summray_data)[1]
+        ))
+      summray_data$xx  = xx
+      summray_data$p.algorithm.labels  = p.algorithm.labels
+      summray_data <- summray_data
+      
+      p = p + geom_text(
+        data = summray_data,
+        mapping = aes(
+          x = xx,
+          y =  ymax + 2 * adjust + distance  ,
+          label = p.algorithm.labels
+        ),
+        show.legend = FALSE ,
+        color = "black",
+        size = 3 + font
+      )
+      
+      
+    }
+    
+    
+    
+    
+    
+    
+    ######################
+    if (!is.null(p.label))
+      if (!is.null(z)) {
+        if (length(p.label) != dim(d1)[1])
+          stop(paste0("The length of p.label is not equall to ", dim(d1)[1]))
+        
+        p =  p +
+          geom_segment(
+            data = d1,
+            mapping = aes(
+              x = xstart,
+              xend = xend,
+              y = ystart,
+              yend = yend
+            ),
+            show.legend = FALSE,
+            size = 1.1,
+            color = "black"
+          ) +
+          geom_segment(
+            data = d2,
+            mapping = aes(
+              x = xstart,
+              xend = xstart,
+              y = ystart,
+              yend = yend
+            ),
+            show.legend = FALSE,
+            size = 1.1,
+            color = "black"
+          ) +
+          geom_segment(
+            data = d2,
+            mapping = aes(
+              x = xend,
+              xend = xend,
+              y = ystart,
+              yend = yend
+            ),
+            show.legend = FALSE,
+            size = 1.1,
+            color = "black"
+          ) +
+          geom_text(
+            data = d1,
+            mapping = aes(
+              x = (xstart + xend) / 2,
+              y = height + 3 * adjust + distance ,
+              label = label
+            ),
+            show.legend = FALSE ,
+            color = "black",
+            size = 3 + font
+          )
+      }
+    p$result <- summray_data
+    p
+  }
+
+
+
 
 
 ########################################Example##############################
