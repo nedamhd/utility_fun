@@ -1,93 +1,119 @@
-
 Repeat.measurment =  function(data, 
                               formula  , 
                               ID,
                               comparison.formula, 
                               adjust ="none"
-                             ){
+){
   # data: wide data
   # formula: like 'cbind(y1, y2, y3) ~(Age+ Sex+ Group)*Time'
   # ID: A variable to identify the subjects 
   # comparison.formula: Formula for multiple comparison like  '~ Group|Time' or '~ Group*Time'
   # adjust: p value adjustment. see '?p.adjust()'
- 
-DV.names = all.vars(update(formula, . ~ 1))
-IV.names = all.vars(update(formula, 1 ~ .))
-Time = factor(c(DV.names))
-if(! "Time" %in% IV.names) stop("The name of within subjevt varible in the formula must be 'Time'.")
-IV.names = IV.names[which(IV.names != "Time")]
-
-melt.data = reshape2::melt(data,id= c(ID,IV.names), measure.vars = DV.names, variable.name = "Time")   
-IV.names = c(IV.names, "Time")
-
-options(contrasts = c("contr.sum","contr.poly"))
-...fixed123456789 <<-Reduce(paste, deparse(update(formula, value ~ .)))
-M1 <-nlme::lme(fixed= as.formula(...fixed123456789),
-       random= as.formula(paste0("~ 1|", ID)), data=melt.data,
-       method="REML",
-       correlation=nlme::corCompSymm(form=   as.formula(paste0("~ 1|", ID))      ))
-# M2<- lm( formula,data=data)
-Anova.M1 <- car::Anova(M1 , type = "III")
-# Anova.M1 = Anova(M2, idata=data.frame(Time), idesign=~Time, type = "III")
-main.table =as.data.frame(Anova.M1)  
-main.table$Chisqstat= paste0(round(Anova.M1$Chisq,2), " (", Anova.M1$Df, ")")
-main.table<- data.frame("Chisq (df)"=  main.table[,4],
-                        "P.value"=round(  main.table[,3],3))
-row.names(main.table) = row.names(Anova.M1)
-
- 
- 
-l=NULL
-if(!is.null(comparison.formula)){
-emm <- emmeans::emmeans(M1, comparison.formula)
-comparison.object = emmeans::contrast(emm, interaction = "pairwise", adjust = adjust) 
-comparison = data.frame(comparison.object)
-# pairs(emm)  # adjust argument not specified -> default p-value adjustment in this case is "tukey"  
-
-by = unique(comparison[,2] )
-
-l = list()
-require(multcompView)                       
-for(i in 1:length(by)) {
-  comparison.by =comparison[which(comparison[,2] == by[i]), c(1,7)]
-  comparison.by.p =  comparison.by[,2]
-  comparison.by.name =  strsplit(as.character(comparison.by[,1]), " - ")
-  comparison.by.name2 = c()
-  for (ii in 1:length(comparison.by.name)) {
-    comparison.by.name2[ii] = paste0(comparison.by.name[[ii]], collapse = "-")
+  
+  DV.names = all.vars(update(formula, . ~ 1))
+  IV.names = all.vars(update(formula, 1 ~ .))
+  Time = factor(c(DV.names))
+  if(! "Time" %in% IV.names) stop("The name of within subjevt varible in the formula must be 'Time'.")
+  IV.names = IV.names[which(IV.names != "Time")]
+  
+  melt.data = reshape2::melt(data,id= c(ID,IV.names), measure.vars = DV.names, variable.name = "Time")   
+  IV.names = c(IV.names, "Time")
+  
+  options(contrasts = c("contr.sum","contr.poly"))
+  ...fixed123456789 <<-Reduce(paste, deparse(update(formula, value ~ .)))
+  M1 <-nlme::lme(fixed= as.formula(...fixed123456789),
+                 random= as.formula(paste0("~ 1|", ID)), data=melt.data,
+                 method="REML",
+                 correlation=nlme::corCompSymm(form=   as.formula(paste0("~ 1|", ID))))
+  # M2<- lm( formula,data=data)
+  Anova.M1 <- car::Anova(M1 , type = "III")
+  # Anova.M1 = Anova(M2, idata=data.frame(Time), idesign=~Time, type = "III")
+  main.table =as.data.frame(Anova.M1)  
+  main.table$Chisqstat= paste0(round(Anova.M1$Chisq,2), " (", Anova.M1$Df, ")")
+  main.table<- data.frame("Chisq (df)"=  main.table[,4],
+                          "P.value"=round(  main.table[,3],3))
+  row.names(main.table) = row.names(Anova.M1)
+  
+  
+  comparison        = data.frame()
+  emm               = data.frame()
+  comparison.object = data.frame()
+  l=NULL
+  if(!is.null(comparison.formula)){
+    emm <- emmeans::emmeans(M1, comparison.formula)
+    comparison.object = emmeans::contrast(emm, interaction = "pairwise", adjust = adjust) 
+    comparison = data.frame(comparison.object)
+    # pairs(emm)  # adjust argument not specified -> default p-value adjustment in this case is "tukey"  
+     
+   if(dim(comparison)[2] == 7 ) {
+    by = unique(comparison[,2] )
+    
+   
+      l = list()
+    require(multcompView)                       
+    for(i in 1:length(by)) {
+      comparison.by =comparison[which(comparison[,2] == by[i]), c(1,7)]
+      comparison.by.p =  comparison.by[,2]
+      comparison.by.name =  strsplit(as.character(comparison.by[,1]), " - ")
+      comparison.by.name2 = c()
+      for (ii in 1:length(comparison.by.name)) {
+        comparison.by.name2[ii] = paste0(comparison.by.name[[ii]], collapse = "-")
+      }
+      names(comparison.by.p) = comparison.by.name2
+      l[[i]]<-multcompLetters(
+        comparison.by.p
+      )$Letters
+      
+    }
+    l =do.call(rbind,l)
+    
+    row.names(l)= by
+  
   }
-  names(comparison.by.p) = comparison.by.name2
-  l[[i]]<-multcompLetters(
-    comparison.by.p
-  )$Letters
-  
-}
-l =do.call(rbind,l)
-
-row.names(l)= by
-}
+    
+    if(dim(comparison)[2] == 6 ) {
+       
+      
+      l = c()
+      require(multcompView)                       
+        comparison.by =comparison[ , c(1,6)]
+        comparison.by.p =  comparison.by[,2]
+        comparison.by.name =  strsplit(as.character(comparison.by[,1]), " - ")
+        comparison.by.name2 = c()
+        for (ii in 1:length(comparison.by.name)) {
+          comparison.by.name2[ii] = paste0(comparison.by.name[[ii]], collapse = "-")
+        }
+        names(comparison.by.p) = comparison.by.name2
+        l <-multcompLetters(
+          comparison.by.p
+        )$Letters
+        
+      }
+       
+       
+    }
  
-...fixed123456789<<- NULL  
-rm(...fixed123456789, envir = globalenv()) 
- 
-
-
-res = list(main.results = list( main.table = main.table, 
-                                comparison = comparison, 
-                                letter= l),
-      invisible.results = list(data = melt.data, 
-                               comparison.formula = comparison.formula,
-                               lme.model = M1, 
-                               car.Anova = Anova.M1, 
-                               emmeans = list(emmeans = emm, 
-                                              contrast = comparison.object))                 
-           
-           
-           )
-class(res) = "Repeat.measurment"
-res
- }
+  ...fixed123456789<<- NULL  
+  rm(...fixed123456789, envir = globalenv()) 
   
+  
+  
+  res = list(main.results = list( main.table = main.table, 
+                                  comparison = comparison, 
+                                  letter= l),
+             invisible.results = list(data = melt.data, 
+                                      comparison.formula = comparison.formula,
+                                      lme.model = M1, 
+                                      car.Anova = Anova.M1, 
+                                      emmeans = list(emmeans = emm, 
+                                                     contrast = comparison.object))                 
+             
+             
+  )
+  class(res) = "Repeat.measurment"
+  res
+}
+
 ###################Examples#######################
 # Data  = data.frame(
 #   R = 1:1000,
@@ -111,6 +137,5 @@ res
 # 
 # 
 # MM2$main.results
-# 
 # 
 # 
