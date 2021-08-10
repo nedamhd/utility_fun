@@ -15,7 +15,7 @@ row.names(Re2)=row.names(Re)
 }
   
 
-  if( class(M0)[1]== "glm" ){
+  if( "glm" %in% class(M0) ){
  cat("Ahad: Classic method by glm\n\n")
   s.M0=summary(M0)
   CI<-  (confint(M0))
