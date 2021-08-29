@@ -1,4 +1,5 @@
- 
+#TODO: add median and IQR to table for nanparametric variables.
+
 Table_One <-   R6::R6Class(
   "table.One",
   public =  list(
@@ -7,12 +8,14 @@ Table_One <-   R6::R6Class(
     deps.quantitative    = NULL,
     deps.qualitative     = NULL,
     wilcox               = FALSE,
+    shapiro              = TRUE,
     results              = list(),
     initialize          = function(data, group, 
                                    deps.quantitative=NULL, 
                                    deps.qualitative=NULL, 
-                                   wilcox = FALSE) {
+                                   wilcox = FALSE, shapiro  = TRUE ) {
       self$data = data 
+      self$shapiro = shapiro
       self$group = group
       self$deps.quantitative = deps.quantitative
       self$deps.qualitative = deps.qualitative
@@ -24,14 +27,18 @@ Table_One <-   R6::R6Class(
     add.quantitative = function(data = NULL, 
                                 group = NULL, 
                                 deps.quantitative = NULL, 
-                                wilcox = NULL) {
+                                wilcox = NULL, shapiro  = NULL) {
       
-      if(is.null(data))               data               = self$data
-      if(is.null(group))              group              = self$group
-      if(is.null(deps.quantitative))   deps.quantitative  = self$deps.quantitative
-      if(is.null(wilcox))             wilcox             = self$wilcox
+      if(is.null(data))               data                = self$data
+      if(is.null(group))              group               = self$group
+      if(is.null(deps.quantitative))  deps.quantitative   = self$deps.quantitative
+      if(is.null(wilcox))             wilcox              = self$wilcox
+      if(is.null(shapiro))            shapiro             = self$shapiro
       
-      private$ttest(data = data, group = group, deps = deps.quantitative, wilcox = wilcox )
+      private$ttest(data = data, 
+                    group = group, 
+                    deps = deps.quantitative, 
+                    wilcox = wilcox,  shapiro =  shapiro )
     },
     add.qualitative = function(data = NULL, 
                                group = NULL, 
@@ -71,7 +78,7 @@ Table_One <-   R6::R6Class(
   ),
   private  = list(
     result.for.plot = data.frame(),
-    ttest     = function(data, group, deps, wilcox = FALSE) {
+    ttest     = function(data, group, deps, wilcox = FALSE, shapiro = TRUE ) {
       if(!(length(deps)== length(wilcox) | length(wilcox) == 1 ))
         stop("length of wilcox must be the same as deps or one!")
       # self$data = data 
@@ -88,10 +95,11 @@ Table_One <-   R6::R6Class(
       for (dep in  deps) {
         if(length(deps)== length(wilcox)) {i = i +1} else {i =1}
         d= data[[dep]]
+        if(isTRUE(shapiro)){
         G1.shapiro <- shapiro.test(d[which(group.value==group.level[1])])$p.value
         G2.shapiro <- shapiro.test(d[which(group.value==group.level[2])])$p.value
         shapiro    <- (G1.shapiro > 0.05) & (G2.shapiro > 0.05)
-        
+        }  
         
         formula <- jmvcore::constructFormula(dep,  group)
         formula <- as.formula(formula)
