@@ -1,0 +1,149 @@
+github.files = function(){
+  cat("Which items do you want to download?\n
+      1- Table_One
+      2- GetSummary
+      3- utility_fun
+      4- GLM_Analysis
+      5- Pips
+      6- APIM (Actor Partner Interdependence Model)
+      7- Anova_table
+      8- COX_Analysis
+      9- CI.bayes
+      10- Cochran sampling
+      11- Crossover
+      12- DateConvertor
+      13- IPAQ.questionnaire
+      14- KAPPA
+      15- Manova
+      16- PSQI.questionnaire
+      17- ROC_Analysis
+      18- Repeated.measurement
+      19- Shading multiple areas under normal curve
+      20-bar.chart
+      21- change.to.numeric
+      22- dot.plot
+      23- all"
+     ) 
+
+      
+n = readline("Please enter the numbe(s) and separate by space: ")      
+n = na.omit(as.numeric(as.character(strsplit(n, split = c(" "))[[1]])) )   
+if(23 %in% n) n = 1:22
+if(1 %in% n)
+  {cat("Downlding 'Table_One' ... ")
+  source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/Table_One.R")
+  cat("done!\n")
+  }
+if(2 %in% n) 
+  {cat("Downlding 'GetSummary' ... ")
+  source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/GetSummary.R")
+  cat("done!\n")
+}
+if(3 %in% n) 
+  {cat("Downlding 'utility_fun' ... ")
+  source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/utility_fun.R")
+  cat("done!\n")
+}
+if(4 %in% n)    
+  {cat("Downlding 'GLM_Analysis' ... ")
+  source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/GLM_Analysis.R")
+  cat("done!\n")
+}
+if(5 %in% n)          
+  {cat("Downlding 'Pips' ... ")
+  source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/Pips.R")
+  cat("done!\n")
+}
+if(6 %in% n)          
+ { cat("Downlding  'APIM' ... ")
+  source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/APIM.R")
+  cat("done!\n")
+}
+if(7 %in% n)          
+  {cat("Downlding  'Anova_table' ... ")
+  source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/Anova_table.R")
+  cat("done!\n")
+}
+if(8 %in% n)           
+  {cat("Downlding  'COX_Analysis' ... ")
+  source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/COX_Analysis.R")
+  cat("done!\n")
+}
+if(9 %in% n)           
+ { cat("Downlding  'CI.bayes' ... ")
+  source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/CI.bayes.R")
+  cat("done!\n")
+}
+if(10 %in% n)          
+  {cat("Downlding 'Cochran sampling'  ... ")
+  source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/Cochran%20sampling.R")
+  cat("done!\n")
+}
+if(11 %in% n)          
+  {cat("Downlding  'Crossover' ... ")
+  source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/Crossover.R")
+  cat("done!\n")
+}
+if(12 %in% n)          
+  {cat("Downlding  'DateConvertor' ... ")
+  source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/DateConvertor")
+  cat("done!\n")
+}
+if(13 %in% n)           
+  {cat("Downlding  'IPAQ.questionnaire' ... ")
+  source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/IPAQ.questionnaire.R")
+  cat("done!\n")
+}
+if(14 %in% n)           
+  {cat("Downlding  'KAPPA' ... ")
+  source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/KAPPA.R")
+  cat("done!\n")
+}
+if(15 %in% n)           
+  {cat("Downlding 'Manova'  ... ")
+  source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/Manova.R")
+  cat("done!\n")
+}
+if(16 %in% n)           
+  {cat("Downlding 'PSQI.questionnaire'  ... ")
+  source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/PSQI.questionnaire.R")
+  cat("done!\n")
+}
+if(17 %in% n)          
+  {cat("Downlding  ROC_Analysis ... ")
+  source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/ROC_Analysis.R")
+  cat("done!\n")
+}
+if(18 %in% n)           
+  {cat("Downlding 'Repeated.measurement'  ... ")
+  source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/Repeated.measurement.R")
+  cat("done!\n")
+}
+if(19 %in% n)           
+  {cat("Downlding  'Shading multiple areas under normal curve' ... ")
+  source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/Shading%20multiple%20areas%20under%20normal%20curve.R")
+  cat("done!\n")
+}
+if(20 %in% n)         
+  {cat("Downlding  'bar.chart' ... ")
+  source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/bar.chart.R")
+  cat("done!\n")
+}
+if(21 %in% n)          
+  {cat("Downlding 'change.to.numeric'  ... ")
+  source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/change.to.numeric.R")
+  cat("done!\n")
+}
+if(22 %in% n)          
+ { cat("Downlding 'dot.plot'  ... ")
+  source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/dot.plot.R")
+  cat("done!\n")
+}
+
+}
+
+
+
+
+
+
