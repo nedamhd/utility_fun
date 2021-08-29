@@ -18,7 +18,7 @@
       17- ROC_Analysis
       18- Repeated.measurement
       19- Shading multiple areas under normal curve
-      20-bar.chart
+      20- bar.chart
       21- change.to.numeric
       22- dot.plot
 
