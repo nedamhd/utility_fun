@@ -24,6 +24,7 @@ bar.chart <-
            distance = NULL,
            plot.adjust = 40,
            font = 0,
+           lower.bound.errorbar = TRUE,
            ANOVA_table = NULL,
            Repeat.measurment = NULL,
            report.p.algorithm.labeling = TRUE) {
@@ -85,10 +86,19 @@ bar.chart <-
       
       if(is.null(y.lab))
         y.lab = y
-         if(type == "mean.ci") y.lab = paste0(y.lab,"\n[Mean (95% CI)]")
-        if(type == "median.quan") y.lab = paste0(y.lab,"\n[Median (IQR)]")
-        if(type == "mean.sd") y.lab = paste0(y.lab,"\n[Mean \u00B1 SD]")
-        
+      if(lower.bound.errorbar){
+      if(type == "mean.ci") y.lab = paste0(y.lab,"\n[Mean (95% CI)]")
+      if(type == "median.quan") y.lab = paste0(y.lab,"\n[Median (IQR)]")
+      if(type == "mean.sd") y.lab = paste0(y.lab,"\n[Mean \u00B1 SD]")
+      }
+      if(!lower.bound.errorbar){
+         if(type == "mean.ci") y.lab = paste0(y.lab,"\n[Mean (Upper bound of 95% CI)]")
+        if(type == "median.quan") y.lab = paste0(y.lab,"\n[Median (3-quantile)]")
+        if(type == "mean.sd") y.lab = paste0(y.lab,"\n[Mean + SD]")
+        }
+      
+      
+      
       if (report.p.algorithm.labeling){
         p.algorithm.labels = Repeat.measurment$main.results$letter
         p.algorithm.labels=  c( t(p.algorithm.labels))
@@ -262,7 +272,8 @@ bar.chart <-
       summray_data$z.lab <- as.factor(summray_data$z.lab)
     }
     
-    require(ggplot2)
+    if(!lower.bound.errorbar) summray_data$ymin = summray_data$y
+    require(ggplot2) 
     require(grid)
     
     
