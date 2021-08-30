@@ -1,4 +1,4 @@
-corr = function(data){
+correlations = function(data){
 source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/Pips.R")
 library("Hmisc")
 res2 <- rcorr(as.matrix(data))
