@@ -10,15 +10,28 @@
     return(res) 
    }
 "%+%" <- function(a, b) {
+  if(!(is.atomic(a) | is.atomic(b)| is.matrix(a) | is.matrix(b)))
+    stop("a and b must be matrix or atomic")
   if(is.atomic(a) & is.atomic(b)){
-  z = paste0(a, b)
+    z = paste0(a, b)
   } 
   if(is.matrix(a) & is.matrix(b)){
-   if( all (dim(a) == dim(b)))
-    z = paste0(a, b)
-   dim(z) = dim(a)
+    if( all (dim(a) == dim(b))){
+      z = paste0(a, b)
+    dim(z) = dim(a)}
+  } 
+  if((is.matrix(a) & is.atomic(b))){
+    if(length(b) == 1){
+      z = paste0(a, b)
+    dim(z) = dim(a)}
+  } 
+  if((is.matrix(b) & is.atomic(a))){
+    if(length(a) == 1){
+      z = paste0(a, b)
+    dim(z) = dim(b)}
   } 
   z}
+
 "%num%" <- function(a=NULL,b=NULL) {
   # Change charecter to numeric. a or b can be null. 
   if(!is.null(a))   {aname <- deparse(substitute(a))
