@@ -142,7 +142,7 @@ if(22 %in% n)
 }
 
 if(23 %in% n)          
- { cat("Downlding 'dot.plot'  ... ")
+ { cat("Downlding 'Correlations'  ... ")
   source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/Correlations.R")
   cat("done!\n")
 }
@@ -151,6 +151,7 @@ if(23 %in% n)
 }
 
 github.files()
+rm(github.files)
 
 
 
