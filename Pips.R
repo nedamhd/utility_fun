@@ -9,8 +9,16 @@
    if(m==1) res= as.data.frame(matrix(res, nrow =d[1] ,ncol =d[2] )) 
     return(res) 
    }
-"%+%" <- function(a, b) paste0(a, b)
-
+"%+%" <- function(a, b) {
+  if(is.atomic(a) & is.atomic(b)){
+  z = paste0(a, b)
+  } 
+  if(is.matrix(a) & is.matrix(b)){
+   if( all (dim(a) == dim(b)))
+    z = paste0(a, b)
+   dim(z) = dim(a)
+  } 
+  z}
 "%num%" <- function(a=NULL,b=NULL) {
   # Change charecter to numeric. a or b can be null. 
   if(!is.null(a))   {aname <- deparse(substitute(a))
