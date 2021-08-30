@@ -27,3 +27,24 @@
   eval( temp, envir = globalenv())
   rm(m.temp.12544522, envir = globalenv())}
 }
+
+
+#############################
+"%fac%" <- function(a=NULL,b=NULL) {
+  # Change charecter to numeric. a or b can be null. 
+  if(!is.null(a))   {aname <- deparse(substitute(a))
+  m.temp.12544521 <<- as.factor(a)
+  te = paste0(aname ,"<- m.temp.12544521")
+  temp = parse(text = te)
+  eval( temp, envir = globalenv())
+  rm(m.temp.12544521, envir = globalenv())}
+  
+  if(!is.null(b))    {bname <- deparse(substitute(b))
+  m.temp.12544522 <<- as.factor(b)
+  te = paste0(bname ,"<- m.temp.12544522")
+  temp = parse(text = te)
+  eval( temp, envir = globalenv())
+  rm(m.temp.12544522, envir = globalenv())}
+}
+
+
