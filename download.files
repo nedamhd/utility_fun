@@ -29,7 +29,7 @@ github.files = function(){
       
 n = readline("Please enter the numbe(s) and separate by space: ")      
 n = na.omit(as.numeric(as.character(strsplit(n, split = c(" "))[[1]])) )   
-if(23 %in% n) n = 1:23
+if(24 %in% n) n = 1:23
 if(1 %in% n)
   {cat("Downlding 'Table_One' ... ")
   source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/Table_One.R")
