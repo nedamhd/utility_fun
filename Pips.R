@@ -6,7 +6,7 @@
      res = c()
      for(i in 1:length(b))
      res[i]=  paste0(sprintf(paste0("%.",a,"f"), b[i]) )              
-   if(m==1) res= as.data.frame(matrix(res, nrow =d[1] ,ncol =d[2] )) 
+   if(m==1) res=  matrix(res, nrow =d[1] ,ncol =d[2] )  
     return(res) 
    }
 "%+%" <- function(a, b) {
