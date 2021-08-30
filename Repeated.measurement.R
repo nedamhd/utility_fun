@@ -15,7 +15,7 @@ Repeat.measurment =  function(data,
   Time = factor(c(DV.names))
   if(! "Time" %in% IV.names) stop("The name of within subjevt varible in the formula must be 'Time'.")
   IV.names = IV.names[which(IV.names != "Time")]
-  
+  data = na.omit(data[,c(ID, IV.names, DV.names)]
   melt.data = reshape2::melt(data,id= c(ID,IV.names), measure.vars = DV.names, variable.name = "Time")   
   IV.names = c(IV.names, "Time")
   
