@@ -78,16 +78,17 @@ bar.chart <-
       IV.names = IV.names[which(IV.names != "Time")]
       if(length(IV.names) > 1) stop("'bar.chart' just compateble with two variable in comparison.formula.")
       z = IV.names
-
+      
       if(length(IV.names) == 0)
         z = NULL
       
       
       if(is.null(y.lab))
         y.lab = y
-      
-      y.lab = paste0(y.lab,"\n[Mean (95% CI)]")
-      
+         if(type == "mean.ci") y.lab = paste0(y.lab,"\n[Mean (95% CI)]")
+        if(type == "median.quan") y.lab = paste0(y.lab,"\n[Median (IQR)]")
+        if(type == "mean.sd") y.lab = paste0(y.lab,"\n[Mean \u00B1 SD]")
+        
       if (report.p.algorithm.labeling){
         p.algorithm.labels = Repeat.measurment$main.results$letter
         p.algorithm.labels=  c( t(p.algorithm.labels))
