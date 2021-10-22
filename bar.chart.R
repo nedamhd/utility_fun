@@ -61,7 +61,7 @@ bar.chart <-
       
       z    = NULL
       if (report.p.algorithm.labeling)
-        p.algorithm.labels = D$.__enclos_env__$private$result.for.plot$label
+        p.algorithm.labels = ANOVA_table$.__enclos_env__$private$result.for.plot$label
       
       
     }
