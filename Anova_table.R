@@ -1,5 +1,3 @@
-
-
 ANOVA_table <-   R6::R6Class(
   "ANOVA_table",
   public =  list(
@@ -7,8 +5,9 @@ ANOVA_table <-   R6::R6Class(
     group                = NULL, 
     model                = list(),
     deps.quantitative    = NULL,
-    kruskal_wallis        = FALSE,
+    kruskal_wallis       = FALSE,
     results              = data.frame(),
+    comparisons          = list(),
     initialize          = function(data, group, 
                                    deps.quantitative=NULL, 
                                    kruskal_wallis = FALSE, posthoc= "Tukey", p.adj= "holm", shapiro.t = TRUE) {
@@ -39,6 +38,9 @@ ANOVA_table <-   R6::R6Class(
                     posthoc = posthoc, p.adj = p.adj,
                     shapiro.t = shapiro.t
       )
+     names(self$comparisons) = deps.quantitative
+     self$comparisons= do.call(rbind,self$comparisons)
+     
     },
     
     
@@ -103,12 +105,12 @@ ANOVA_table <-   R6::R6Class(
         l = data.frame()
         for (j in 1:length(group.level)) {
           l =rbind(l, data.frame(dep, group.level[j],
-                                private$descriptive(d[group.value==group.level[j]])))
+                                 private$descriptive(d[group.value==group.level[j]])))
           
           # if(count [j] > 3)
           # {
           if(isTRUE(shapiro.t))
-          G.shapiro[j] <-  shapiro.test(d[which(group.value==group.level[j])])$p.value  
+            G.shapiro[j] <-  shapiro.test(d[which(group.value==group.level[j])])$p.value  
           # } else{
           # G.shapiro[j] <- 1#ks.test(d[which(group.value==group.level[j])], "pnorm", 0, 1, exact = TRUE)$p.value 
           # }
@@ -127,8 +129,8 @@ ANOVA_table <-   R6::R6Class(
         self$model[[k]] = model
         test.r <- "ANOVA" 
         if(isTRUE(shapiro.t))
-           if(!isTRUE(shapiro))  
-             {results <- kruskal.test(formula, data =  rm.data); test.r <- "KruskalWallis" }  
+          if(!isTRUE(shapiro))  
+          {results <- kruskal.test(formula, data =  rm.data); test.r <- "KruskalWallis" }  
         
         if(length(kruskal_wallis) > 1){
           if(isTRUE(kruskal_wallis[i])) {results <- kruskal.test(formula, data =  rm.data); test.r <- "KruskalWallis" } 
@@ -143,6 +145,7 @@ ANOVA_table <-   R6::R6Class(
         if(test.r=="ANOVA")
           p.value = sprintf("%.3f", round(summary(model)[[1]][["Pr(>F)"]][1], 3)) 
         
+         self$comparisons[[k]] <<- private$regenerate_label_summary(model = model, posthoc= posthoc, p.adj= p.adj)$Result$comparison
         label = private$regenerate_label_summary(model = model, posthoc= posthoc, p.adj= p.adj)$labels.df$labels
         
         # label = multcompView::multcompLetters(
@@ -208,8 +211,8 @@ ANOVA_table <-   R6::R6Class(
         if(is.null(flev)) flev = names( model$model)[2]
         require(agricolae)
         se<- function(x) sd(x,na.rm=TRUE)/sqrt(sum(!is.na(x)))
-        summary.me<- function(d=d,y=y,flev=flev){ 
-          summa<- function(x) c(length=sum(!is.na(x)), mean=mean(x,na.rm=TRUE),sd= sd(x,na.rm=TRUE),se=se(x),
+        summary.me <- function(d=d,y=y,flev=flev){ 
+          summa    <- function(x) c(length=sum(!is.na(x)), mean=mean(x,na.rm=TRUE),sd= sd(x,na.rm=TRUE),se=se(x),
                                 ci.l=mean(x,na.rm=TRUE) -1.96*se(x),
                                 ci.u=mean(x,na.rm=TRUE) +1.96*se(x) ,
                                 med = quantile(x, p= 0.5),
@@ -271,7 +274,7 @@ ANOVA_table <-   R6::R6Class(
     
     
   )
-
+  
 )
 
 
