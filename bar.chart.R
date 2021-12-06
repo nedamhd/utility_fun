@@ -72,18 +72,21 @@ bar.chart <-
       if (class(Repeat.measurment)[1] != "Repeat.measurment")
         stop("The class of Repeat.measurment is not correct!")
       
-      x                  =   "Time"
       y                  =   "value"
       data               =   Repeat.measurment$invisible.results$data
       comparison.formula =   Repeat.measurment$invisible.results$comparison.formula
       IV.names = all.vars(comparison.formula)
-      IV.names = IV.names[which(IV.names != "Time")]
-      if(length(IV.names) > 1) stop("'bar.chart' just compateble with two variable in comparison.formula.")
-      z = IV.names
+      # IV.names = IV.names[which(IV.names != "Time")]
+      # IV.names = IV.names[which(IV.names != "Time")]
+      if(length(IV.names) > 2) stop("'bar.chart' just compateble with two variable in comparison.formula.")
+     
+       if(length(IV.names) == 2)
+      {z = IV.names[1]
+      x = IV.names[2]}
       
-      if(length(IV.names) == 0)
+      if(length(IV.names) == 1){
         z = NULL
-      
+         x = IV.names[1]}
       
       if(is.null(y.lab))
         y.lab = y
@@ -613,7 +616,7 @@ bar.chart <-
             size = 3 + font
           )
       }
-   p=  p + theme(legend.position=legend.position)
+    p=  p + theme(legend.position=legend.position)
     p$result <- summray_data
     p
   }
