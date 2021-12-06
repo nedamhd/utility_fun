@@ -24,6 +24,7 @@ bar.chart <-
            distance = NULL,
            plot.adjust = 40,
            font = 0,
+           legend.position= "right",
            lower.bound.errorbar = TRUE,
            ANOVA_table = NULL,
            Repeat.measurment = NULL,
@@ -87,15 +88,15 @@ bar.chart <-
       if(is.null(y.lab))
         y.lab = y
       if(lower.bound.errorbar){
-      if(type == "mean.ci") y.lab = paste0(y.lab,"\n[Mean (95% CI)]")
-      if(type == "median.quan") y.lab = paste0(y.lab,"\n[Median (IQR)]")
-      if(type == "mean.sd") y.lab = paste0(y.lab,"\n[Mean \u00B1 SD]")
+        if(type == "mean.ci") y.lab = paste0(y.lab,"\n[Mean (95% CI)]")
+        if(type == "median.quan") y.lab = paste0(y.lab,"\n[Median (IQR)]")
+        if(type == "mean.sd") y.lab = paste0(y.lab,"\n[Mean \u00B1 SD]")
       }
       if(!lower.bound.errorbar){
-         if(type == "mean.ci") y.lab = paste0(y.lab,"\n[Mean (Upper bound of 95% CI)]")
+        if(type == "mean.ci") y.lab = paste0(y.lab,"\n[Mean (Upper bound of 95% CI)]")
         if(type == "median.quan") y.lab = paste0(y.lab,"\n[Median (3-quantile)]")
         if(type == "mean.sd") y.lab = paste0(y.lab,"\n[Mean + SD]")
-        }
+      }
       
       
       
@@ -372,49 +373,49 @@ bar.chart <-
         if(!is.null(z.text.lab))
           p = p + scale_fill_discrete(labels=z.text.lab)+
             scale_color_discrete(labels=z.text.lab)
+      
+      if (!isTRUE(colorful)){
+        if(!is.null(z.text.lab))
+          p =  p +
+            scale_colour_grey(start = 0.3 , end = 0.7,labels=z.text.lab ) +
+            scale_fill_grey(start = 0.3 , end = 0.7,labels=z.text.lab )
         
-        if (!isTRUE(colorful)){
-          if(!is.null(z.text.lab))
-            p =  p +
-              scale_colour_grey(start = 0.3 , end = 0.7,labels=z.text.lab ) +
-              scale_fill_grey(start = 0.3 , end = 0.7,labels=z.text.lab )
-          
-          if(is.null(z.text.lab))
-            p =  p +
-              scale_colour_grey(start = 0.3 , end = 0.7 ) +
-              scale_fill_grey(start = 0.3 , end = 0.7)
-          
-        } 
+        if(is.null(z.text.lab))
+          p =  p +
+            scale_colour_grey(start = 0.3 , end = 0.7 ) +
+            scale_fill_grey(start = 0.3 , end = 0.7)
         
-        
-        
-        
-        
-        
-        base.of.y = ggplot_build(p)$layout$panel_params[[1]]$y.range
-        if (is.null(adjust))
-          adjust = (abs(base.of.y[2]) + abs(base.of.y[1])) / plot.adjust
-        
-        if (is.null(distance))
-          distance = (abs(base.of.y[2]) + abs(base.of.y[1])) / plot.adjust
-        
-        xx <- ggplot_build(p)$data[[2]]$x
-        xstart = xx [(1:length(xx)) %% 2 == 0]
-        xend = xx [(1:length(xx)) %% 2 != 0]
-        
-        d1 = cbind(
-          xstart,
-          xend,
-          ystart = c(height + adjust + distance),
-          yend = c(height + adjust + distance)
-        )   %>% as.data.frame()
-        d2 = cbind(
-          xstart,
-          xend,
-          ystart = c(height + distance),
-          yend = c(height + adjust + distance)
-        )   %>% as.data.frame()
-        
+      } 
+      
+      
+      
+      
+      
+      
+      base.of.y = ggplot_build(p)$layout$panel_params[[1]]$y.range
+      if (is.null(adjust))
+        adjust = (abs(base.of.y[2]) + abs(base.of.y[1])) / plot.adjust
+      
+      if (is.null(distance))
+        distance = (abs(base.of.y[2]) + abs(base.of.y[1])) / plot.adjust
+      
+      xx <- ggplot_build(p)$data[[2]]$x
+      xstart = xx [(1:length(xx)) %% 2 == 0]
+      xend = xx [(1:length(xx)) %% 2 != 0]
+      
+      d1 = cbind(
+        xstart,
+        xend,
+        ystart = c(height + adjust + distance),
+        yend = c(height + adjust + distance)
+      )   %>% as.data.frame()
+      d2 = cbind(
+        xstart,
+        xend,
+        ystart = c(height + distance),
+        yend = c(height + adjust + distance)
+      )   %>% as.data.frame()
+      
     }
     
     #########################
@@ -612,6 +613,7 @@ bar.chart <-
             size = 3 + font
           )
       }
+   p=  p + theme(legend.position=legend.position)
     p$result <- summray_data
     p
   }
