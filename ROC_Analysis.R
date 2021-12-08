@@ -109,7 +109,7 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                 if( !is.null(spliter) && (length(x)==1) )     {
                                   g= list(private$gg.Roc.1factor(data = data, x = x, y = y,
                                                                  x.lab = x.lab, spliter = spliter,spliter.lab = spliter.lab,
-                                                                 , line.size= line.size,
+                                                                 line.size= line.size,
                                                                  colorful = colorful))
                                   names(g)<- paste0(x)
                                   
