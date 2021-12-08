@@ -1,4 +1,3 @@
-
 ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = FALSE,
                             public         = list(
                               mainData     = NULL,
@@ -33,7 +32,7 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                 if(!is.null(spliter)){
                                   self$spliter <- spliter
                                   if(!is.null(spliter.lab)){self$spliter.lab <- spliter.lab} else 
-                                  {self$spliter.lab <- unique(self$data[[spliter]])}
+                                  {self$spliter.lab <- levels(self$data[[spliter]])}
                                   
                                 }
                                 # self$result <- private$myroc.area()
@@ -53,7 +52,8 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                 if(!is.null(spliter)){
                                   self$spliter <- spliter
                                   if(!is.null(spliter.lab)){self$spliter.lab <- spliter.lab} else 
-                                  {self$spliter.lab <- unique(self$data[[spliter]])}
+                                  {self$spliter.lab <- levels(self$data[[spliter]])
+                                 }
                                 }else {
                                   self$spliter     <- NULL
                                   self$spliter.lab <- NULL  
@@ -123,8 +123,8 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                 }
                                 
                                 
-                                 print(g)
- 
+                                print(g)
+                                
                                 self$plot <- c(self$plot,g) 
                               },
                               
@@ -218,14 +218,18 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                               gg.Roc.1factor = function(data , x , y , x.lab, spliter,spliter.lab, line.size, colorful ){
                                 temp<-  na.omit(data[,c(x,y,spliter)])
                                 data<-  temp
-                                fe<- unique(temp[[spliter]])
+                                if(!is.factor(temp[[spliter]])) stop("spliter must be factor.")
+                                fe<- levels(temp[[spliter]])
                                 fe.n <- length(fe)
-                                temp<- split(temp,as.factor(temp[[spliter]]) )
+                                temp<- split(temp,temp[[spliter]]) 
+                                names(temp)
                                 data[["variable"]] <- "999"
                                 # if(length(x.lab) == fe) cat("Use x.lab for spliter labels.")
                                 x.lab2<- c() 
+                                x.lab3<- c() 
+                                data[["variable2"]]=NA
                                 for (i in 1:fe.n) {
-                                  self$result <- rbind(self$result, cbind(spliter = paste0(spliter, " - ", spliter.lab[i]),
+                                  self$result <- rbind(self$result, cbind(spliter = paste0(spliter, " - ",  spliter.lab[i]),
                                                                           private$myroc.area (temp[[i]], obs =as.character(y),pred = as.character(x)), stringsAsFactors =FALSE))
                                   a= as.numeric(as.character( private$myroc.area (temp[[i]], obs =as.character(y),pred = as.character(x))[["A"]]))
                                   # dir<<-   private$myroc.area (temp[[i]], obs =as.character(y),pred = as.character(x))[["Direction"]] 
@@ -235,17 +239,22 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                   if (p < 0.0009999999999){
                                     p <- "p<0.001"
                                     x.lab2[i] =   paste0(spliter.lab[i], "\nAUC = ", round(a,2),", ",   p,"\n")
+                                    # data[["variable"]][i] =  i  
                                     
                                   }      
-                                  data[["variable"]][which(data[[spliter]]== fe[i])] <-  x.lab2[i]
+                                    data[["variable2"]][which(as.character(data[[spliter]])== names(temp)[i])] <-  x.lab2[i]
                                   # if (dir == "indirect") data[[x]] <- -1*data[[x]]
                                 }
+                                  # data[["variable2"]]= factor(  data[["category"]],
+                                  #                                levels = levels( data[["category"]]), 
+                                  #                                labels=x.lab2)  
+                                  cat("The spliter.lab is:\n",spliter.lab, "\nsplite file names are:\n",
+                                  names(temp),"\n")
+                                  data12<<-data
                                 
-                                
-                                
-                             g=    ggplot(data=data, aes(d = .data[[y]], m = .data[[x]],
-                                                      color= variable,
-                                                      linetype= variable)) + 
+                                g=    ggplot(data=data, aes(d = .data[[y]], m = .data[[x]],
+                                                            color= variable2,
+                                                            linetype= variable2)) + 
                                   style_roc(guide = TRUE)+
                                   geom_roc(n.cuts = 0, labels = FALSE, size = line.size)+
                                   geom_abline(slope = 1, intercept = 0, color = "grey",linetype= "dashed")+
@@ -256,15 +265,15 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                          axis.title= element_text(face ="bold" ,size = 16,colour = "black"),
                                          title =element_text(face ="bold" ,size = 14,colour = "black"))+
                                   
-                                  theme( legend.key.width = unit(1.25,"cm"))+
-                                  scale_linetype_manual(values=c("solid", "dashed",  "dotted","dotdash" ,  "longdash" ,  "twodash"))#
-                              
-                             if(isFALSE(colorful)){
-                               g =  g +
-                                 scale_colour_grey(start = 0.01 , end = 0.01 )  } 
-                             return(g)  
-                             
-                                },
+                                  theme( legend.key.width = unit(1.25,"cm")) +
+                                   scale_linetype_manual(values=c("solid", "dashed",  "dotted","dotdash" ,  "longdash" ,  "twodash"))#
+                                
+                                if(isFALSE(colorful)){
+                                  g =  g +
+                                    scale_colour_grey(start = 0.01 , end = 0.01 )  } 
+                                return(g)  
+                                
+                              },
                               gg.Roc = function(data , x , y , x.lab, line.size, colorful ){
                                 fe<- length(x) 
                                 temp<- data[,c(x,y)]
@@ -293,9 +302,9 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                 
                                 
                                 
-                              g=  ggplot(data=temp.melt, aes(d = temp.melt[[y]], m = value, 
-                                                           color= variable,
-                                                           linetype= variable)) + 
+                                g=  ggplot(data=temp.melt, aes(d = temp.melt[[y]], m = value, 
+                                                               color= variable,
+                                                               linetype= variable)) + 
                                   style_roc(guide = TRUE)+
                                   geom_roc(n.cuts = 0, labels = FALSE, size = line.size)+
                                   geom_abline(slope = 1, intercept = 0, color = "grey",linetype= "dashed")+
@@ -307,11 +316,11 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                          title =element_text(face ="bold" ,size = 14,colour = "black"))+
                                   theme( legend.key.width = unit(1.25,"cm"))+
                                   scale_linetype_manual(values=c("solid","dashed", "dotted",  "dotdash" ,  "longdash" ,  "twodash"))#
-                              if(isFALSE(colorful)){
-                                g =  g +
-                                  scale_colour_grey(start = 0.01 , end = 0.01 )  }
-                            return(g)  
-                              
+                                if(isFALSE(colorful)){
+                                  g =  g +
+                                    scale_colour_grey(start = 0.01 , end = 0.01 )  }
+                                return(g)  
+                                
                               }
                             )
 )
