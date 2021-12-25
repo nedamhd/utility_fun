@@ -16,7 +16,7 @@ GLM_Analysis <- R6::R6Class("GLM_Analysis", lock_objects = FALSE, lock_class = F
                                 self$bayes     = bayes
                                 n.model        = 1
                                 "%+%" <- function(x,y) paste0(x,y)
-                                m1 <- glm(formula = formula, family = family, data = data)
+                                m1 <- glm(formula = formula, family = family, data = na.omit(data[,all.vars(formula)]))
                                 self$sepration[self$n.model] <- !(m1$converged)
                                 m1.ci = private$CI(m1, Family = self$family)$type2.result
                                 if(self$sepration[self$n.model] | self$bayes){
@@ -42,7 +42,7 @@ GLM_Analysis <- R6::R6Class("GLM_Analysis", lock_objects = FALSE, lock_class = F
                                 }
                                 if(isTRUE(stepwise)){
                                require(MASS)
-                                  best= (stepAIC(m1, trace = 0))$formula
+                                   best= stepAIC(m1, trace = 0 )$formula
                                   self$add(formula =  best) 
                                   
                                 }
