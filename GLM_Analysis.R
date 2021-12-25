@@ -9,7 +9,8 @@ GLM_Analysis <- R6::R6Class("GLM_Analysis", lock_objects = FALSE, lock_class = F
                               family      = "gaussian",
                               sepration   = c(),
                               # plot        = NULL,
-                              initialize = function(data, formula, family = "gaussian", bayes = FALSE){
+                              initialize = function(data, formula, family = "gaussian", bayes = FALSE,
+                                                    univariate=FALSE, stepwise=FALSE){
                                 self$data      = data
                                 self$family    = family
                                 self$bayes     = bayes
@@ -30,6 +31,26 @@ GLM_Analysis <- R6::R6Class("GLM_Analysis", lock_objects = FALSE, lock_class = F
                                 
                                 self$result$main.table <- m1.ci
                                 self$result$models <- c( self$result$models,m1)
+                                
+                                
+                                if(isTRUE(univariate)){
+                                  ind=  all.vars(update( formula, 1~.))
+                                  dep=  all.vars(update( formula, .~1))
+                                for (i in 1:length(ind)) {
+                                 self$add(formula = as.formula(paste0(dep, "~", ind[i]))) 
+                                }
+                                }
+                                if(isTRUE(stepwise)){
+                               require(MASS)
+                                  best= (stepAIC(m1, trace = 0))$formula
+                                  self$add(formula =  best) 
+                                  
+                                }
+                                    
+                                  
+                                  
+                                  
+                                  
                               },
                               add = function(data = NULL, 
                                              formula, 
@@ -152,8 +173,5 @@ GLM_Analysis <- R6::R6Class("GLM_Analysis", lock_objects = FALSE, lock_class = F
                               
                             )
 )
-
-
-
 
 
