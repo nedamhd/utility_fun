@@ -10,13 +10,16 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                               spliter.lab = NULL,
                               plot        = NULL,
                               line.size   = NULL,
+                              scientific.notation = FALSE,
                               Cut.off.points =   NULL,
                               colorful = NULL,
                               initialize = function(data , obs, pred, 
                                                     pred.lab = NULL, spliter =NULL,
                                                     spliter.lab = NULL, 
                                                     line.size = 1,
-                                                    colorful = TRUE) {
+                                                    colorful = TRUE,
+                                                    scientific.notation = FALSE) {
+                                self$scientific.notation = scientific.notation
                                 x.lab = pred.lab
                                 self$obs = obs
                                 self$line.size = line.size 
@@ -41,7 +44,7 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                               },
                               add = function(data=NULL , obs=NULL, pred, 
                                              pred.lab = NULL, spliter =NULL,
-                                             spliter.lab = NULL) {
+                                             spliter.lab = NULL, scientific.notation = FALSE) {
                                 x.lab <- pred.lab
                                 if(is.null(obs)) obs =  self$obs
                                 self$obs = obs
@@ -53,7 +56,7 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                   self$spliter <- spliter
                                   if(!is.null(spliter.lab)){self$spliter.lab <- spliter.lab} else 
                                   {self$spliter.lab <- levels(self$data[[spliter]])
-                                 }
+                                  }
                                 }else {
                                   self$spliter     <- NULL
                                   self$spliter.lab <- NULL  
@@ -69,13 +72,15 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                                  spliter =   self$spliter,
                                                  spliter.lab = self$spliter.lab,
                                                  line.size=self$line.size,
-                                                 colorful = self$colorful){
+                                                 colorful = self$colorful, 
+                                                 scientific.notation = self$scientific.notation){
                                 require(ggplot2); require(verification);require(plotROC)
                                 
                                 if(is.null(spliter))  {
                                   g= list(private$gg.Roc(data = data, x = x, y = y, x.lab = x.lab, 
                                                          line.size= line.size, colorful = colorful))
-                                  private$cutoff(data = data, obs = y, pred = x,  spliter.label = NA) 
+                                  private$cutoff(data = data, obs = y, pred = x,  spliter.label = NA, 
+                                                 scientific.notation = scientific.notation) 
                                   ###########
                                   names(g)<- paste0(x, collapse = " & ")
                                   
@@ -89,8 +94,8 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                   for (i in 1:s.l){
                                     g[[i]] <-    private$gg.Roc(data=data[[i]] ,  x = x, y = y, x.lab = x.lab, 
                                                                 line.size= line.size,
-                                                                colorful = colorful)
-                                    private$cutoff(data = data[[i]], obs = y, pred = x,
+                                                                colorful = colorful, scientific.notation = scientific.notation)
+                                    private$cutoff(data = data[[i]], obs = y, pred = x,scientific.notation = scientific.notation,
                                                    spliter.label = paste0(spliter,": ", names(data)[i]) )
                                     
                                     cat("Element ", i," of list output is for ",spliter, ": '", names(data)[i],
@@ -116,7 +121,7 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                   data <- split(data, f = as.factor(data[[spliter]]))
                                   s.l <- length(data)
                                   for (i in 1:s.l){
-                                    private$cutoff(data = data[[i]], obs = y, pred = x, 
+                                    private$cutoff(data = data[[i]], obs = y, pred = x, scientific.notation = scientific.notation,
                                                    spliter.label =  paste0(spliter,": ", names(data)[i])) 
                                   }
                                   
@@ -146,7 +151,7 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                 if("RDCOMClient" %in% rownames(installed.packages()) == FALSE)  { 
                                   # Sys.setenv("TAR" = "internal") # if you need it.
                                   # devtools::install_github("omegahat/RDCOMClient")
-                                 remotes::install_github("BSchamberger/RDCOMClient", ref = "main") }
+                                  remotes::install_github("BSchamberger/RDCOMClient", ref = "main") }
                                 R2wd::wdGet(filename,path , method="RDCOMClient")
                                 R2wd::wdBody("\n\n")
                                 R2wd::wdTable(as.data.frame(x), ...)
@@ -196,7 +201,7 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                 result
                                 
                               }, 
-                              cutoff = function(data = NULL, obs, pred, spliter.label = NULL) {
+                              cutoff = function(data = NULL, obs, pred, spliter.label = NULL, scientific.notation = FALSE) {
                                 obs1 <- c(data[[obs]])
                                 n.pred = length(pred)
                                 for (pr in 1:n.pred) {
@@ -206,12 +211,24 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                   aa1= pROC::roc(response = obs1, predictor = pred1)
                                   a.yu1= pROC::ci.coords(aa1,x= "best",best.method="youden",best.policy="random",boot.n=10000)
                                   a.yu1 = as.data.frame(a.yu1)
-                                  cut.points = data.frame(spliter = spliter.label,
+                                  if(isFALSE(scientific.notation))
+                                      cut.points = data.frame(spliter = spliter.label,
                                                           name = pred[pr] ,
                                                           Threshold = paste0(round(a.yu1[1,2],2)," (",round(a.yu1[1,1],3),",",round(a.yu1[1,3],3),")" ),
                                                           Specificity = paste0(round(a.yu1[1,5]*100,2)," (",round(a.yu1[1,4]*100,3),",",round(a.yu1[1,6]*100,3),")" ),
                                                           Sensitivity = paste0(round(a.yu1[1,8]*100,2)," (",round(a.yu1[1,7]*100,3),",",round(a.yu1[1,9]*100,3),")" )
                                   )
+                                  if(isTRUE(scientific.notation))
+                                      cut.points = data.frame(spliter = spliter.label,
+                                                          name = pred[pr] ,
+                                                          Threshold = paste0(sprintf("%.3e",a.yu1[1,2])," (",sprintf("%.3e",a.yu1[1,1]),",",sprintf("%.3e",a.yu1[1,3]),")" ),
+                                                          Specificity = paste0(round(a.yu1[1,5]*100,2)," (",round(a.yu1[1,4]*100,3),",",round(a.yu1[1,6]*100,3),")" ),
+                                                          Sensitivity = paste0(round(a.yu1[1,8]*100,2)," (",round(a.yu1[1,7]*100,3),",",round(a.yu1[1,9]*100,3),")" )
+                                  ) 
+                                  
+                                  
+                                  
+                                  
                                   self$Cut.off.points<-  rbind(self$Cut.off.points,cut.points)
                                 }
                               },
@@ -242,15 +259,15 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                     # data[["variable"]][i] =  i  
                                     
                                   }      
-                                    data[["variable2"]][which(as.character(data[[spliter]])== names(temp)[i])] <-  x.lab2[i]
+                                  data[["variable2"]][which(as.character(data[[spliter]])== names(temp)[i])] <-  x.lab2[i]
                                   # if (dir == "indirect") data[[x]] <- -1*data[[x]]
                                 }
-                                  # data[["variable2"]]= factor(  data[["category"]],
-                                  #                                levels = levels( data[["category"]]), 
-                                  #                                labels=x.lab2)  
-                                  cat("The spliter.lab is:\n",spliter.lab, "\nsplite file names are:\n",
-                                  names(temp),"\n")
-                                  data12<<-data
+                                # data[["variable2"]]= factor(  data[["category"]],
+                                #                                levels = levels( data[["category"]]), 
+                                #                                labels=x.lab2)  
+                                cat("The spliter.lab is:\n",spliter.lab, "\nsplite file names are:\n",
+                                    names(temp),"\n")
+                                data12<<-data
                                 
                                 g=    ggplot(data=data, aes(d = .data[[y]], m = .data[[x]],
                                                             color= variable2,
@@ -266,7 +283,7 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                          title =element_text(face ="bold" ,size = 14,colour = "black"))+
                                   
                                   theme( legend.key.width = unit(1.25,"cm")) +
-                                   scale_linetype_manual(values=c("solid", "dashed",  "dotted","dotdash" ,  "longdash" ,  "twodash"))#
+                                  scale_linetype_manual(values=c("solid", "dashed",  "dotted","dotdash" ,  "longdash" ,  "twodash"))#
                                 
                                 if(isFALSE(colorful)){
                                   g =  g +
@@ -369,5 +386,4 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
 # 
 # D$ggsave(  width = 5, height=5)
 # names(D$plot) 
-#  
 #  
