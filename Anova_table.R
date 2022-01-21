@@ -1,5 +1,5 @@
-ANOVA_table <-   R6::R6Class(
-  "ANOVA_table",
+  ANOVA_table <-   R6::R6Class(
+    "ANOVA_table",
   public =  list(
     data                 = NULL,
     group                = NULL, 
@@ -10,13 +10,22 @@ ANOVA_table <-   R6::R6Class(
     comparisons          = list(),
     initialize          = function(data, group, 
                                    deps.quantitative=NULL, 
-                                   kruskal_wallis = FALSE, posthoc= "Tukey", p.adj= "holm", shapiro.t = TRUE) {
+                                   kruskal_wallis = FALSE, 
+                                   posthoc= "Tukey", 
+                                   p.adj= "holm", 
+                                   shapiro.t = TRUE,
+                                   digits = 2,
+                                   digits.pvalue = 3,
+                                   scientific.notation = FALSE) {
       self$data = data 
       self$group = group
       self$deps.quantitative = deps.quantitative
       self$kruskal_wallis = kruskal_wallis
       self$add.quantitative(posthoc = posthoc, p.adj = p.adj, 
-                            shapiro.t = shapiro.t
+                            shapiro.t = shapiro.t, 
+                            digits = digits,
+                            digits.pvalue = digits.pvalue,
+                            scientific.notation = scientific.notation
       )
     },
     
@@ -25,7 +34,10 @@ ANOVA_table <-   R6::R6Class(
                                 deps.quantitative = NULL, 
                                 kruskal_wallis = NULL, 
                                 posthoc= "Tukey", 
-                                p.adj="holm", shapiro.t=TRUE) {
+                                p.adj="holm", shapiro.t=TRUE,
+                                digits = 2,
+                                digits.pvalue = 3,
+                                scientific.notation = FALSE) {
       
       if(is.null(data))               data               = self$data
       if(is.null(group))              group              = self$group
@@ -36,11 +48,14 @@ ANOVA_table <-   R6::R6Class(
                     deps = deps.quantitative, 
                     kruskal_wallis = kruskal_wallis,
                     posthoc = posthoc, p.adj = p.adj,
-                    shapiro.t = shapiro.t
+                    shapiro.t = shapiro.t,
+                    digits = digits,
+                    digits.pvalue = digits.pvalue,
+                    scientific.notation = scientific.notation
       )
-     names(self$comparisons) = deps.quantitative
-     self$comparisons= do.call(rbind,self$comparisons)
-     
+      names(self$comparisons) = deps.quantitative
+      self$comparisons= do.call(rbind,self$comparisons)
+      
     },
     
     
@@ -61,10 +76,11 @@ ANOVA_table <-   R6::R6Class(
     result.for.plot = data.frame(),
     ANOVA = function(data, group, deps, 
                      kruskal_wallis = FALSE,   posthoc= "Tukey", 
-                     p.adj= "holm", shapiro.t =TRUE) {
+                     p.adj= "holm", shapiro.t =TRUE,  digits = 2,
+                     digits.pvalue = 3, scientific.notation = FALSE) {
       if(!(length(deps)== length(kruskal_wallis) | length(kruskal_wallis) == 1 ))
         stop("length of kruskal_wallis must be the same as deps or one!")
-      
+      if( any(unique(data[,group] == 0)) stop("group must start from 1.")
       
       i = 0
       G.shapiro = c()
@@ -141,34 +157,61 @@ ANOVA_table <-   R6::R6Class(
           
         }
         if(test.r=="KruskalWallis")
-          p.value = sprintf("%.3f", round(results$p.value, 3)) 
+          p.value = sprintf("%.3f", round(results$p.value, digits.pvalue)) 
         if(test.r=="ANOVA")
-          p.value = sprintf("%.3f", round(summary(model)[[1]][["Pr(>F)"]][1], 3)) 
+          p.value = sprintf("%.3f", round(summary(model)[[1]][["Pr(>F)"]][1], digits.pvalue)) 
         
-         self$comparisons[[k]] <<- private$regenerate_label_summary(model = model, posthoc= posthoc, p.adj= p.adj)$Result$comparison
+        if(p.value == "0.000") p.value = "<0.001"
+        
+        self$comparisons[[k]] <- private$regenerate_label_summary(model = model, posthoc= posthoc, p.adj= p.adj)$Result$comparison
         label = private$regenerate_label_summary(model = model, posthoc= posthoc, p.adj= p.adj)$labels.df$labels
         
         # label = multcompView::multcompLetters(
         #   TukeyHSD(model)[[1]][,"p adj"]  )$Letters
         l = cbind(l, label=label)
         private$result.for.plot <- rbind(private$result.for.plot, l)
-        
-        values2 = data.frame( t(c(
+       
+         if(isFALSE(scientific.notation))
+          values2 = data.frame( t(c(
           Factor= dep, 
-          paste0(sprintf("%.2f", round(l[,9], 2)),
+          paste0(sprintf("%.2f", round(l[,9], digits)),
                  ' (', 
-                 sprintf("%.2f", round(l[,10], 2)), ', ',
-                 sprintf("%.2f", round(l[,11], 2)), ')',
+                 sprintf("%.2f", round(l[,10], digits)), ', ',
+                 sprintf("%.2f", round(l[,11], digits)), ')',
                  label), 
           p.value,test = test.r)))
         
-        values1 = data.frame( t(c(
-          Factor= dep, 
-          paste0(sprintf("%.2f", round(l[,4], 2)),
-                 ' \u00B1 ', 
-                 sprintf("%.2f", round(l[,5], 2)), label), 
-          p.value,test = test.r)))
         
+        
+        if(isTRUE(scientific.notation))
+          values2 = data.frame( t(c(
+            Factor= dep, 
+            paste0(sprintf("%.3e", l[,9]),
+                   ' (', 
+                   sprintf("%.3e", l[,10]), ', ',
+                   sprintf("%.3e", l[,11]), ')',
+                   label), 
+            p.value,test = test.r)))
+        
+        
+        if(isFALSE(scientific.notation))
+          values1 = data.frame( t(c(
+          Factor= dep, 
+          paste0(sprintf("%.2f", round(l[,4], digits)),
+                 ' \u00B1 ', 
+                 sprintf("%.2f", round(l[,5], digits)), label), 
+          p.value,test = test.r)))
+       
+        if(isTRUE(scientific.notation))
+          values1 = data.frame( t(c(
+            Factor= dep, 
+            paste0(sprintf("%.3e", l[,4]),
+                   ' \u00B1 ', 
+                   sprintf("%.3e", l[,5]), label), 
+            p.value,test = test.r))) 
+          
+          
+          
         values = values1
         if(test.r == "KruskalWallis")
           values = values2
@@ -176,7 +219,7 @@ ANOVA_table <-   R6::R6Class(
         names(values)<-   c("Factor", paste0("Level ", l[,2]) ,"P value", "Test")
         self$results <- rbind(self$results,values)
         rm(values)       
-        rm(l)
+        # rm(l)
         
         
       }
@@ -213,11 +256,11 @@ ANOVA_table <-   R6::R6Class(
         se<- function(x) sd(x,na.rm=TRUE)/sqrt(sum(!is.na(x)))
         summary.me <- function(d=d,y=y,flev=flev){ 
           summa    <- function(x) c(length=sum(!is.na(x)), mean=mean(x,na.rm=TRUE),sd= sd(x,na.rm=TRUE),se=se(x),
-                                ci.l=mean(x,na.rm=TRUE) -1.96*se(x),
-                                ci.u=mean(x,na.rm=TRUE) +1.96*se(x) ,
-                                med = quantile(x, p= 0.5),
-                                q1 = quantile(x, p= 0.25),
-                                q3 = quantile(x, p= 0.75)
+                                    ci.l=mean(x,na.rm=TRUE) -1.96*se(x),
+                                    ci.u=mean(x,na.rm=TRUE) +1.96*se(x) ,
+                                    med = quantile(x, p= 0.5),
+                                    q1 = quantile(x, p= 0.25),
+                                    q3 = quantile(x, p= 0.75)
           )
           
           summary_data <-  aggregate(d[[y]],   by=list(  d[[flev]]),FUN=  summa)
