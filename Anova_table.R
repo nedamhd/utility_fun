@@ -80,7 +80,7 @@
                      digits.pvalue = 3, scientific.notation = FALSE) {
       if(!(length(deps)== length(kruskal_wallis) | length(kruskal_wallis) == 1 ))
         stop("length of kruskal_wallis must be the same as deps or one!")
-      if( any(unique(data[,group] == 0)) stop("group must start from 1.")
+      if( any(unique(data[,group]) == 0)) stop("group must start from 1.")
       
       i = 0
       G.shapiro = c()
