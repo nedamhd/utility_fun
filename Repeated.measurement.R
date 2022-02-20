@@ -1,7 +1,8 @@
 Repeat.measurment =  function(data, 
                               formula  , 
                               ID,
-                              comparison.formula, 
+                              comparison.formula = NULL,
+                              glht.linfct.matrix = NULL,
                               adjust ="none"
 ){
   # data: wide data
@@ -44,39 +45,15 @@ Repeat.measurment =  function(data,
     comparison.object = emmeans::contrast(emm, interaction = "pairwise", adjust = adjust) 
     comparison = data.frame(comparison.object)
     # pairs(emm)  # adjust argument not specified -> default p-value adjustment in this case is "tukey"  
-     
-   if(dim(comparison)[2] == 7 ) {
-    by = unique(comparison[,2] )
     
-   
+    if(dim(comparison)[2] == 7 ) {
+      by = unique(comparison[,2] )
+      
+      
       l = list()
-    require(multcompView)                       
-    for(i in 1:length(by)) {
-      comparison.by =comparison[which(comparison[,2] == by[i]), c(1,7)]
-      comparison.by.p =  comparison.by[,2]
-      comparison.by.name =  strsplit(as.character(comparison.by[,1]), " - ")
-      comparison.by.name2 = c()
-      for (ii in 1:length(comparison.by.name)) {
-        comparison.by.name2[ii] = paste0(comparison.by.name[[ii]], collapse = "-")
-      }
-      names(comparison.by.p) = comparison.by.name2
-      l[[i]]<-multcompLetters(
-        comparison.by.p
-      )$Letters
-      
-    }
-    l =do.call(rbind,l)
-    
-    row.names(l)= by
-  
-  }
-    
-    if(dim(comparison)[2] == 6 ) {
-       
-      
-      l = c()
       require(multcompView)                       
-        comparison.by =comparison[ , c(1,6)]
+      for(i in 1:length(by)) {
+        comparison.by =comparison[which(comparison[,2] == by[i]), c(1,7)]
         comparison.by.p =  comparison.by[,2]
         comparison.by.name =  strsplit(as.character(comparison.by[,1]), " - ")
         comparison.by.name2 = c()
@@ -84,30 +61,71 @@ Repeat.measurment =  function(data,
           comparison.by.name2[ii] = paste0(comparison.by.name[[ii]], collapse = "-")
         }
         names(comparison.by.p) = comparison.by.name2
-        l <-multcompLetters(
+        l[[i]]<-multcompLetters(
           comparison.by.p
         )$Letters
         
       }
-       
-       
+      l =do.call(rbind,l)
+      
+      row.names(l)= by
+      
     }
+    
+    if(dim(comparison)[2] == 6 ) {
+      
+      
+      l = c()
+      require(multcompView)                       
+      comparison.by =comparison[ , c(1,6)]
+      comparison.by.p =  comparison.by[,2]
+      comparison.by.name =  strsplit(as.character(comparison.by[,1]), " - ")
+      comparison.by.name2 = c()
+      for (ii in 1:length(comparison.by.name)) {
+        comparison.by.name2[ii] = paste0(comparison.by.name[[ii]], collapse = "-")
+      }
+      names(comparison.by.p) = comparison.by.name2
+      l <-multcompLetters(
+        comparison.by.p
+      )$Letters
+      
+    }
+    
+    
+  }
  
+  
+  glht.results = NULL
+  if(!is.null(glht.linfct.matrix)){
+  if(ncol(glht.linfct.matrix) != length(coef(M1))) {
+  cat("coefficients names have been returned.\nError: ncol(linfct) is not equal to length(coef(model))" )
+       return(names(coef(M1)))
+       stop(  )   
+  }
+    library(multcomp)
+    warpbreaks.mc= glht(M1, linfct = as.matrix(glht.linfct.matrix))
+    ss = summary(warpbreaks.mc)
+    ss2= round(cbind.data.frame("Estimate"=ss$test$coefficients, 
+                                "Std. Error"= ss$test$sigma, 
+                                "z value" = ss$test$tstat, 
+                                "pvalues" = ss$test$pvalues) ,3) 
+    
+  }
+  
+  
   ...fixed123456789<<- NULL  
   rm(...fixed123456789, envir = globalenv()) 
-  
-  
-  
   res = list(main.results = list( main.table = main.table, 
                                   comparison = comparison, 
-                                  letter= l),
+                                  letter= l,
+                                  glht.results = ss2 
+                                  ),
              invisible.results = list(data = melt.data, 
                                       comparison.formula = comparison.formula,
                                       lme.model = M1, 
                                       car.Anova = Anova.M1, 
                                       emmeans = list(emmeans = emm, 
                                                      contrast = comparison.object))                 
-             
              
   )
   class(res) = "Repeat.measurment"
