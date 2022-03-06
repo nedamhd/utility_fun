@@ -93,15 +93,15 @@ Repeat.measurment =  function(data,
     
     
   }
- 
   
-  glht.results = NULL
+  
+  ss2 = NULL
   if(!is.null(glht.linfct.matrix)){
-  if(ncol(glht.linfct.matrix) != length(coef(M1))) {
-  cat("coefficients names have been returned.\nError: ncol(linfct) is not equal to length(coef(model))" )
-       return(names(coef(M1)))
-       stop(  )   
-  }
+    if(ncol(glht.linfct.matrix) != length(coef(M1))) {
+      cat("coefficients names have been returned.\nError: ncol(linfct) is not equal to length(coef(model))" )
+      return(names(coef(M1)))
+      stop(  )   
+    }
     library(multcomp)
     warpbreaks.mc= glht(M1, linfct = as.matrix(glht.linfct.matrix))
     ss = summary(warpbreaks.mc)
@@ -119,14 +119,14 @@ Repeat.measurment =  function(data,
                                   comparison = comparison, 
                                   letter= l,
                                   glht.results = ss2 
-                                  ),
-             invisible.results = list(data = melt.data, 
-                                      comparison.formula = comparison.formula,
-                                      lme.model = M1, 
-                                      car.Anova = Anova.M1, 
-                                      emmeans = list(emmeans = emm, 
-                                                     contrast = comparison.object))                 
-             
+  ),
+  invisible.results = list(data = melt.data, 
+                           comparison.formula = comparison.formula,
+                           lme.model = M1, 
+                           car.Anova = Anova.M1, 
+                           emmeans = list(emmeans = emm, 
+                                          contrast = comparison.object))                 
+  
   )
   class(res) = "Repeat.measurment"
   res
