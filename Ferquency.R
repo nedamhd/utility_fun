@@ -47,4 +47,4 @@ group = c("pulp", "marital")
 Ferquency  (data, x, group = group)
 ')
 
---
+
