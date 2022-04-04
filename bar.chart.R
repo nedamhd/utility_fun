@@ -29,9 +29,9 @@ bar.chart <-
            ANOVA_table = NULL,
            Repeat.measurment = NULL,
            report.p.algorithm.labeling = TRUE) {
-    x.lab   =   x.text.lab
-    z.lab   =   z.main.lab
-    y.lab   =   y.main.lab
+           x.lab   =   x.text.lab
+           z.lab   =   z.main.lab
+           y.lab   =   y.main.lab
     
     # if(is.null(z) & is.null(x) & is.null(y))
     # if(is.null(x.text.lab)){
@@ -79,14 +79,14 @@ bar.chart <-
       # IV.names = IV.names[which(IV.names != "Time")]
       # IV.names = IV.names[which(IV.names != "Time")]
       if(length(IV.names) > 2) stop("'bar.chart' just compateble with two variable in comparison.formula.")
-     
-       if(length(IV.names) == 2)
+      
+      if(length(IV.names) == 2)
       {z = IV.names[1]
       x = IV.names[2]}
       
       if(length(IV.names) == 1){
         z = NULL
-         x = IV.names[1]}
+        x = IV.names[1]}
       
       if(is.null(y.lab))
         y.lab = y
@@ -391,7 +391,7 @@ bar.chart <-
       } 
       
       
-      
+       }
       
       
       
@@ -419,7 +419,7 @@ bar.chart <-
         yend = c(height + adjust + distance)
       )   %>% as.data.frame()
       
-    }
+     
     
     #########################
     
@@ -523,10 +523,7 @@ bar.chart <-
         distance = (abs(base.of.y[2]) + abs(base.of.y[1])) / plot.adjust
       
       xx <- ggplot_build(p)$data[[2]]$x
-      
-      
-      
-    }
+  }
     
     
     ########################################
@@ -562,10 +559,10 @@ bar.chart <-
     
     
     ######################
-    if (!is.null(p.label))
-      if (!is.null(z)) {
-        if (length(p.label) != dim(d1)[1])
-          stop(paste0("The length of p.label is not equall to ", dim(d1)[1]))
+    if (!is.null(p.label)){ 
+      # if (!is.null(z)) { 
+          if (length(p.label) != dim(d1)[1])
+           stop(paste0("The length of p.label is not equall to ", dim(d1)[1]))
         
         p =  p +
           geom_segment(
@@ -615,7 +612,7 @@ bar.chart <-
             color = "black",
             size = 3 + font
           )
-      }
+      }  
     p=  p + theme(legend.position=legend.position)
     p$result <- summray_data
     p
