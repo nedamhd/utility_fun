@@ -12,6 +12,7 @@ dot.plot <-
            type = c("mean.ci", "median.quan")[1],
            p.label = NULL,
            adjust = NULL ,
+           height = NULL ,
            colorful = TRUE,
            main.title = NULL) {
     label = p.label
@@ -69,7 +70,7 @@ dot.plot <-
     
     m <-  data.melt  %>% group_by(variable) %>%
       summarise(max = max(value, na.rm = TRUE))
-    height <- m$max
+   if(is.null(height)) height <- m$max
     
     require(ggplot2)
     #library(ggthemes)
@@ -167,11 +168,11 @@ dot.plot <-
         title =  main.title
       ) +
       scale_y_continuous(#expand = c(0.0, 0.1),
-                         breaks = round(seq(
-                           from = min(data.melt$value, na.rm = TRUE),
-                           to = max(data.melt$value, na.rm = TRUE),
-                           length.out = 5
-                         ) - .009, 2)) +
+        breaks = round(seq(
+          from = min(data.melt$value, na.rm = TRUE),
+          to = max(data.melt$value, na.rm = TRUE),
+          length.out = 5
+        ) - .009, 2)) +
       scale_linetype_manual(values = rep(1, 8)) +
       guides(color = guide_legend(override.aes = list(size = 5)))
     
@@ -253,18 +254,17 @@ dot.plot <-
     p
   }
 
- 
-  # plot.dot (
-  #   rs1,
-  #   x = c("nonHDLC_HDLCmgdL", "nonHDLCAREase"),
-  #   x.lab = c("nonHDL-C/HDL-C", "nonHDL-C/PON1"),
-  #   z = "CAD",
-  #   log.transformation = TRUE,
-  #   type = "median.quan",
-  #   y.lab = "log(Values) \n[Error bars: Median and IQR]",
-  #   label = c("P=0.221", "P<0.001"),
-  #   colorful = TRUE,
-  #   z.lab  = "  ",
-  #   main.title = "A)"
-  # )
- 
+
+# plot.dot (
+#   rs1,
+#   x = c("nonHDLC_HDLCmgdL", "nonHDLCAREase"),
+#   x.lab = c("nonHDL-C/HDL-C", "nonHDL-C/PON1"),
+#   z = "CAD",
+#   log.transformation = TRUE,
+#   type = "median.quan",
+#   y.lab = "log(Values) \n[Error bars: Median and IQR]",
+#   label = c("P=0.221", "P<0.001"),
+#   colorful = TRUE,
+#   z.lab  = "  ",
+#   main.title = "A)"
+# )
