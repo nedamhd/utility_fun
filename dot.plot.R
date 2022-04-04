@@ -255,7 +255,7 @@ dot.plot <-
   }
 
 
-# plot.dot (
+# dot.plot (
 #   rs1,
 #   x = c("nonHDLC_HDLCmgdL", "nonHDLCAREase"),
 #   x.lab = c("nonHDL-C/HDL-C", "nonHDL-C/PON1"),
