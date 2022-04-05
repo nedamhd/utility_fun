@@ -24,13 +24,14 @@ github.files = function(){
       22- dot.plot
       23- correlations
       24- Ferquency
-      25- all"
+      25- SNP Analysis
+      26- all"
      ) 
 
       
 n = readline("Please enter the numbe(s) and separate by space: ")      
 n = na.omit(as.numeric(as.character(strsplit(n, split = c(" "))[[1]])) )   
-if(25 %in% n) n = 1:24
+if(26 %in% n) n = 1:25
 if(1 %in% n)
   {cat("Downlding 'Table_One' ... ")
   source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/Table_One.R")
@@ -150,6 +151,11 @@ if(23 %in% n)
 if(24 %in% n)          
  { cat("Downlding 'Ferquency'  ... ")
   source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/Ferquency.R")
+  cat("done!\n")
+}
+if(25 %in% n)          
+ { cat("Downlding 'SNP Analysis'  ... ")
+  source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/SNP%20Analysis.R")
   cat("done!\n")
 }
 }
