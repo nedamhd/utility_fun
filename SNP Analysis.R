@@ -380,6 +380,14 @@ return( list(Table =rbind( a1,a2),Tabl.allel=Tabl.allel,y=y,allel.lable=allel.la
 }
 
 ########################################
+cat(" Example:\n
+ Re = SNP.table ( data= samples, formula = rs3735590 ~ CAD.FollowUp,
+                   allel.lable=c("G","A"),
+                   genotype=NULL,
+                   x.labels.table.sad = c("non-CAD", "CAD" ),
+                   type.of.non.zero=c("common.homozigot" ),
+                   method=c("bayesglm" )
+")
 
 
 # Re = SNP.table ( data= samples, formula = rs3735590 ~ CAD.FollowUp,
