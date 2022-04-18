@@ -1,3 +1,5 @@
+ 
+ 
 GLM_Analysis <- R6::R6Class("GLM_Analysis", lock_objects = FALSE, lock_class = FALSE,
                             public         = list(
                               data        = NULL,
@@ -9,11 +11,17 @@ GLM_Analysis <- R6::R6Class("GLM_Analysis", lock_objects = FALSE, lock_class = F
                               family      = "gaussian",
                               sepration   = c(),
                               # plot        = NULL,
+                              univariate  = FALSE,
+                              n.model.univariate  = 0,
+                              stepwise    = FALSE,
                               initialize = function(data, formula, family = "gaussian", bayes = FALSE,
                                                     univariate=FALSE, stepwise=FALSE){
                                 self$data      = data
                                 self$family    = family
                                 self$bayes     = bayes
+                                self$univariate  = univariate
+                                self$stepwise     = stepwise
+                                
                                 n.model        = 1
                                 "%+%" <- function(x,y) paste0(x,y)
                                 m1 <- glm(formula = formula, family = family, data = na.omit(data[,all.vars(formula)]))
@@ -36,21 +44,22 @@ GLM_Analysis <- R6::R6Class("GLM_Analysis", lock_objects = FALSE, lock_class = F
                                 if(isTRUE(univariate)){
                                   ind=  all.vars(update( formula, 1~.))
                                   dep=  all.vars(update( formula, .~1))
-                                for (i in 1:length(ind)) {
-                                 self$add(formula = as.formula(paste0(dep, "~", ind[i]))) 
-                                }
+                                  self$n.model.univariate = length(ind)
+                                  for (i in 1:length(ind)) {
+                                    self$add(formula = as.formula(paste0(dep, "~", ind[i]))) 
+                                  }
                                 }
                                 if(isTRUE(stepwise)){
-                               require(MASS)
-                                   best= stepAIC(m1, trace = 0 )$formula
+                                  require(MASS)
+                                  best= stepAIC(m1, trace = 0 )$formula
                                   self$add(formula =  best) 
                                   
                                 }
-                                    
-                                  
-                                  
-                                  
-                                  
+                                
+                                
+                                
+                                
+                                
                               },
                               add = function(data = NULL, 
                                              formula, 
@@ -113,7 +122,35 @@ GLM_Analysis <- R6::R6Class("GLM_Analysis", lock_objects = FALSE, lock_class = F
                                   write.table(x, file = datafile, sep = "\t", row.names = row.names,
                                               col.names = col.names, ...)
                                   if(!is.null(text))   {writeLines(text , con=datafile)}
-                                }
+                                },
+                              
+                              merge.univariate = function(f = self$result$main.table, 
+                                                          univariate=self$univariate, 
+                                                          n.model.univariate = self$n.model.univariate,
+                                                          n.model = self$n.model){
+                                
+                                if( (isFALSE(univariate)| (n.model.univariate == 0))) stop("univariate models do not exist. Run with 'univariate= TRUE'.")
+                                n = dim(f)[2] 
+                                
+                                d = f[ c(3:(n.model.univariate*2 +2 ))]  
+                              
+                              
+                              
+                              d[1,] = NA
+                              dd = data.frame(est = rep(NA,  n[1]), p.value = rep(NA,  n[1]))
+                              for(j  in (1:dim(d)[2])[as.logical((1:dim(d)[2]) %% 2)]){
+                                k =  which(!is.na(d[,j]))
+                                dd[k,] = d[k, c(j,j+1)]
+                              }
+                              
+                              if(n.model.univariate+1 < n.model)
+                                re = cbind(f[,1:2], dd, f[, (n.model.univariate*2 +3 ):(n.model*2)])
+                              
+                              if(n.model.univariate+1 == n.model)
+                                re=  cbind(f[,1:2], dd)
+                              
+                              re
+                              }
                             ),
                             
                             private = list(
@@ -173,5 +210,3 @@ GLM_Analysis <- R6::R6Class("GLM_Analysis", lock_objects = FALSE, lock_class = F
                               
                             )
 )
-
-
