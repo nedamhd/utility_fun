@@ -208,15 +208,23 @@ ping.IP <- function() {
 ############################
  # my pipes 
  "%f%" <- function(a, b) {
-     if(is.matrix(b)) {d = dim(b); m =1}
-     if(is.vector(b)) {d = length(b); m =0}
-      b =as.vector(b)
-     res = c()
-     for(i in 1:length(b))
-     res[i]=  paste0(sprintf(paste0("%.",a,"f"), b[i]) )              
-   if(m==1) res=  matrix(res, nrow =d[1] ,ncol =d[2] )  
-    return(res) 
-   }
+  # a = "3.anyletter" for replace 0.000 with <0.001
+  if(is.matrix(b)) {d = dim(b); m =1}
+  if(is.vector(b)) {d = length(b); m =0}
+  b =as.vector(b)
+  res = c()
+  norm = strsplit(as.character(a), split ="[.]")[[1]]
+  a = as.numeric(norm[1])
+  P = norm[2]
+  for(i in 1:length(b)){
+    res[i]=  paste0(sprintf(paste0("%.",a,"f"), b[i]) ) 
+  if(!is.na(P)) 
+    if( res[i] == "0.000") res[i] = "<0.001"
+  }
+  if(m==1) res=  matrix(res, nrow =d[1] ,ncol =d[2] )  
+  return(res) 
+}
+
 "%+%" <- function(a, b) {
   if(!(is.atomic(a) | is.atomic(b)| is.matrix(a) | is.matrix(b)))
     stop("a and b must be matrix or atomic")
