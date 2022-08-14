@@ -1,0 +1,109 @@
+
+its = function(data, y  , time, treatment, timeSince, breaks = NULL, 
+               labels= NULL,lab.x=NULL, lab.y=NULL, number.of.changepoints=3, save.plots = FALSE ){
+  # time:      1 2 3 4 5 6 7 8 9 10    before treatment
+  # treatment: 0 0 0 0 0 1 1 1 1 1    immediately effect
+  # timeSince: 0 0 0 0 0 1 2 3 4 5     after treatment
+  # y: response
+  
+  if(is.null(lab.x)) lab.x = time
+  if(is.null(lab.y)) lab.y = y
+  
+  
+  data.temp = na.omit( cbind.data.frame(data[,c(y, time, treatment, timeSince)]))
+  names(data.temp) = c("y", "time", "treatment", "timeSince")
+  
+  
+ # f= formula(paste0("`","y","` ~ ", "time"," + ", "treatment"," + ", "timeSince" ))
+  f= formula(y ~ time + treatment +  timeSince )
+  
+  ts <- lm( formula = f, data=data.temp )
+  s.M0=  summary(ts) 
+
+CI<-  (confint(ts))
+mean.sim <- s.M0$coefficients[,1]
+Re=data.frame(beta= round(  (mean.sim),2),round((  (CI)),2),
+               P.value=round(s.M0$coefficients[,4],2+1))
+
+
+Re2= data.frame("OR(95% CI)"= (paste0( Re[,1],"(", Re[,2],",", Re[,3], ")")), "P value"= Re[,4])
+row.names(Re2)=row.names(Re)
+
+
+
+
+  
+  data.temp$fitted.values =  ts$fitted.values  
+  treatment.time= max(data.temp[data.temp$treatment==0,"time"])
+  last.treatment.time= max(data.temp[,"time"])
+  
+  library(ggplot2)
+
+  data1 <- as.data.frame( cbind( time = treatment.time:last.treatment.time, 
+                                 treatment = 0, 
+                                 timeSince = 0 )) 
+  data1$no.treatment = predict( ts, data1 )
+  
+ g= ggplot(data = data.temp, mapping =  aes(x= time, y = y ))+
+  geom_point( color= "gray")+
+  geom_vline(xintercept = treatment.time, color = "red", linetype = 2)+
+   geom_line(mapping = aes(x= time, y = fitted.values), color = "blue", size =1)+
+   geom_line(data = data1, mapping = aes(x= time, y = no.treatment,), linetype = 3, color= "gray")+
+   geom_line(mapping = aes(group = 1))+
+   labs(x = lab.x, y = lab.y)+
+   theme_bw()
+   
+  if(!(is.null(breaks) & is.null(labels))) g = g + scale_x_continuous( breaks = breaks, labels = labels)
+  ################### 
+ require(changepoint)
+ m.pelt= cpt.mean(data.temp$y,method='BinSeg', Q=number.of.changepoints)
+                  
+
+ g0= ggplot(data.temp, mapping =  aes(x= time, y = y ))+
+   geom_point( color= "gray")+
+   geom_line(mapping = aes(x= time, y = y) )+
+   geom_vline(xintercept = cpts(m.pelt),size=1, color = "blue", linetype = 3)+
+   geom_vline(xintercept = treatment.time, color = "red", linetype = 2)+
+   
+   labs(x = lab.x, y = lab.y)+
+   theme_bw()
+ if(!(is.null(breaks) & is.null(labels))) g0 = g0 + scale_x_continuous( breaks = breaks, labels = labels)
+ 
+ 
+
+ 
+  wind.pelt=cpt.var(diff(data.temp$y),method='BinSeg', Q=number.of.changepoints)
+  data.temp$diff = c(NA, wind.pelt@data.set )
+
+   g1= ggplot(data.temp, mapping =  aes(x= time, y = diff ))+
+   geom_point( color= "gray")+
+   geom_line(mapping = aes(x= time, y = diff) )+
+     geom_vline(xintercept = cpts(wind.pelt),size=1, color = "blue", linetype = 3)+
+     geom_vline(xintercept = treatment.time, color = "red", linetype = 2)+
+     labs(x = lab.x, y = paste0("One Month Lagged Difference in ", lab.y))+
+   theme_bw()
+ if(!(is.null(breaks) & is.null(labels))) g1 = g1 + scale_x_continuous( breaks = breaks, labels = labels)
+ 
+ 
+  g01 = gridExtra::grid.arrange(g0+labs(title = "A)"),g1+ labs(title = "B)"), nrow=2)
+   
+ 
+if(save.plots ==TRUE) {
+  ggsave(paste0(y,".TS.jpeg"), g, width = 7, height = 5, dpi=600)
+  ggsave(paste0(y,".CP.mean.jpeg"), g0, width = 7, height = 5, dpi=600)
+  ggsave(paste0(y,".CP.variance.jpeg"), g1, width = 7, height = 5, dpi=600)
+  ggsave(paste0(y,".CPs.jpeg"), g01, width = 7, height = 10, dpi=600)
+  cat("Plots saved on WD!\n")
+}
+ 
+ 
+   list(coefficients = list(Re2, Re), 
+        change.point.mean = list(cpts=cpts(m.pelt),
+                                 cpt.model = m.pelt    
+        ),
+        
+  change.point.variance = list(cpts=cpts(wind.pelt),
+                                     cpt.model = wind.pelt),
+ 
+       plots =  list(g ,g0, g1, g01))
+}
