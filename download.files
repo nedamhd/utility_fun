@@ -26,13 +26,13 @@ github.files = function(){
       24- Ferquency
       25- SNP Analysis
       26- multinomial
-      27- all"
+      27- Interrupted time series"
      ) 
 
       
 n = readline("Please enter the numbe(s) and separate by space: ")      
 n = na.omit(as.numeric(as.character(strsplit(n, split = c(" "))[[1]])) )   
-if(27 %in% n) n = 1:26
+#if(27 %in% n) n = 1:26
 if(1 %in% n)
   {cat("Downlding 'Table_One' ... ")
   source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/Table_One.R")
@@ -164,6 +164,12 @@ if(26 %in% n)
   source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/multinomial.R")
   cat("done!\n")
 }
+if(27 %in% n)          
+ { cat("Downlding 'Interrupted time series'  ... ")
+  source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/ITS")
+  cat("done!\n")
+}
+
 }
 
 github.files()
