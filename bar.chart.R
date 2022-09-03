@@ -1,3 +1,4 @@
+ 
 bar.chart <-
   function(data = NULL,
            x = NULL,
@@ -29,9 +30,9 @@ bar.chart <-
            ANOVA_table = NULL,
            Repeat.measurment = NULL,
            report.p.algorithm.labeling = TRUE) {
-           x.lab   =   x.text.lab
-           z.lab   =   z.main.lab
-           y.lab   =   y.main.lab
+    x.lab   =   x.text.lab
+    z.lab   =   z.main.lab
+    y.lab   =   y.main.lab
     
     # if(is.null(z) & is.null(x) & is.null(y))
     # if(is.null(x.text.lab)){
@@ -391,40 +392,40 @@ bar.chart <-
       } 
       
       
-       }
-      
-      
-      
-      base.of.y = ggplot_build(p)$layout$panel_params[[1]]$y.range
-      if (is.null(adjust))
-        adjust = (abs(base.of.y[2]) + abs(base.of.y[1])) / plot.adjust
-      
-      if (is.null(distance))
-        distance = (abs(base.of.y[2]) + abs(base.of.y[1])) / plot.adjust
-      
-      xx <- ggplot_build(p)$data[[2]]$x
-      xstart = xx [(1:length(xx)) %% 2 == 0]
-      xend = xx [(1:length(xx)) %% 2 != 0]
-      
-      d1 = cbind(
-        xstart,
-        xend,
-        ystart = c(height + adjust + distance),
-        yend = c(height + adjust + distance)
-      )   %>% as.data.frame()
-      d2 = cbind(
-        xstart,
-        xend,
-        ystart = c(height + distance),
-        yend = c(height + adjust + distance)
-      )   %>% as.data.frame()
-      
      
+    
+    
+    
+    base.of.y = ggplot_build(p)$layout$panel_params[[1]]$y.range
+    if (is.null(adjust))
+      adjust = (abs(base.of.y[2]) + abs(base.of.y[1])) / plot.adjust
+    
+    if (is.null(distance))
+      distance = (abs(base.of.y[2]) + abs(base.of.y[1])) / plot.adjust
+    
+    xx <- ggplot_build(p)$data[[2]]$x
+    xstart = xx [(1:length(xx)) %% 2 == 0]
+    xend = xx [(1:length(xx)) %% 2 != 0]
+    
+    d1 = cbind(
+      xstart,
+      xend,
+      ystart = c(height + adjust + distance),
+      yend = c(height + adjust + distance)
+    )   %>% as.data.frame()
+    d2 = cbind(
+      xstart,
+      xend,
+      ystart = c(height + distance),
+      yend = c(height + adjust + distance)
+    )   %>% as.data.frame()
+    
+    } else  
     
     #########################
     
     
-    if (is.null(z.lab)) {
+   {
       
       
       p <- ggplot() +
@@ -523,7 +524,7 @@ bar.chart <-
         distance = (abs(base.of.y[2]) + abs(base.of.y[1])) / plot.adjust
       
       xx <- ggplot_build(p)$data[[2]]$x
-  }
+    }
     
     
     ########################################
@@ -561,58 +562,58 @@ bar.chart <-
     ######################
     if (!is.null(p.label)){ 
       # if (!is.null(z)) { 
-          if (length(p.label) != dim(d1)[1])
-           stop(paste0("The length of p.label is not equall to ", dim(d1)[1]))
-        
-        p =  p +
-          geom_segment(
-            data = d1,
-            mapping = aes(
-              x = xstart,
-              xend = xend,
-              y = ystart,
-              yend = yend
-            ),
-            show.legend = FALSE,
-            size = 1.1,
-            color = "black"
-          ) +
-          geom_segment(
-            data = d2,
-            mapping = aes(
-              x = xstart,
-              xend = xstart,
-              y = ystart,
-              yend = yend
-            ),
-            show.legend = FALSE,
-            size = 1.1,
-            color = "black"
-          ) +
-          geom_segment(
-            data = d2,
-            mapping = aes(
-              x = xend,
-              xend = xend,
-              y = ystart,
-              yend = yend
-            ),
-            show.legend = FALSE,
-            size = 1.1,
-            color = "black"
-          ) +
-          geom_text(
-            data = d1,
-            mapping = aes(
-              x = (xstart + xend) / 2,
-              y = height + 3 * adjust + distance ,
-              label = label
-            ),
-            show.legend = FALSE ,
-            color = "black",
-            size = 3 + font
-          )
-      }  
+      if (length(p.label) != dim(d1)[1])
+        stop(paste0("The length of p.label is not equall to ", dim(d1)[1]))
+      
+      p =  p +
+        geom_segment(
+          data = d1,
+          mapping = aes(
+            x = xstart,
+            xend = xend,
+            y = ystart,
+            yend = yend
+          ),
+          show.legend = FALSE,
+          size = 1.1,
+          color = "black"
+        ) +
+        geom_segment(
+          data = d2,
+          mapping = aes(
+            x = xstart,
+            xend = xstart,
+            y = ystart,
+            yend = yend
+          ),
+          show.legend = FALSE,
+          size = 1.1,
+          color = "black"
+        ) +
+        geom_segment(
+          data = d2,
+          mapping = aes(
+            x = xend,
+            xend = xend,
+            y = ystart,
+            yend = yend
+          ),
+          show.legend = FALSE,
+          size = 1.1,
+          color = "black"
+        ) +
+        geom_text(
+          data = d1,
+          mapping = aes(
+            x = (xstart + xend) / 2,
+            y = height + 3 * adjust + distance ,
+            label = label
+          ),
+          show.legend = FALSE ,
+          color = "black",
+          size = 3 + font
+        )
+    }  
     p=  p + theme(legend.position=legend.position)
     p$result <- summray_data
     p
@@ -782,3 +783,4 @@ bar.chart <-
 #   Repeat.measurment = MM1,
 #   report.p.algorithm.labeling = TRUE
 # )
+ 
