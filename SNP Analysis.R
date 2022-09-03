@@ -267,8 +267,9 @@ my.table.cat=
     d<- na.omit(as.data.frame(cbind(data[,x],data[,y])))
     names(d)<-c(x,y)
     yy<- c(y, paste(  rep("NA",(length(  unique(d[,y]))-1)),letters[1:(length(  unique(d[,y]))-1)]))
+     Tab1<- table(d[,y], d[,x]) 
     chi.t<-chisq.test( 
-      (Tab1<- table(d[,y], d[,x]))
+      Tab1
       ,simulate.p.value =TRUE)
     freq<- matrix(paste0(round(prop.table(Tab1,2)*100,2)," (",Tab1 ,")" ),dim(Tab1)[1])
     # colnames(freq)<- paste0 (x.labels.table," (n= " ,margin.table(Tab1,2),")")
@@ -283,101 +284,101 @@ my.table.cat=
 
 SNP.table=
   
-function( data,formula,
-          allel.lable=c("G","T"),
-          genotype=NULL,
-          x.labels.table.sad,
-          type.of.non.zero=c("common.homozigot", "rare.homozigot"),
-          method=c("glm","bayesglm")
-          ){ 
-  
- if(! method %in% c("glm","bayesglm")) stop("Ahad: Method should be 'glm' or 'bayesglm'")
-  
-  if(is.null(genotype))
-    genotype=c(
-      paste0(allel.lable[1],allel.lable[1]),
-      paste0(allel.lable[1],allel.lable[2]),
-      paste0(allel.lable[2],allel.lable[2]))
-  
-  
-  cat1<-   my.table.cat(data,formula=formula,x.labels.table.sad)
-  x<- all.vars(formula)[2]
-  y<- all.vars(formula)[1]
-  d<- na.omit(as.data.frame(cbind(data[,x],data[,y])))
-  names(d)<-c(x,y)
-  if(dim(cat1$freq)[1]==3){ 
-    Tabl.allel<-rbind( 
-      cat1$freq[1,]*2+cat1$freq[2,],
-      cat1$freq[3,]*2+cat1$freq[2,])}
-  
-  if(dim(cat1$freq)[1]==2){ 
-    warning("Dimension of table is TWO")
-    if(type.of.non.zero=="common.homozigot")  { 
+  function( data,formula,
+            allel.lable=c("G","T"),
+            genotype=NULL,
+            x.labels.table.sad,
+            type.of.non.zero=c("common.homozigot", "rare.homozigot"),
+            method=c("glm","bayesglm")
+  ){ 
+    
+    if(! method %in% c("glm","bayesglm")) stop("Ahad: Method should be 'glm' or 'bayesglm'")
+    
+    if(is.null(genotype))
+      genotype=c(
+        paste0(allel.lable[1],allel.lable[1]),
+        paste0(allel.lable[1],allel.lable[2]),
+        paste0(allel.lable[2],allel.lable[2]))
+    
+    
+    cat1<-   my.table.cat(data,formula=formula,x.labels.table.sad)
+    x<- all.vars(formula)[2]
+    y<- all.vars(formula)[1]
+    d<- na.omit(as.data.frame(cbind(data[,x],data[,y])))
+    names(d)<-c(x,y)
+    if(dim(cat1$freq)[1]==3){ 
       Tabl.allel<-rbind( 
         cat1$freq[1,]*2+cat1$freq[2,],
-        cat1$freq[2,] )
+        cat1$freq[3,]*2+cat1$freq[2,])}
+    
+    if(dim(cat1$freq)[1]==2){ 
+      warning("Dimension of table is TWO")
+      if(type.of.non.zero=="common.homozigot")  { 
+        Tabl.allel<-rbind( 
+          cat1$freq[1,]*2+cat1$freq[2,],
+          cat1$freq[2,] )
+      }
+      if(type.of.non.zero=="rare.homozigot"  )  {
+        Tabl.allel<-  cat1$freq[1,]+cat1$freq[2,]*2 }
     }
-    if(type.of.non.zero=="rare.homozigot"  )  {
-      Tabl.allel<-  cat1$freq[1,]+cat1$freq[2,]*2 }
+    
+    
+    if(dim(cat1$freq)[1]==1){ 
+      warning("Dimension of table is ONE")
+      Tabl.allel<-  cat1$freq[1,]*2}
+    
+    
+    p.table.allel<- round( prop.table( Tabl.allel,2)*100,2)
+    colnames(p.table.allel)<-allel.lable
+    ch.t<-chisq.test(Tabl.allel,simulate.p.value =TRUE) 
+    freq<-data.frame( "Subgroup"=allel.lable, matrix(paste0(p.table.allel," (",Tabl.allel ,")" ),dim(Tabl.allel)[1]))
+    rownames(freq)<-allel.lable
+    freq[1,"P Value"]<- ifelse(round(ch.t$p.value,3)==0, "<0.001",round(ch.t$p.value,3))
+    names(freq)<- names(cat1$Table)
+    cat1$Table[,"Subgroup"] <-genotype
+    
+    if(dim(cat1$freq)[1]!=3){
+      return( list(Table =rbind(  cat1$Table,freq[1:2,]),Tabl.allel=Tabl.allel,y=y,allel.lable=allel.lable)
+      )
+    }
+    
+    
+    if(dim(cat1$freq)[1]==3){
+      y=c(0,0,0,1,1,1)
+      w=c(cat1$freq)
+      Snp<- c(0,1,2,0,1,2)
+      library(arm)
+      if(method=="glm"){  
+        ci=CI.bayes( glm(y~as.factor(Snp),weights = w, family = binomial(logit)))$type2.result
+      } 
+      if(method=="bayesglm"){  
+        ci=CI.bayes(  bayesglm(y~as.factor(Snp),weights = w, family = binomial(logit)))$type2.result
+      }
+      ci=apply(ci,2 , as.character)
+      ci[1,]="-"
+      a1=cbind(cat1$Table,ci)
+      
+      y=c(0,0,1,1)
+      w=c(Tabl.allel)
+      allels<- c(0,1,0,1)
+      if(method=="glm"){  
+        ci2=CI.bayes( glm(y~as.factor(allels),weights = w, family = binomial(logit)))$type2.result
+      }
+      if(method=="bayesglm"){  
+        ci2=CI.bayes( bayesglm(y~as.factor(allels),weights = w, family = binomial(logit)))$type2.result
+      }
+      
+      
+      ci2=apply(ci2,2 , as.character)
+      ci2[1,]="-"
+      a2=cbind(freq[1:2,],ci2)
+      
+      # list(Table =rbind(  cat1$Table,freq[1:2,]),Tabl.allel=Tabl.allel,y=y,allel.lable=allel.lable)
+      return( list(Table =rbind( a1,a2),Tabl.allel=Tabl.allel,y=y,allel.lable=allel.lable))
+    }
+    
+    
   }
-  
-  
-  if(dim(cat1$freq)[1]==1){ 
-    warning("Dimension of table is ONE")
-    Tabl.allel<-  cat1$freq[1,]*2}
-  
-  
-  p.table.allel<- round( prop.table( Tabl.allel,2)*100,2)
-  colnames(p.table.allel)<-allel.lable
-  ch.t<-chisq.test(Tabl.allel,simulate.p.value =TRUE) 
-  freq<-data.frame( "Subgroup"=allel.lable, matrix(paste0(p.table.allel," (",Tabl.allel ,")" ),dim(Tabl.allel)[1]))
-  rownames(freq)<-allel.lable
-  freq[1,"P Value"]<- ifelse(round(chi.t$p.value,3)==0, "<0.001",round(chi.t$p.value,3))
-  names(freq)<- names(cat1$Table)
-  cat1$Table[,"Subgroup"] <-genotype
-  
-  if(dim(cat1$freq)[1]!=3){
- return( list(Table =rbind(  cat1$Table,freq[1:2,]),Tabl.allel=Tabl.allel,y=y,allel.lable=allel.lable)
- )
-  }
-  
-  
-  if(dim(cat1$freq)[1]==3){
-y=c(0,0,0,1,1,1)
-w=c(cat1$freq)
-Snp<- c(0,1,2,0,1,2)
-library(arm)
-if(method=="glm"){  
-ci=CI.bayes( glm(y~as.factor(Snp),weights = w, family = binomial(logit)))$type2.result
-} 
-if(method=="bayesglm"){  
-  ci=CI.bayes(  bayesglm(y~as.factor(Snp),weights = w, family = binomial(logit)))$type2.result
-}
-ci=apply(ci,2 , as.character)
-ci[1,]="-"
-a1=cbind(cat1$Table,ci)
-
-y=c(0,0,1,1)
-w=c(Tabl.allel)
-allels<- c(0,1,0,1)
-if(method=="glm"){  
-ci2=CI.bayes( glm(y~as.factor(allels),weights = w, family = binomial(logit)))$type2.result
-}
-if(method=="bayesglm"){  
-  ci2=CI.bayes( bayesglm(y~as.factor(allels),weights = w, family = binomial(logit)))$type2.result
-}
-
-
-ci2=apply(ci2,2 , as.character)
-ci2[1,]="-"
-a2=cbind(freq[1:2,],ci2)
-
-# list(Table =rbind(  cat1$Table,freq[1:2,]),Tabl.allel=Tabl.allel,y=y,allel.lable=allel.lable)
-return( list(Table =rbind( a1,a2),Tabl.allel=Tabl.allel,y=y,allel.lable=allel.lable))
-}
-
-
-}
 
 ########################################
 cat(" Example:\n
