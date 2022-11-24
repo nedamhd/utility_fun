@@ -39,7 +39,7 @@ bar.chart <-
     #    levels(data[,x])
     #   x.text.lab = x
     ##############################for  ANOVA_table##################
-    
+    x.name <- ""
     if (!is.null(ANOVA_table)) {
       if (class(ANOVA_table)[1] != "ANOVA_table")
         stop("The class of ANOVA_table is not correct!")
@@ -58,6 +58,7 @@ bar.chart <-
         type = c("mean.ci", "median.quan", "mean.sd")[2]
         y.lab = paste0(y.lab,"\n[Median (IQR)]")
       } else {
+        type = c("mean.ci", "median.quan", "mean.sd")[1]
         y.lab = paste0(y.lab,"\n[Mean (95% CI)]")
       }
       
