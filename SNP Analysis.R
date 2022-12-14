@@ -382,14 +382,14 @@ SNP.table=
 
 ########################################
 
-cat(' Example:\n
- Re = SNP.table ( data= samples, formula = rs3735590 ~ CAD.FollowUp,
-                   allel.lable=c("G","A"),
-                   genotype=NULL,
-                   x.labels.table.sad = c("non-CAD", "CAD" ),
-                   type.of.non.zero=c("common.homozigot" ),
-                   method=c("bayesglm" )
-')
+ 
+ #Re = SNP.table ( data= samples, formula = rs3735590 ~ CAD.FollowUp,
+ #                  allel.lable=c("G","A"),
+ #                  genotype=NULL,
+#                   x.labels.table.sad = c("non-CAD", "CAD" ),
+#                   type.of.non.zero=c("common.homozigot" ),
+#                   method=c("bayesglm" )
+ 
 
 
 # Re = SNP.table ( data= samples, formula = rs3735590 ~ CAD.FollowUp,
