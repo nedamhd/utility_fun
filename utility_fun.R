@@ -13,7 +13,7 @@ rm(librares)
 
 ##########################
 # Important common libraries
-library(ggplot2); library(dplyr); library(wrapr)
+library(ggplot2); library(dplyr); 
 
 
 ##########################
