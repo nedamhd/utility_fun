@@ -1,4 +1,9 @@
-#TODO: add median and IQR to table for nanparametric variables.
+#TODO: 
+# add median and IQR to table for nanparametric variables.
+# The label of group should returned insted of 0 , 1
+
+
+
 
 Table_One <-   R6::R6Class(
   "table.One",
