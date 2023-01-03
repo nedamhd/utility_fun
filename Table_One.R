@@ -101,7 +101,7 @@ Table_One <-   R6::R6Class(
         shapiro    <- (G1.shapiro > 0.05) & (G2.shapiro > 0.05)
         }  
         
-        formula <- jmvcore::constructFormula(dep,  group)
+        formula <- paste0(dep, "~",  group)
         formula <- as.formula(formula)
         results <- t.test(formula, data =  data)
         test.r <- "t-test" 
