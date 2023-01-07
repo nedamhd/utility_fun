@@ -31,6 +31,6 @@ Download:
 
 List of Unicode characters: https://en.wikipedia.org/wiki/List_of_Unicode_characters.
 
-Install package for solve the error 'ERROR: compilation failed for package': 'install.packages ("stringi", type = "win.binary")'
+Install package for solve the error `ERROR: compilation failed for package`: `install.packages ("stringi", type = "win.binary")`
 
   
