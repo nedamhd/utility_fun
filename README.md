@@ -29,6 +29,8 @@ Download:
 
 * To print specific charecters such as `±`, just use unicode characters. For example: `print('\u00B1')`.
 
-List of Unicode characters: https://en.wikipedia.org/wiki/List_of_Unicode_characters
+List of Unicode characters: https://en.wikipedia.org/wiki/List_of_Unicode_characters.
+
+Install package for solve the error 'ERROR: compilation failed for package': 'install.packages ("stringi", type = "win.binary")'
 
   
