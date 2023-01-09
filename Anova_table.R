@@ -1,4 +1,6 @@
-  ANOVA_table <-   R6::R6Class(
+#TODO: group must start from 1 
+
+ANOVA_table <-   R6::R6Class(
     "ANOVA_table",
   public =  list(
     data                 = NULL,
