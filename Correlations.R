@@ -1,4 +1,6 @@
-correlations = function(data, type = c("pearson", "spearman")){
+correlations = function(data, type = c("pearson", "spearman", 1, 2)){
+  if(as.character(type) == "2") type = "spearman"
+  if(as.character(type) == "1") type = "pearson"
   source("https://raw.githubusercontent.com/ahadalizadeh/utility_fun/master/Pips.R")
   library("Hmisc")
   res2 <- rcorr(as.matrix(data),type = type)
