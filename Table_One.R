@@ -25,8 +25,8 @@ Table_One <-   R6::R6Class(
       self$deps.quantitative = deps.quantitative
       self$deps.qualitative = deps.qualitative
       self$wilcox = wilcox
-      if(!is.null(deps.quantitative)) self$add.quantitative()
-      if(!is.null(deps.qualitative)) self$add.qualitative()
+      if(!is.null(deps.quantitative)) try(self$add.quantitative())
+      if(!is.null(deps.qualitative)) try(self$add.qualitative())
     },
     
     add.quantitative = function(data = NULL, 
