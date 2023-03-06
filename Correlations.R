@@ -37,15 +37,7 @@ correlations = function(data, type = c("pearson", "spearman", 1, 2)){
     z}
   
   ######################################
- partial.corr = function() 
-  library(ppcor)
- 
-  x = 
-  y = 
-  adjusting.list
-  
-   pcor()
-  
+
   
     library("Hmisc")
   res2 <- rcorr(as.matrix(data),type = type)
