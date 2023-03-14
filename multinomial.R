@@ -231,23 +231,23 @@ multinomial = function(data, formula,
       
     }
 
-cat("
-h=multinomial (data = Data, 
-             formula = Pathology ~ EBV.PCR +
-               HPV_16.PCR+
-               HPV_18+
-               Fresh_FFPE + 
-               age, 
-             ref = "Chronic Cervicitis" ,
-             # newdata =  data.frame(EBV.PCR = c(0:1, 0:1),
-             #                       Fresh_FFPE = c(0,0,1,1), 
-             #                    age =  35), 
-             bayesian = TRUE,
+
+#h=multinomial (data = Data, 
+ #            formula = Pathology ~ EBV.PCR +
+ #              HPV_16.PCR+
+  #             HPV_18+
+  #             Fresh_FFPE + 
+  #             age, 
+  #           ref = "Chronic Cervicitis" ,
+    #         # newdata =  data.frame(EBV.PCR = c(0:1, 0:1),
+  #           #                       Fresh_FFPE = c(0,0,1,1), 
+   #          #                    age =  35), 
+      #       bayesian = TRUE,
              
-       # ggplot.mapping = 
-       #   aes(x = as.factor(Fresh_FFPE), 
-       #       y = probability,
-       #       colour = as.factor(EBV.PCR), 
-       #       group = as.factor(Fresh_FFPE)
-             # )                        
-)")
+  #     # ggplot.mapping = 
+  #     #   aes(x = as.factor(Fresh_FFPE), 
+  #     #       y = probability,
+  #     #       colour = as.factor(EBV.PCR), 
+   #    #       group = as.factor(Fresh_FFPE)
+   #          # )                        
+#)
