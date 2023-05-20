@@ -45,6 +45,7 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                               add = function(data=NULL , obs=NULL, pred, 
                                              pred.lab = NULL, spliter =NULL,
                                              spliter.lab = NULL, scientific.notation = FALSE) {
+                                   self$scientific.notation = scientific.notation            
                                 x.lab <- pred.lab
                                 if(is.null(obs)) obs =  self$obs
                                 self$obs = obs
