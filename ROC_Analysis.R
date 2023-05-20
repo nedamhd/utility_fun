@@ -95,7 +95,7 @@ ROC_Analysis <- R6::R6Class("ROC_Analysis", lock_objects = FALSE, lock_class = F
                                   for (i in 1:s.l){
                                     g[[i]] <-    private$gg.Roc(data=data[[i]] ,  x = x, y = y, x.lab = x.lab, 
                                                                 line.size= line.size,
-                                                                colorful = colorful, scientific.notation = scientific.notation)
+                                                                colorful = colorful )
                                     private$cutoff(data = data[[i]], obs = y, pred = x,scientific.notation = scientific.notation,
                                                    spliter.label = paste0(spliter,": ", names(data)[i]) )
                                     
