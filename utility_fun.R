@@ -22,16 +22,17 @@ read.cb <- function(header=TRUE,...) read.table("clipboard", header = header,
                                                 sep ="\t",...)
 ##########################
 # Write x to clipbord
-write.cb = function(x, row.names=TRUE, col.names=TRUE, comment=FALSE, text=NULL, ...){ 
-datafile <- file("clipboard", open='wt')
-on.exit(close(datafile))
-if(comment == TRUE)   {
-  if(is.null(comment(x))) warning("There is no comment for x! first add one by comment(x) = '...'") else
-  writeLines(comment(x), con=datafile)}
-write.table(x, file = datafile, sep = "\t", row.names = row.names,
-              col.names = col.names, ...)
-if(!is.null(text))   {writeLines(text , con=datafile)}
-}
+write.cb =
+  function(x, row.names=TRUE, col.names=TRUE, comment=FALSE, text=NULL, ...){ 
+    datafile <- file(paste0("clipboard-", object.size(x)), open='wt')
+    on.exit(close(datafile))
+    if(comment == TRUE)   {
+      if(is.null(comment(x))) warning("There is no comment for x! first add one by comment(x) = '...'") else
+        writeLines(comment(x), con=datafile)}
+    write.table(x, file = datafile, sep = "\t", row.names = row.names,
+                col.names = col.names, ...)
+    if(!is.null(text))   {writeLines(text , con=datafile)}
+  }
 
 #########################
 # Create a table in word automatically using x dataframe.
