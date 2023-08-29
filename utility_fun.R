@@ -29,7 +29,7 @@ write.cb =
     if(comment == TRUE)   {
       if(is.null(comment(x))) warning("There is no comment for x! first add one by comment(x) = '...'") else
         writeLines(comment(x), con=datafile)}
-    write.table(x, file = datafile, sep = "\t", row.names = row.names,
+    write.table(x, file = paste0("clipboard-", object.size(x)), sep = "\t", row.names = row.names,
                 col.names = col.names, ...)
     if(!is.null(text))   {writeLines(text , con=datafile)}
   }
