@@ -1,6 +1,7 @@
-Repeat.measurment =  function(data, 
+Repeat.measurment =  function(data = NULL, 
                               formula  , 
                               ID,
+                              melt.data = NULL,
                               comparison.formula = NULL,
                               glht.linfct.matrix = NULL,
                               adjust ="none"
@@ -17,11 +18,20 @@ Repeat.measurment =  function(data,
   if(! "Time" %in% IV.names) stop("The name of within subjevt varible in the formula must be 'Time'.")
   IV.names = IV.names[which(IV.names != "Time")]
   data = na.omit(data[,c(ID, IV.names, DV.names)])
-  melt.data = reshape2::melt(data,id= c(ID,IV.names), measure.vars = DV.names, variable.name = "Time")   
+  formula2<- formula
+  if(!is.null(data) ){
+  melt.data = reshape2::melt(data,id= c(ID,IV.names), measure.vars = DV.names, variable.name = "Time")
+  formula2 <-Reduce(paste, deparse(update(formula, value ~ .)))
+  
+  } else 
+    if(is.null(melt.data)) {
+    stop("data or melt.data is empty")
+    
+  }  
   IV.names = c(IV.names, "Time")
   
   options(contrasts = c("contr.sum","contr.poly"))
-  ...fixed123456789 <<-Reduce(paste, deparse(update(formula, value ~ .)))
+  ...fixed123456789 <<- formula2
   M1 <-nlme::lme(fixed= as.formula(...fixed123456789),
                  random= as.formula(paste0("~ 1|", ID)), data=melt.data,
                  method="REML",
@@ -155,5 +165,4 @@ Repeat.measurment =  function(data,
 # 
 # 
 # MM2$main.results
-# 
 # 
