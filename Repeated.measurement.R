@@ -17,17 +17,17 @@ Repeat.measurment =  function(data = NULL,
   Time = factor(c(DV.names))
   if(! "Time" %in% IV.names) stop("The name of within subjevt varible in the formula must be 'Time'.")
   IV.names = IV.names[which(IV.names != "Time")]
-  data = na.omit(data[,c(ID, IV.names, DV.names)])
+
   formula2<- formula
-  if(!is.null(data) ){
-  melt.data = reshape2::melt(data,id= c(ID,IV.names), measure.vars = DV.names, variable.name = "Time")
-  formula2 <-Reduce(paste, deparse(update(formula, value ~ .)))
-  
+  if(!is.null(data) ){ 
+    data = na.omit(data[,c(ID, IV.names, DV.names)])
+    melt.data = reshape2::melt(data,id= c(ID,IV.names), measure.vars = DV.names, variable.name = "Time")
+    formula2 <-Reduce(paste, deparse(update(formula, value ~ .)))
+    
   } else 
     if(is.null(melt.data)) {
-    stop("data or melt.data is empty")
-    
-  }  
+      stop("data or melt.data is empty")
+    }  
   IV.names = c(IV.names, "Time")
   
   options(contrasts = c("contr.sum","contr.poly"))
