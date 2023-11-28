@@ -93,10 +93,16 @@ bar.chart <-
       if(is.null(y.lab))
         y.lab = y
       if(lower.bound.errorbar){
+       if(add.errorbars.lab){
         if(type == "mean.ci") y.lab = paste0(y.lab,"\n[Mean (95% CI)]")
         if(type == "median.quan") y.lab = paste0(y.lab,"\n[Median (IQR)]")
         if(type == "mean.sd") y.lab = paste0(y.lab,"\n[Mean \u00B1 SD]")
-      }
+        } else {
+        if(type == "mean.ci") y.lab = paste0(y.lab )
+        if(type == "median.quan") y.lab = paste0(y.lab )
+        if(type == "mean.sd") y.lab = paste0(y.lab )
+       }
+       }
       if(!lower.bound.errorbar){
         if(type == "mean.ci") y.lab = paste0(y.lab,"\n[Mean (Upper bound of 95% CI)]")
         if(type == "median.quan") y.lab = paste0(y.lab,"\n[Median (3-quantile)]")
