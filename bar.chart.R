@@ -1,4 +1,4 @@
- 
+
 bar.chart <-
   function(data = NULL,
            x = NULL,
@@ -393,40 +393,41 @@ bar.chart <-
       } 
       
       
-     
-    
-    
-    
-    base.of.y = ggplot_build(p)$layout$panel_params[[1]]$y.range
-    if (is.null(adjust))
-      adjust = (abs(base.of.y[2]) + abs(base.of.y[1])) / plot.adjust
-    
-    if (is.null(distance))
-      distance = (abs(base.of.y[2]) + abs(base.of.y[1])) / plot.adjust
-    
-    xx <- ggplot_build(p)$data[[2]]$x
-    xstart = xx [(1:length(xx)) %% 2 == 0]
-    xend = xx [(1:length(xx)) %% 2 != 0]
-    
-    d1 = cbind(
-      xstart,
-      xend,
-      ystart = c(height + adjust + distance),
-      yend = c(height + adjust + distance)
-    )   %>% as.data.frame()
-    d2 = cbind(
-      xstart,
-      xend,
-      ystart = c(height + distance),
-      yend = c(height + adjust + distance)
-    )   %>% as.data.frame()
-    
+      
+      
+      
+      
+      base.of.y = ggplot_build(p)$layout$panel_params[[1]]$y.range
+      if (is.null(adjust))
+        adjust = (abs(base.of.y[2]) + abs(base.of.y[1])) / plot.adjust
+      
+      if (is.null(distance))
+        distance = (abs(base.of.y[2]) + abs(base.of.y[1])) / plot.adjust
+      
+      xx <- ggplot_build(p)$data[[2]]$x
+      xstart = xx [(1:length(xx)) %% 2 == 0]
+      xend = xx [(1:length(xx)) %% 2 != 0]
+      
+      d1 = cbind(
+        xstart,
+        xend,
+        ystart = c(height + adjust + distance),
+        yend = c(height + adjust + distance)
+      )   %>% as.data.frame()
+      print(d1)
+      d2 = cbind(
+        xstart,
+        xend,
+        ystart = c(height + distance),
+        yend = c(height + adjust + distance)
+      )   %>% as.data.frame()
+      
     } else  
+      
+      #########################
     
-    #########################
     
-    
-   {
+    {
       
       
       p <- ggplot() +
@@ -525,7 +526,28 @@ bar.chart <-
         distance = (abs(base.of.y[2]) + abs(base.of.y[1])) / plot.adjust
       
       xx <- ggplot_build(p)$data[[2]]$x
-    }
+      xstart = xx [(1:length(xx)) %% 2 == 0]
+      xend = xx [(1:length(xx)) %% 2 != 0]
+      
+      d1 = cbind(
+        xstart,
+        xend,
+        ystart = c(height + adjust + distance),
+        yend = c(height + adjust + distance)
+      )   %>% as.data.frame()
+      print(d1)
+      d2 = cbind(
+        xstart,
+        xend,
+        ystart = c(height + distance),
+        yend = c(height + adjust + distance)
+      )   %>% as.data.frame()
+      
+      
+      
+      
+      
+      }
     
     
     ########################################
@@ -784,4 +806,3 @@ bar.chart <-
 #   Repeat.measurment = MM1,
 #   report.p.algorithm.labeling = TRUE
 # )
- 
