@@ -1,5 +1,6 @@
 PATH="${RTOOLS40_HOME}\usr\bin;${PATH}"
 # file.edit('~/.Renviron')
+#options(timeout = max(1000, getOption("timeout")))
 options(internet.info = 0)
 https_proxy=http://127.0.0.1:10809/
 http_proxy=http://127.0.0.1:10809/
