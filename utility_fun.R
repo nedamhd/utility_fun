@@ -1,8 +1,16 @@
 # Author: Ahad Alizadeh
 # Last update: 2019-4-23
 # Description: Some utility functions to improve coding
- 
 
+
+# Here's a function to remove a term including all interactions in which the term is present:
+   remove_terms <- function(form, term) {
+    fterms <- terms(form)
+    fac <- attr(fterms, "factors")
+    idx <- which(as.logical(fac[term, ]))
+    new_fterms <- drop.terms(fterms, dropx = idx, keep.response = TRUE)
+    return(formula(new_fterms))
+  }
 
 ##########################
 #Check and install requested R packages
