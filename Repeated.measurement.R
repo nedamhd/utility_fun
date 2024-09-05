@@ -11,7 +11,7 @@ Repeat.measurment =  function(data = NULL,
   # ID: A variable to identify the subjects 
   # comparison.formula: Formula for multiple comparison like  '~ Group|Time' or '~ Group*Time'
   # adjust: p value adjustment. see '?p.adjust()'
- 
+  
   "%+%" <- function(a, b) {
     if(!(is.atomic(a) | is.atomic(b)| is.matrix(a) | is.matrix(b)))
       stop("a and b must be matrix or atomic")
@@ -38,18 +38,20 @@ Repeat.measurment =  function(data = NULL,
   
   
   
-   library(car)
-   remove_terms <- function(form, term) {
+  library(car)
+  remove_terms <- function(form, term) {
     fterms <- terms(form)
     fac <- attr(fterms, "factors")
     idx <- which(as.logical(fac[term, ]))
     new_fterms <- drop.terms(fterms, dropx = idx, keep.response = TRUE)
     return(formula(new_fterms))
   }
-  formulaNoTime=  remove_terms(formula,  "Time")
-  
   DV.names = all.vars(update(formula, . ~ 1))
   IV.names = all.vars(update(formula, 1 ~ .)) 
+  
+  if(!all(IV.names == "Time"))  formulaNoTime=  remove_terms(formula,  "Time")
+  if(all(IV.names == "Time"))  formulaNoTime=  update.formula(formula, .~1)
+  
   Time = factor(c(DV.names))
   if(! "Time" %in% IV.names) stop("The name of within subjevt varible in the formula must be 'Time'.")
   IV.names = IV.names[which(IV.names != "Time")]
@@ -72,8 +74,10 @@ Repeat.measurment =  function(data = NULL,
                  random= as.formula(paste0("~ 1|", ID)), data=melt.data,
                  method="REML",
                  correlation=nlme::corCompSymm(form=   as.formula(paste0("~ 1|", ID))))
+  
+  
   ML1 <- lm( as.formula(formulaNoTime),
-                 data=data)
+             data=data)
   # M2<- lm( formula,data=data)
   Anova.M1 <- car::Anova(M1 , type = "III")
   (av.ok <- car::Anova(ML1, idata=data.frame(Time = as.factor(paste0("Time", 1:length(DV.names)))), 
@@ -84,7 +88,7 @@ Repeat.measurment =  function(data = NULL,
   eta_squared = effectsize::eta_squared(M1)
   univariate.tests=  av.ok.s$univariate.tests 
   pval.adjustments= as.data.frame(av.ok.s$pval.adjustments)
-
+  
   main.table =as.data.frame(Anova.M1)  
   main.table$Chisqstat= paste0(round(Anova.M1$Chisq,2), " (", Anova.M1$Df, ")")
   main.table<- data.frame("Chisq (df)"=  main.table[,4],
@@ -169,30 +173,30 @@ Repeat.measurment =  function(data = NULL,
   }
   comparison.formula.IV.names = all.vars(update(comparison.formula, 1 ~ .))
   # melt.data<<- melt.data
- 
+  
   Rnames <- row.names(l)
-
-    comparison_summray_data <-
+  
+  comparison_summray_data <-
     melt.data  %>% group_by_at(.vars = comparison.formula.IV.names ) %>%
     summarise(
       y = paste0(round(mean(value, na.rm = TRUE),2)," \u00B1 ", round(sd(value, na.rm = TRUE),2)),
       .groups = 'drop'
     )
-    comparison_summray_data <- reshape2::acast(comparison_summray_data, as.formula(
-      paste0(comparison.formula.IV.names[2] ,"~",comparison.formula.IV.names[1])) )
- 
- if(all(row.names(t(comparison_summray_data)) == Rnames)){
-   comparison_summray_data = comparison_summray_data %+% l 
-   row.names(comparison_summray_data) = row.names(l)
-   colnames(comparison_summray_data) = colnames(l)
- } 
-    
- if(all(row.names(comparison_summray_data) == Rnames)) {
-   comparison_summray_data = comparison_summray_data %+% l 
-   row.names(comparison_summray_data) = row.names(l)
-   colnames(comparison_summray_data) = colnames(l)
+  comparison_summray_data <- reshape2::acast(comparison_summray_data, as.formula(
+    paste0(comparison.formula.IV.names[2] ,"~",comparison.formula.IV.names[1])) )
+  
+  if(all(row.names(t(comparison_summray_data)) == Rnames)){
+    comparison_summray_data = comparison_summray_data %+% l 
+    row.names(comparison_summray_data) = row.names(l)
+    colnames(comparison_summray_data) = colnames(l)
   } 
-   
+  
+  if(all(row.names(comparison_summray_data) == Rnames)) {
+    comparison_summray_data = comparison_summray_data %+% l 
+    row.names(comparison_summray_data) = row.names(l)
+    colnames(comparison_summray_data) = colnames(l)
+  } 
+  
   ...fixed123456789<<- NULL  
   rm(...fixed123456789, envir = globalenv()) 
   
