@@ -1,5 +1,9 @@
- 
- 
+
+# Calculate R-squared
+
+
+
+
 GLM_Analysis <- R6::R6Class("GLM_Analysis", lock_objects = FALSE, lock_class = FALSE,
                             public         = list(
                               data        = NULL,
@@ -10,6 +14,7 @@ GLM_Analysis <- R6::R6Class("GLM_Analysis", lock_objects = FALSE, lock_class = F
                               # result$models =list(),
                               family      = "gaussian",
                               sepration   = c(),
+                              R2          = data.frame(Formula= NA, R2 = NA ),
                               # plot        = NULL,
                               univariate  = FALSE,
                               n.model.univariate  = 0,
@@ -25,14 +30,37 @@ GLM_Analysis <- R6::R6Class("GLM_Analysis", lock_objects = FALSE, lock_class = F
                                 n.model        = 1
                                 "%+%" <- function(x,y) paste0(x,y)
                                 m1 <- glm(formula = formula, family = family, data = na.omit(data[,all.vars(formula)]))
-                                self$sepration[self$n.model] <- !(m1$converged)
+                                deviance <- summary(m1)$deviance
+                                null_deviance <- summary(m1)$null.deviance
+                                rsquared <- 1 - (deviance / null_deviance)
+                                rsquaredS = c(paste0( all.vars(formula ), collapse = ", "))
+                                d.m =    dim( self$R2)
+                                self$R2[d.m+1,1] =    rsquaredS   
+                                self$R2[d.m+1,2] =    rsquared
+                                
+                                
+                                
+                             self$sepration[self$n.model] <- !(m1$converged)
+                                
+                                
                                 m1.ci = private$CI(m1, Family = self$family)$type2.result
                                 if(self$sepration[self$n.model] | self$bayes){
                                   m1 = arm::bayesglm(formula = formula, family = family, data = data)
+                                  deviance <- summary(m1)$deviance
+                                  null_deviance <- summary(m1)$null.deviance
+                                  rsquared <- 1 - (deviance / null_deviance)
+                                  rsquaredS = c(paste0( all.vars(formula ), collapse = ", "))
+                                  d.m =    dim( self$R2)
+                                  self$R2[d.m+1,1] =    rsquaredS   
+                                  self$R2[d.m+1,2] =    rsquared
+                                  
+                                  
                                   m1.ci = private$CI(m1, Family = self$family)$type2.result
                                   cat("\nWe re-analyzed using bayesian glm due to Separation.\nIgnore  warning!\n")
                                   names(m1.ci) =c("Effect ","P value ") %+% "Model " %+% n.model %+% "*"
-                                } else {
+                                
+                                  
+                                  } else {
                                   names(m1.ci) =c("Effect ","P value ") %+% "Model " %+% n.model
                                 }
                                 
@@ -71,11 +99,30 @@ GLM_Analysis <- R6::R6Class("GLM_Analysis", lock_objects = FALSE, lock_class = F
                                 self$n.model = n.model 
                                 self$bayes = bayes
                                 "%+%" <- function(x,y) paste0(x,y)
-                                m1 = glm(formula = formula, family = family, data = data)
+                                m1 =  glm(formula = formula, family = family, data = data)
+                               
+                                deviance <- summary(m1)$deviance
+                                null_deviance <- summary(m1)$null.deviance
+                                rsquared <- 1 - (deviance / null_deviance)
+                                rsquaredS = c(paste0( all.vars(formula ), collapse = ", "))
+                                d.m =    dim( self$R2)
+                                self$R2[d.m+1,1] =    rsquaredS   
+                                self$R2[d.m+1,2] =    rsquared
+                                
                                 self$sepration[self$n.model] <- !(m1$converged)
                                 m1.ci = private$CI(m1, Family = self$family)$type2.result
                                 if(self$sepration[self$n.model]| self$bayes){
                                   m1 = arm::bayesglm(formula = formula, family = family, data = data)
+                                  
+                                  deviance <- summary(m1)$deviance
+                                  null_deviance <- summary(m1)$null.deviance
+                                  rsquared <- 1 - (deviance / null_deviance)
+                                  rsquaredS = c(paste0( all.vars(formula ), collapse = ", ") )
+                                  d.m =    dim( self$R2)
+                                  self$R2[d.m+1,1] =    rsquaredS   
+                                  self$R2[d.m+1,2] =    rsquared   
+                                  
+                                  
                                   m1.ci = private$CI(m1, Family = self$family)$type2.result
                                   cat("\nWe re-analyzed using bayesian glm due to Separation.\nIgnore  warning!\n")
                                   names(m1.ci) =c("Effect ","P value ") %+% "Model " %+% n.model %+% "*"
@@ -133,23 +180,23 @@ GLM_Analysis <- R6::R6Class("GLM_Analysis", lock_objects = FALSE, lock_class = F
                                 n = dim(f)[2] 
                                 
                                 d = f[ c(3:(n.model.univariate*2 +2 ))]  
-                              
-                              
-                              
-                              d[1,] = NA
-                              dd = data.frame(est = rep(NA,  n[1]), p.value = rep(NA,  n[1]))
-                              for(j  in (1:dim(d)[2])[as.logical((1:dim(d)[2]) %% 2)]){
-                                k =  which(!is.na(d[,j]))
-                                dd[k,] = d[k, c(j,j+1)]
-                              }
-                              
-                              if(n.model.univariate+1 < n.model)
-                                re = cbind(f[,1:2], dd, f[, (n.model.univariate*2 +3 ):(n.model*2)])
-                              
-                              if(n.model.univariate+1 == n.model)
-                                re=  cbind(f[,1:2], dd)
-                              
-                              re
+                                
+                                
+                                
+                                d[1,] = NA
+                                dd = data.frame(est = rep(NA,  n[1]), p.value = rep(NA,  n[1]))
+                                for(j  in (1:dim(d)[2])[as.logical((1:dim(d)[2]) %% 2)]){
+                                  k =  which(!is.na(d[,j]))
+                                  dd[k,] = d[k, c(j,j+1)]
+                                }
+                                
+                                if(n.model.univariate+1 < n.model)
+                                  re = cbind(f[,1:2], dd, f[, (n.model.univariate*2 +3 ):(n.model*2)])
+                                
+                                if(n.model.univariate+1 == n.model)
+                                  re=  cbind(f[,1:2], dd)
+                                
+                                re
                               }
                             ),
                             
