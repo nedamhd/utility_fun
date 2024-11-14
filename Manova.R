@@ -458,14 +458,14 @@ Main.Manova<- function(formula,data,interaction.formula,type="CI",y.lab=NULL,com
 }
 
 
-Data  = data.frame(
-  x1 = abs(rnorm(1000)),
-  x2 = factor(rbinom(1000,1,0.5)),
-  x3 = factor(rbinom(1000,1,0.5)),
-  y1 = abs(rnorm(1000)),
-  y2 = abs(rnorm(1000)),
-  y3 = abs(rnorm(1000))
-)
+# Data  = data.frame(
+#   x1 = abs(rnorm(1000)),
+#   x2 = factor(rbinom(1000,1,0.5)),
+#   x3 = factor(rbinom(1000,1,0.5)),
+#   y1 = abs(rnorm(1000)),
+#   y2 = abs(rnorm(1000)),
+#   y3 = abs(rnorm(1000))
+# )
 
 # s=Manova.fun(data = Data, formula = cbind( y1,y3, y2) ~ x2*x3   )  
 # s=Anova.fun(data = Data, formula = y2 ~ x2*x3   )  
