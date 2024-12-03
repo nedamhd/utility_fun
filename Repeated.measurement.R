@@ -185,11 +185,7 @@ Repeat.measurment =  function(data = NULL,
   comparison_summray_data <- reshape2::acast(comparison_summray_data, as.formula(
     paste0(comparison.formula.IV.names[2] ,"~",comparison.formula.IV.names[1])) )
   
-  if(all(row.names(t(comparison_summray_data)) == Rnames)){
-    comparison_summray_data = comparison_summray_data %+% l 
-    row.names(comparison_summray_data) = row.names(l)
-    colnames(comparison_summray_data) = colnames(l)
-  } 
+  
   
   if(all(row.names(comparison_summray_data) == Rnames)) {
     comparison_summray_data = comparison_summray_data %+% l 
