@@ -171,6 +171,9 @@ Repeat.measurment =  function(data = NULL,
                                 "pvalues" = ss$test$pvalues) ,3) 
     
   }
+  comparison_summray_data = NULL
+  
+  if(!is.null(comparison.formula)){
   comparison.formula.IV.names = all.vars(update(comparison.formula, 1 ~ .))
   # melt.data<<- melt.data
   
@@ -192,7 +195,7 @@ Repeat.measurment =  function(data = NULL,
     row.names(comparison_summray_data) = row.names(l)
     colnames(comparison_summray_data) = colnames(l)
   } 
-  
+  }
   ...fixed123456789<<- NULL  
   rm(...fixed123456789, envir = globalenv()) 
   
