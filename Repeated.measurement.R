@@ -86,7 +86,7 @@ Repeat.measurment =  function(data = NULL,
   sphericity.tests= av.ok.s$sphericity.tests
   
   eta_squared = effectsize::eta_squared(M1)
-  univariate.tests=  av.ok.s$univariate.tests 
+  univariate.tests=  av.ok.s
   pval.adjustments= as.data.frame(av.ok.s$pval.adjustments)
   
   main.table =as.data.frame(Anova.M1)  
